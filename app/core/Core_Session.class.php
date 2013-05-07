@@ -1,0 +1,189 @@
+<?php
+
+class Core_Session
+{
+    private static $instance = null;
+    
+    private $id             = -1;
+    
+    private $valid          = false;
+    private $closed         = true;
+    private $resumed        = false;
+    
+    private $mysqlMode      = false;
+    private $mysql;
+
+    private $key;
+    private $SESSION;
+    
+    /* static getter */
+    public static function getInstance($openOnInit = true)
+    {
+        if(self::$instance === null) self::$instance = new self($openOnInit);
+        return self::$instance;
+    }
+    
+    public function __construct($openOnInit = true)
+    {
+        // singleton check
+        if(self::$instance !== null) exit('Core_Session is a Singleton dude. Use Core_Session.getInstance().');
+        
+        // open
+        if($openOnInit) $this->open();
+    }
+    
+    public function open()
+    {
+        if(Core_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
+        {
+            $this->mysqlMode = true;
+            $this->mysql = &Core_MySQL::getInstance();
+            
+            session_set_save_handler(
+                array($this, 'handleMySQLSessionOpen'),
+                array($this, 'handleMySQLSessionClose'),
+                array($this, 'handleMySQLSessionRead'),
+                array($this, 'handleMySQLSessionWrite'),
+                array($this, 'handleMySQLSessionDestroy'),
+                array($this, 'handleMySQLSessionClean')
+                );
+        }
+        
+        if(session_start())
+        {
+            $this->id = session_id();
+            $this->key = 'tobysess';
+            
+            // session resume
+            if(isset($_SESSION[$this->key]))
+            {
+                $this->SESSION = $_SESSION;
+                $this->resumed = true;
+            }
+            
+            // session start
+            else
+            {
+                $this->SESSION[$this->key] = array('last_seen' => 0);
+            }
+            
+            // set vars
+            $_SESSION = false;
+            $this->valid = true;
+            $this->closed = false;
+        }
+    }
+    
+    public function close()
+    {
+        $this->set('last_seen', time());
+        
+        $_SESSION = $this->SESSION;
+        session_write_close();
+        
+        $this->closed = true;
+    }
+    
+    public function destroy()
+    {
+        session_destroy();
+        $_SESSION = false;
+        $this->SESSION = false;
+        
+        $this->closed = true;
+    }
+    
+    /* getter setter */
+    public function getId()
+    {
+        return $this->id;    
+    }
+    
+    public function isValid()
+    {
+        return $this->valid;
+    }
+    
+    public function isResumed()
+    {
+        return $this->resumed;
+    }
+
+    public function set($key, $value)
+    {
+        if($this->valid) if(!$this->closed) $this->SESSION[$this->key][$key] = $value;
+    }
+
+    public function get($key)
+    {
+        return $this->has($key) ? $this->SESSION[$this->key][$key] : null;
+    }
+    
+    public function has($key)
+    {
+        return isset($this->SESSION[$this->key][$key]);
+    }
+    
+    public function delete($key)
+    {
+        unset($this->SESSION[$this->key][$key]);
+    }
+    
+    public function printr()
+    {
+        Core_Utils::printr($this->SESSION);
+    }
+    
+    /* event handler */
+    private function handleMySQLSessionOpen()
+    {
+        return $this->mysql->connected;
+    }
+    
+    private function handleMySQLSessionClose()
+    {
+        return true;
+    }
+    
+    private function handleMySQLSessionRead($id)
+    {
+        $id = mysql_real_escape_string($id);
+        
+        $this->mysql->select('pd_sessions', '*', "WHERE id='$id' FOR UPDATE");
+        if($this->mysql->getNumRows() != 0) return $this->mysql->fetchElementByName('data');
+        
+        return '';
+    }
+    
+    private function handleMySQLSessionWrite($id, $data)
+    {
+        $this->mysql->replace('pd_sessions', array(
+            'id' => $id,
+            'access_time' => time(),
+            'data' => $data
+        ));
+        
+        return $this->mysql->result;
+    }
+    
+    private function handleMySQLSessionDestroy($id)
+    {
+        $id = mysql_real_escape_string($id);
+        
+        $this->mysql->delete('pd_sessions', "WHERE id='$id'");
+        return $this->mysql->result;
+    }
+    
+    private function handleMySQLSessionClean($max)
+    {
+        $old = mysql_real_escape_string(time() - $max);
+        
+        $this->mysql->delete('pd_sessions', "WHERE access_time < $old");
+        return $this->mysql->result;
+    }
+    
+    public function __destruct()
+    {
+        $this->close();
+    }
+}

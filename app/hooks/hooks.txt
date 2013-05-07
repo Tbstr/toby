@@ -1,0 +1,7 @@
+Files in here help to fire code on certain events while the application core is running.
+
+
+Available hooks:
+
+init.hook.php       - fires after core init
+resolved.hook.php   - fires after successful resolve (after action run)
