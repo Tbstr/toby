@@ -1,22 +1,24 @@
 <?php
 
 // -- APP VARS --
-$appURL                 = 'http://www.project.com';
-$secureAppURL           = 'https://www.project.com';
+$appURL                 = 'http://www.tobiasfriese.de';
+$secureAppURL           = 'http://www.tobiasfriese.de';
 
 $theme                  = 'default';
-//$themeConfig           = 'picdrop_min';
+//$themeConfig           = 'default_v2';
 
 $defaultResolve         = 'index/index';
 $defaultTitle           = 'Project Name';
 
 // -- MYSQL --
+/*
 $mysql                  = array(
                             'host'      => '',
                             'user'      => '',
                             'password'  => '',
                             'db'        => ''
                             );
+ */
 
 // -- SESSIONS --
 $sessionUseMySQL        = false;

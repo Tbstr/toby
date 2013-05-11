@@ -1,6 +1,6 @@
 <?php
 
-abstract class Core_Controller
+abstract class Toby_Controller
 {
     public $name;
     public $action;
@@ -27,7 +27,7 @@ abstract class Core_Controller
         $this->name         = $name;
         $this->action       = $action;
         
-        if(Core_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Core_Config::_getValue ('toby', 'defaultTitle', 'string');
+        if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
         
         // holders
         $this->layout       = new stdClass();
@@ -46,7 +46,7 @@ abstract class Core_Controller
         
         // forward
         if($externalForward) header('Location: '.($forceSecure ? SECURE_APP_URL : APP_URL).DS.$controller.DS.$action.($vars ? DS.implode(DS, $vars) : ''));
-        else Core::boot($controller, $action, $vars);
+        else Toby::boot($controller, $action, $vars);
         
         // exit
         exit(0);
@@ -61,7 +61,7 @@ abstract class Core_Controller
     protected function returnFile($filePath, $nameOverride = null,  $mimeType = 'auto')
     {
         // set header information
-        header("Content-Type: ". ($mimeType == 'auto' ? Core_Utils::getMIMEFromExtension($filePath) : $mimeType));
+        header("Content-Type: ". ($mimeType == 'auto' ? Toby_Utils::getMIMEFromExtension($filePath) : $mimeType));
         header("Content-Disposition: attachment; filename=\"".($nameOverride == null ? basename($filePath) : $nameOverride)."\"");
         header("Content-Length: ".filesize($filePath));
         header("Content-Transfer-Encoding: binary");
@@ -141,7 +141,7 @@ abstract class Core_Controller
     /* to string */
     public function toString()
     {
-        return "[Core_Controller {$this->serialize()}]";
+        return "[Toby_Controller {$this->serialize()}]";
     }
     
     public function serialize()

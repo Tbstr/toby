@@ -1,6 +1,6 @@
 <?php
 
-class Core_MySQL
+class Toby_MySQL
 {
     private static $instances   = array();
 
@@ -35,7 +35,7 @@ class Core_MySQL
 
     private function autoInit()
     {
-        $appConf = &Core_Config::_getConfig('toby');
+        $appConf = &Toby_Config::_getConfig('toby');
 
         if(!isset($appConf['mysql']['host'])) return;
         if(!isset($appConf['mysql']['user'])) return;
@@ -87,12 +87,12 @@ class Core_MySQL
         if($this->errorCode != 0)       $this->errorCode = 0;
 
         // log
-        if($this->logQueries) Core_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
+        if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
 
         // dry run
         if($this->dryRun)
         {
-            Core_Utils::printr($q);
+            Toby_Utils::printr($q);
             return true;
         }
 
@@ -105,7 +105,7 @@ class Core_MySQL
             $this->errorMessage = mysql_error($this->link);
             $this->errorCode = mysql_errno($this->link);
             
-            Core_Logger::log("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
+            Toby_Logger::log("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
             return false;
         }
 
@@ -237,6 +237,6 @@ class Core_MySQL
     public function initQueryLogging()
     {
         $this->logQueries = true;
-        Core_Logger::log('[MySQL log start] '.REQUEST, 'mysql-queries', true);
+        Toby_Logger::log('[MySQL log start] '.REQUEST, 'mysql-queries', true);
     }
 }

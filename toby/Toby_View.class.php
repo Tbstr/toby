@@ -1,6 +1,6 @@
 <?php
 
-class Core_View
+class Toby_View
 {
     private $scriptPath;
     private $vars;
@@ -24,12 +24,12 @@ class Core_View
         // script override
         if(is_string($scriptOverride))
         {
-            $overrideScriptPath = Core_Renderer::findViewScript($scriptOverride);
+            $overrideScriptPath = Toby_Renderer::findViewScript($scriptOverride);
             if($overrideScriptPath !== false) $scriptPath = $overrideScriptPath;
         }
         
         // set
-        $this->themeURL = Core_ThemeManager::$themeURL;
+        $this->themeURL = Toby_ThemeManager::$themeURL;
         
         // render
         ob_start();
@@ -45,7 +45,7 @@ class Core_View
     protected function partial($scriptName, $vars = null, $includeParentVars = false)
     {
         // find script
-        $scriptPath = Core_Renderer::findViewScript($scriptName);
+        $scriptPath = Toby_Renderer::findViewScript($scriptName);
         if($scriptPath === false) return 'Script "'.$scriptName.'" could not be found.';
         
         // manage vars
@@ -54,7 +54,7 @@ class Core_View
         else $viewVars = &$vars;
         
         // create view and render
-        $partialView = new Core_View($scriptPath, $viewVars);
+        $partialView = new Toby_View($scriptPath, $viewVars);
         return $partialView->render();
     }
     
@@ -72,9 +72,9 @@ class Core_View
     
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
-        $controller = Core::runAction($controllerName, $actionName, $vars);
+        $controller = Toby::runAction($controllerName, $actionName, $vars);
         if($controller === false) exit("includeAction: $controllerName/$actionName does not exist");
         
-        return Core_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
     }
 }

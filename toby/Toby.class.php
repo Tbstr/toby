@@ -1,29 +1,19 @@
 <?php
 
-// autoloader
-function autoload($className)
-{
-    // name mangler
-    $elements = explode('_', $className);
-    array_pop($elements);
-    
-    $path = 'app/'.strtolower(implode('/', $elements))."/$className.class.php";
-    
-    if(file_exists($path)) require_once($path);
-}
-spl_autoload_register('autoload');
-
-// add lib to include path
-set_include_path(get_include_path().PATH_SEPARATOR.dirname(__DIR__).'/lib');
-
 // core class
-class Core
+class Toby
 {
     private static $tobyConf;
-    private static $logRequestTime = false;
+    private static $logRequestTime  = false;
     
-    public static function init($request = null)
+    public static $SCOPE_WEB        = 'scopeWeb';
+    public static $SCOPE_LOCAL      = 'scopeLocal';
+    
+    public static function init($tobyRoot, $appRoot, $publicRoot, $scope, $request = null)
     {
+        // change directory
+        chdir($tobyRoot);
+        
         // error handling
         error_reporting(E_ALL);
         ini_set('display_errors', '1');
@@ -31,13 +21,23 @@ class Core
         // define constants
         define('DS', DIRECTORY_SEPARATOR);
         define('NL', "\n");
-
-        define('APP_ROOT', getcwd());
-
-        // init config
-        Core_Config::getInstance()->readDir(APP_ROOT.'/app/config');
         
-        self::$tobyConf = &Core_Config::_getConfig('toby');
+        define('TOBY_ROOT', $tobyRoot);
+        define('APP_ROOT', $appRoot);
+        define('PUBLIC_ROOT', $publicRoot);
+        
+        define('SCOPE', $scope);
+        
+        // register autoloader
+        spl_autoload_register('Toby::autoload');
+        
+        // add lib to include path
+        set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
+        
+        // init config
+        Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
+        
+        self::$tobyConf = &Toby_Config::_getConfig('toby');
 
         // define web constants
         if($request == null)
@@ -58,20 +58,20 @@ class Core
         }
         
         // init logging
-        Core_Logger::init(APP_ROOT.'/app/logs');
-        Core_Logger::logErrors('error');
+        Toby_Logger::init(APP_ROOT.'/logs');
+        Toby_Logger::logErrors('error');
         
-        if(Core_Config::_getValue('toby', 'logRequestTimes', 'bool'))
+        if(Toby_Config::_getValue('toby', 'logRequestTimes', 'bool'))
         {
             self::$logRequestTime = true;
-            Core_Logger::log('[app start]', 'request-times', true);
+            Toby_Logger::log('[app start]', 'request-times', true);
         }
         
         // init mysql
-        if(Core_Config::_getValue('toby', 'logMySQLQueries', 'bool')) Core_MySQL::getInstance()->initQueryLogging();
+        if(Toby_Config::_getValue('toby', 'logMySQLQueries', 'bool')) Toby_MySQL::getInstance()->initQueryLogging();
         
         // include init hook
-        if(file_exists(APP_ROOT.'/app/hooks/init.hook.php')) include APP_ROOT.'/app/hooks/init.hook.php';
+        if(file_exists(APP_ROOT.'/hooks/init.hook.php')) include APP_ROOT.'/hooks/init.hook.php';
         
         // resolve and boot
         if($request != null)
@@ -84,7 +84,7 @@ class Core
             $vars = (count($elements) > 2) ? array_slice($elements, 2) : null;
             
             // boot
-            Core::boot($controllerName, $actionName, $vars, true);
+            Toby::boot($controllerName, $actionName, $vars, true);
         }
     }
     
@@ -112,7 +112,7 @@ class Core
             define('RESOLVE', "$controllerName/$actionName".($vars == null ? '' : '/'.implode('/', $vars)));
             
             // include resolved hook
-            if(file_exists(APP_ROOT.'/app/hooks/resolved.hook.php')) include APP_ROOT.'/app/hooks/resolved.hook.php';
+            if(file_exists(APP_ROOT.'/hooks/resolved.hook.php')) include APP_ROOT.'/hooks/resolved.hook.php';
             
             // render
             echo self::renderController($controller);
@@ -125,7 +125,7 @@ class Core
         if(self::$logRequestTime)
         {
             $starttime = microtime();
-            Core_Logger::log("running action: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars)), 'request-times', true);
+            Toby_Logger::log("running action: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars)), 'request-times', true);
         }
         
         // vars
@@ -133,9 +133,9 @@ class Core
         $actionFullName = $action . 'Action';
         
         // exec
-        if(file_exists(APP_ROOT."/app/controller/$controllerFullName.class.php"))
+        if(file_exists(APP_ROOT."/controller/$controllerFullName.class.php"))
         {
-            require_once APP_ROOT."/app/controller/$controllerFullName.class.php";
+            require_once APP_ROOT."/controller/$controllerFullName.class.php";
             
             if(class_exists($controllerFullName))
             {
@@ -151,7 +151,7 @@ class Core
                     if(self::$logRequestTime)
                     {
                         $deltatime = number_format(microtime() - $starttime, 3);
-                        Core_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms]", 'request-times', true);
+                        Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms]", 'request-times', true);
                     }
                     
                     // return
@@ -164,14 +164,14 @@ class Core
         if(self::$logRequestTime)
         {
             $deltatime = number_format(microtime() - $starttime, 3);
-            Core_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms] [action not found]", 'request-times', true);
+            Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms] [action not found]", 'request-times', true);
         }
         
         // return
         return false;
     }
     
-    public static function renderController(Core_Controller &$controller)
+    public static function renderController(Toby_Controller &$controller)
     {
         // cancellation
         if(!$controller->renderView) return;
@@ -180,19 +180,44 @@ class Core
         if(self::$logRequestTime) $starttime = microtime();
         
         // prepare theme manager
-        if(!Core_ThemeManager::initByController($controller)) exit('unable to set theme '.Core_ThemeManager::$themeName);
+        if(!Toby_ThemeManager::initByController($controller)) exit('unable to set theme '.Toby_ThemeManager::$themeName);
         
         // render content
-        $content = Core_Renderer::renderPage($controller);
+        $content = Toby_Renderer::renderPage($controller);
         
         // stop timing
         if(self::$logRequestTime)
         {
             $deltatime = number_format(microtime() - $starttime, 3);
-            Core_Logger::log("rendering controller: {$controller->serialize()} [{$deltatime}ms]", 'request-times', true);
+            Toby_Logger::log("rendering controller: {$controller->serialize()} [{$deltatime}ms]", 'request-times', true);
         }
         
         // return
         return $content;
+    }
+    
+    // autoloader
+    public static function autoload($className)
+    {
+        // prepare
+        $elements = explode('_', $className);
+        array_pop($elements);
+        
+        // resolve toby related
+        if(strtolower($elements[0]) == 'toby')
+        {
+            $elements[0]    = TOBY_ROOT;
+            $path = strtolower(implode('/', $elements))."/$className.class.php";
+        }
+        
+        // resolve app related
+        else
+        {
+            array_unshift($elements, APP_ROOT);
+            $path = strtolower(implode('/', $elements))."/$className.class.php";
+        }
+        
+        // require
+        if(file_exists($path)) require_once($path);
     }
 }

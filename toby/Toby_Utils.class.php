@@ -1,6 +1,6 @@
 <?php
 
-class Core_Utils
+class Toby_Utils
 {
     public static $mailDryRun = false;
     
@@ -31,7 +31,7 @@ class Core_Utils
         {
             foreach($array as $key => $value)
             {
-                if(!empty($key)) $object->$key = Core_Utils::array2object($value);
+                if(!empty($key)) $object->$key = Toby_Utils::array2object($value);
             }
         }
         

@@ -1,14 +1,16 @@
 <?php
 
-// change directory & require
-chdir(__DIR__);
-require_once 'app/core/Core.class.php';
+// require config
+require_once 'bootstrap.cfg.php';
+require_once $tobyRoot.'/Toby.class.php';
 
-// define scope
-define('SCOPE', 'local');
 
 // init & run
 array_shift($argv);
     
-Core::init();
-Core::runAction(array_shift($argv), array_shift($argv), $argv);
+Toby::init( $tobyRoot,
+            $appRoot,
+            $publicRoot,
+            Toby::$SCOPE_LOCAL);
+
+Toby::runAction(array_shift($argv), array_shift($argv), $argv);

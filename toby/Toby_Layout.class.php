@@ -1,6 +1,6 @@
 <?php
 
-class Core_Layout extends Core_View
+class Toby_Layout extends Toby_View
 {
     public $title              = '';
     public $jsVars             = null;
@@ -23,7 +23,7 @@ class Core_Layout extends Core_View
         $this->placeJSVars();
         
         // theme related
-        Core_ThemeManager::placeHeaderInformation();
+        Toby_ThemeManager::placeHeaderInformation();
     }
     
     protected function placeJSVars()

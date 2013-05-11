@@ -2,7 +2,7 @@
 
 require_once 'Mail.php';
 
-class Core_Mailer
+class Toby_Mailer
 {
     /**
      * @var string
@@ -41,7 +41,7 @@ class Core_Mailer
 
     /**
      * @param string $htmlMessage
-     * @return Core_Mailer
+     * @return Toby_Mailer
      */
     public function setHtmlMessage($htmlMessage)
     {
@@ -51,7 +51,7 @@ class Core_Mailer
 
     /**
      * @param string $recipient
-     * @return Core_Mailer
+     * @return Toby_Mailer
      */
     public function setRecipient($recipient)
     {
@@ -61,7 +61,7 @@ class Core_Mailer
 
     /**
      * @param string $sender
-     * @return Core_Mailer
+     * @return Toby_Mailer
      */
     public function setSender($sender)
     {
@@ -71,7 +71,7 @@ class Core_Mailer
 
     /**
      * @param string $subject
-     * @return Core_Mailer
+     * @return Toby_Mailer
      */
     public function setSubject($subject)
     {
@@ -81,7 +81,7 @@ class Core_Mailer
 
     /**
      * @param string $textMessage
-     * @return Core_Mailer
+     * @return Toby_Mailer
      */
     public function setTextMessage($textMessage)
     {

@@ -1,6 +1,6 @@
 <?php
 
-class Core_Session
+class Toby_Session
 {
     private static $instance = null;
     
@@ -26,7 +26,7 @@ class Core_Session
     public function __construct($openOnInit = true)
     {
         // singleton check
-        if(self::$instance !== null) exit('Core_Session is a Singleton dude. Use Core_Session.getInstance().');
+        if(self::$instance !== null) exit('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
         
         // open
         if($openOnInit) $this->open();
@@ -34,10 +34,10 @@ class Core_Session
     
     public function open()
     {
-        if(Core_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
+        if(Toby_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
         {
             $this->mysqlMode = true;
-            $this->mysql = &Core_MySQL::getInstance();
+            $this->mysql = &Toby_MySQL::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),
@@ -131,7 +131,7 @@ class Core_Session
     
     public function printr()
     {
-        Core_Utils::printr($this->SESSION);
+        Toby_Utils::printr($this->SESSION);
     }
     
     /* event handler */

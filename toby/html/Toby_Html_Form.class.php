@@ -1,6 +1,6 @@
 <?php
 
-class Core_Html_Form
+class Toby_Html_Form
 {
     private $name;
     private $action;
@@ -89,7 +89,7 @@ class Core_Html_Form
             {
                 case self::$ELEMENT_INPUT_TEXT:
                     
-                    $tag = new Core_Html_Tag('input');
+                    $tag = new Toby_Html_Tag('input');
                     
                     $tag->addAttributes(isset($elm['attr']) ? $elm['attr'] : null);
                     
@@ -103,7 +103,7 @@ class Core_Html_Form
                 
                 case self::$ELEMENT_INPUT_PASSWORD:
                     
-                    $tag = new Core_Html_Tag('input');
+                    $tag = new Toby_Html_Tag('input');
                     
                     $tag->addAttributes(isset($elm['attr']) ? $elm['attr'] : null);
                     
@@ -117,7 +117,7 @@ class Core_Html_Form
                 
                 case self::$ELEMENT_INPUT_HIDDEN:
                     
-                    $tag = new Core_Html_Tag('input');
+                    $tag = new Toby_Html_Tag('input');
                     
                     $tag->addAttributes(isset($elm['attr']) ? $elm['attr'] : null);
                     
@@ -131,7 +131,7 @@ class Core_Html_Form
                 
                 case self::$ELEMENT_TEXTAREA:
                     
-                    $tag = new Core_Html_Tag('textarea');
+                    $tag = new Toby_Html_Tag('textarea');
                     
                     $tag->addAttributes(isset($elm['attr']) ? $elm['attr'] : null);
                     
@@ -148,7 +148,7 @@ class Core_Html_Form
         $formTag = null;
         if(!$this->omitFormTag)
         {
-            $formTag = new Core_Html_Tag('form');
+            $formTag = new Toby_Html_Tag('form');
             $formTag->addAttributes($this->attr)
                     ->addAttribute('name', $this->name)
                     ->addAttribute('action', $this->action)

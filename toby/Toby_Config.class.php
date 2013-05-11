@@ -1,6 +1,6 @@
 <?php
 
-class Core_Config
+class Toby_Config
 {
     public static $instance = null;
     
@@ -42,7 +42,7 @@ class Core_Config
 
             if(is_readable($filePath))
             {
-                $key = strstr($filename, '.cfg.php', true);
+                $key = substr($filename, 0, strrpos($filename, '.cfg.php'));
                 $this->$key = $this->getConfigVars($filePath);
             }
         }
@@ -75,6 +75,6 @@ class Core_Config
         
         // return parsed
         $value = isset($configLink[$key]) ? $configLink[$key] : null;
-        return Core_Utils::parseValue($value, $datatype);
+        return Toby_Utils::parseValue($value, $datatype);
     }
 }

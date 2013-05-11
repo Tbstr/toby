@@ -1,6 +1,6 @@
 <?php
 
-class Core_ConfigFileManager
+class Toby_ConfigFileManager
 {
     public static function read($filePath, $processSections = false)
     {

@@ -1,6 +1,6 @@
 <?php
 
-class Controller_Index extends Core_Controller
+class Controller_Index extends Toby_Controller
 {
     public function indexAction()
     {

@@ -1,6 +1,6 @@
 <?php
 
-class Core_Logger
+class Toby_Logger
 {
     public static $initialized = false;
     public static $logsDirPath;
@@ -14,7 +14,7 @@ class Core_Logger
     public static function init($logsDirPath)
     {
         self::$logsDirPath = $logsDirPath;
-        self::$fatalNotificationTo = Core_Config::_getValue('toby', 'fatalNotificationTo', 'string');
+        self::$fatalNotificationTo = Toby_Config::_getValue('toby', 'fatalNotificationTo', 'string');
         
         self::$initialized = true;
     }
@@ -53,9 +53,9 @@ class Core_Logger
     {
         if(!self::$logErrors)
         {
-            set_error_handler('Core_Logger::handleError', error_reporting());
-            set_exception_handler('Core_Logger::handleException');
-            register_shutdown_function('Core_Logger::handleShutdown');
+            set_error_handler('Toby_Logger::handleError', error_reporting());
+            set_exception_handler('Toby_Logger::handleException');
+            register_shutdown_function('Toby_Logger::handleShutdown');
             
             self::$logErrors = true;
         }
@@ -125,6 +125,6 @@ class Core_Logger
     
     public function logRotate()
     {
-        Core_Logger::log('log rotate');
+        Toby_Logger::log('log rotate');
     }
 }

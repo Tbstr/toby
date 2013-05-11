@@ -1,13 +1,13 @@
 <?php
 
-class Core_Renderer
+class Toby_Renderer
 {
     /* static variables */
-    private static $defaultLayoutsPath = '/app/layout';
-    private static $defaultViewsPath = '/app/view';
+    private static $defaultLayoutsPath = '/layout';
+    private static $defaultViewsPath = '/view';
 
     /* static methods */
-    public static function renderPage(Core_Controller &$controller)
+    public static function renderPage(Toby_Controller &$controller)
     {
         // auto init theme manager
         self::themeManagerAutoInit();
@@ -17,9 +17,9 @@ class Core_Renderer
         
         // layout
         $layoutPath = self::findLayout($controller->layoutName);
-        if($layoutPath ===  false) exit('Core_Layout "'.$controller->layoutName.'" could not be found.');
+        if($layoutPath ===  false) exit('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
-        $layout = new Core_Layout($layoutPath, get_object_vars($controller->layout));
+        $layout = new Toby_Layout($layoutPath, get_object_vars($controller->layout));
         
         $layout->title = $controller->layoutTitle;
         $layout->jsVars = get_object_vars($controller->javascript);
@@ -43,14 +43,14 @@ class Core_Renderer
         if($scriptPath === false) exit('Script "'.$scriptName.'" could not be found.');
         
         // render & return
-        $scriptView = new Core_View($scriptPath, $vars);
+        $scriptView = new Toby_View($scriptPath, $vars);
         return $scriptView->render();
     }
     
     public static function findLayout($layoutName)
     {
         // theme
-        $layoutPath = Core_ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.tpl.php';
+        $layoutPath = Toby_ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.tpl.php';
         if(file_exists($layoutPath)) return $layoutPath;
             
         // app
@@ -63,7 +63,7 @@ class Core_Renderer
     public static function findViewScript($scriptName)
     {
         // theme
-        $viewScriptPath = Core_ThemeManager::$themePathRoot.'/view/'.$scriptName.'.tpl.php';
+        $viewScriptPath = Toby_ThemeManager::$themePathRoot.'/view/'.$scriptName.'.tpl.php';
         if(file_exists($viewScriptPath)) return $viewScriptPath;
             
         // app
@@ -76,7 +76,7 @@ class Core_Renderer
     private static function themeManagerAutoInit()
     {
         // cancellation
-        if(Core_ThemeManager::$initialized) return;
-        if(!Core_ThemeManager::init()) exit('unable to init theme manager');
+        if(Toby_ThemeManager::$initialized) return;
+        if(!Toby_ThemeManager::init()) exit('unable to init theme manager');
     }
 }

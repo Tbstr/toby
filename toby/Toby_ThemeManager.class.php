@@ -1,6 +1,6 @@
 <?php
 
-class Core_ThemeManager
+class Toby_ThemeManager
 {
     /* variables */
     public static $themeName;
@@ -18,8 +18,8 @@ class Core_ThemeManager
         // compute input
         if($themeName === false)
         {
-            $configThemeName    = Core_Config::_getValue('toby', 'theme');
-            $configThemeConfig  = Core_Config::_getValue('toby', 'themeConfig');
+            $configThemeName    = Toby_Config::_getValue('toby', 'theme');
+            $configThemeConfig  = Toby_Config::_getValue('toby', 'themeConfig');
             
             if(!empty($configThemeName))
             {
@@ -37,17 +37,17 @@ class Core_ThemeManager
         }
         
         // init if file exists
-        $themePath = "app/themes/$themeName";
+        $themePath = PUBLIC_ROOT."/themes/$themeName";
         if(file_exists(APP_ROOT.DS.$themePath))
         {
             self::$themeName = $themeName;
             self::$themePathRoot = APP_ROOT.DS.$themePath;
-            self::$themeURL = Core_Utils::pathCombine(array(APP_URL_REL, $themePath));
+            self::$themeURL = Toby_Utils::pathCombine(array(APP_URL_REL, $themePath));
             
-            $configPath = Core_Utils::pathCombine(array(self::$themePathRoot, ($configName ? $configName : $themeName))).'.info';
+            $configPath = Toby_Utils::pathCombine(array(self::$themePathRoot, ($configName ? $configName : $themeName))).'.info';
             if(file_exists($configPath))
             {
-                self::$themeConfig = Core_ConfigFileManager::read($configPath, true);
+                self::$themeConfig = Toby_ConfigFileManager::read($configPath, true);
                 self::$initialized = true;
                 
                 return true;
@@ -59,7 +59,7 @@ class Core_ThemeManager
         return false;
     }
     
-    public static function initByController(Core_Controller &$controller)
+    public static function initByController(Toby_Controller &$controller)
     {
         // vars
         $theme = false;
