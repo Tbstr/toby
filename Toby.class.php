@@ -49,8 +49,8 @@ class Toby
         {
             define('REQUEST', $request);
             
-            define('APP_URL', isset(self::$tobyConf['appURL']) ? self::$tobyConf['appURL'] : '');
-            define('SECURE_APP_URL', isset(self::$tobyConf['secureAppURL']) ? self::$tobyConf['secureAppURL'] : APP_URL);
+            define('APP_URL', Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '');
+            define('SECURE_APP_URL', Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : APP_URL);
             define('APP_URL_REL', dirname($_SERVER['SCRIPT_NAME']));
         }
         
@@ -95,10 +95,10 @@ class Toby
             // default resolve on fail
             if($stdResolveOnFail)
             {
-                if(!empty(self::$tobyConf['defaultResolve']))
+                if(Toby_Config::_hasKey('toby', 'defaultResolve'))
                 {
                     // reboot
-                    list($controllerName, $actionName) = explode('/', self::$tobyConf['defaultResolve']);
+                    list($controllerName, $actionName) = explode('/', Toby_Config::_hasKey('toby', 'defaultResolve'));
                     self::boot($controllerName, $actionName);
                 }
             }
