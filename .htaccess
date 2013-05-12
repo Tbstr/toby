@@ -1,7 +1,0 @@
-<IfModule mod_rewrite.c>
-	
-    # send request to public directory
-    RewriteEngine on
-    RewriteRule ^(.*)$ public/$1?%{QUERY_STRING} [L]
-	
-</IfModule>

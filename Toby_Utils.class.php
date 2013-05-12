@@ -4,9 +4,10 @@ class Toby_Utils
 {
     public static $mailDryRun = false;
     
-    public static function printr($v)
+    public static function printr()
     {
-        echo '<pre>'.print_r($v, true).'</pre>';
+        $args = func_get_args();
+        foreach($args as $arg) echo '<pre>'.print_r((string)$arg, true).'</pre>';
     }
     
     public static function clearPath($path)

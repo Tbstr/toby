@@ -3,7 +3,6 @@
 // core class
 class Toby
 {
-    private static $tobyConf;
     private static $logRequestTime  = false;
     
     public static $SCOPE_WEB        = 'scopeWeb';
@@ -36,8 +35,6 @@ class Toby
         
         // init config
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
-        
-        self::$tobyConf = &Toby_Config::_getConfig('toby');
 
         // define web constants
         if($request == null)
@@ -61,7 +58,7 @@ class Toby
         Toby_Logger::init(APP_ROOT.'/logs');
         Toby_Logger::logErrors('error');
         
-        if(Toby_Config::_getValue('toby', 'logRequestTimes', 'bool'))
+        if(Toby_Config::_getValue('toby', 'logRequestTimes'))
         {
             self::$logRequestTime = true;
             Toby_Logger::log('[app start]', 'request-times', true);

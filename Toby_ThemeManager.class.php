@@ -26,22 +26,17 @@ class Toby_ThemeManager
                 $themeName = $configThemeName;
                 if(!empty($configThemeConfig)) $configName = $configThemeConfig;
             }
-            else
-            {
-                $themeName = 'default';
-            }
+            else $themeName = 'default';
         }
-        else
-        {
-            $themeName = strtolower($themeName);
-        }
+        else $themeName = strtolower($themeName);
         
         // init if file exists
-        $themePath = PUBLIC_ROOT."/themes/$themeName";
-        if(file_exists(APP_ROOT.DS.$themePath))
+        $themePath = "themes/$themeName";
+        
+        if(file_exists(PUBLIC_ROOT.DS.$themePath))
         {
             self::$themeName = $themeName;
-            self::$themePathRoot = APP_ROOT.DS.$themePath;
+            self::$themePathRoot = PUBLIC_ROOT.DS.$themePath;
             self::$themeURL = Toby_Utils::pathCombine(array(APP_URL_REL, $themePath));
             
             $configPath = Toby_Utils::pathCombine(array(self::$themePathRoot, ($configName ? $configName : $themeName))).'.info';

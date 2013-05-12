@@ -35,17 +35,17 @@ class Toby_MySQL
 
     private function autoInit()
     {
-        $appConf = &Toby_Config::_getConfig('toby');
-
-        if(!isset($appConf['mysql']['host'])) return;
-        if(!isset($appConf['mysql']['user'])) return;
-        if(!isset($appConf['mysql']['password'])) return;
+        // cancellation
+        if(Toby_Config::_getValue('toby', 'mySQLAutoConnect') !== true) return;
+        
+        // vars
+        $mad = &Toby_Config::_getValue('toby', 'mySQLAccessData');
 
         $this->init(
-            $appConf['mysql']['host'],
-            $appConf['mysql']['user'],
-            $appConf['mysql']['password'],
-            isset($appConf['mysql']['db']) ? $appConf['mysql']['db'] : null
+            $mad['host'],
+            $mad['user'],
+            $mad['password'],
+            isset($mad['db']) ? $mad['db'] : null
             );
     }
 
