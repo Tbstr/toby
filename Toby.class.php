@@ -98,7 +98,7 @@ class Toby
                 if(Toby_Config::_hasKey('toby', 'defaultResolve'))
                 {
                     // reboot
-                    list($controllerName, $actionName) = explode('/', Toby_Config::_hasKey('toby', 'defaultResolve'));
+                    list($controllerName, $actionName) = explode('/', Toby_Config::_getValue('toby', 'defaultResolve'));
                     self::boot($controllerName, $actionName);
                 }
             }
