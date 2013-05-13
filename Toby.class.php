@@ -5,13 +5,24 @@ class Toby
 {
     private static $logRequestTime  = false;
     
-    public static $SCOPE_WEB        = 'scopeWeb';
-    public static $SCOPE_LOCAL      = 'scopeLocal';
+    public static $SCOPE_WEB        = 'web';
+    public static $SCOPE_LOCAL      = 'local';
     
-    public static function init($tobyRoot, $appRoot, $publicRoot, $scope, $request = null)
+    public static function init($request = null, $scope = 'local')
     {
+        // check env vars
+        switch(false)
+        {
+            case defined('PROJECT_ROOT'):
+            case defined('APP_ROOT'):
+            case defined('PUBLIC_ROOT'):
+            case defined('TOBY_ROOT'):
+                exit('necessary environment variables not set');
+                break;
+        }
+        
         // change directory
-        chdir($tobyRoot);
+        chdir(PROJECT_ROOT);
         
         // error handling
         error_reporting(E_ALL);
@@ -20,10 +31,6 @@ class Toby
         // define constants
         define('DS', DIRECTORY_SEPARATOR);
         define('NL', "\n");
-        
-        define('TOBY_ROOT', $tobyRoot);
-        define('APP_ROOT', $appRoot);
-        define('PUBLIC_ROOT', $publicRoot);
         
         define('SCOPE', $scope);
         
