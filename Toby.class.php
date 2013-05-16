@@ -77,6 +77,9 @@ class Toby
         // include init hook
         if(file_exists(APP_ROOT.'/hooks/init.hook.php')) include APP_ROOT.'/hooks/init.hook.php';
         
+        // force resolve
+        if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
+        
         // resolve and boot
         if($request != null)
         {
