@@ -58,7 +58,7 @@ class Toby
             
             define('APP_URL', Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '');
             define('SECURE_APP_URL', Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : APP_URL);
-            define('APP_URL_REL', preg_replace('/https?:\/\/[a-zA-Z0-9.-_]*\.[a-zA-Z]{2,4}\/?/', '/', APP_URL));
+            define('APP_URL_REL', preg_replace('/https?:\/\/(www\.)?[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', APP_URL));
         }
         
         // init logging
