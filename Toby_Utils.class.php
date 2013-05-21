@@ -7,7 +7,7 @@ class Toby_Utils
     public static function printr()
     {
         $args = func_get_args();
-        foreach($args as $arg) echo '<pre>'.print_r((string)$arg, true).'</pre>';
+        foreach($args as $arg) echo '<pre>'.print_r($arg, true).'</pre>';
     }
     
     public static function clearPath($path)
