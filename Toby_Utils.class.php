@@ -157,6 +157,7 @@ class Toby_Utils
     public static function rrmdir($path, $basePath = '', $allowBacklinks = false)
     {
         // cancellation
+        if(!file_exists($path)) return false;
         if(strncmp($path, $basePath, strlen($basePath)) !== 0) return false;
         if(!$allowBacklinks) if(strpos($path, '..') !== false) return false;
 
