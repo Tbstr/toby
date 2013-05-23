@@ -61,10 +61,14 @@ abstract class Toby_Controller
     protected function returnFile($filePath, $nameOverride = null,  $mimeType = 'auto')
     {
         // set header information
+        header("Pragma: public");
+        header("Expires: 0");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("Content-Description: File Transfer");
         header("Content-Type: ". ($mimeType == 'auto' ? Toby_Utils::getMIMEFromExtension($filePath) : $mimeType));
         header("Content-Disposition: attachment; filename=\"".($nameOverride == null ? basename($filePath) : $nameOverride)."\"");
-        header("Content-Length: ".filesize($filePath));
         header("Content-Transfer-Encoding: binary");
+        header("Content-Length: ".filesize($filePath));
         
         // read file & exit
         readfile($filePath);

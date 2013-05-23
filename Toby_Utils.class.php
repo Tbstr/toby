@@ -76,23 +76,23 @@ class Toby_Utils
         if(empty($filename)) return false;
         
         // vars
-        $extension = strtolower(substr($filename, strrpos($filename, '.')));
+        $extension = strtolower(substr($filename, strrpos($filename, '.') + 1));
         
         $mimes = array(
-            '.pdf'      => 'application/pdf',
-            '.zip'      => 'application/zip',
-            '.gif'      => 'image/gif',
-            '.jpg'      => 'image/jpeg',
-            '.jpeg'     => 'image/jpeg',
-            '.jpe'      => 'image/jpeg',
-            '.png'      => 'image/png',
-            '.tif'      => 'image/tiff',
-            '.tiff'     => 'image/tiff',
-            '.htm'      => 'text/html',
-            '.html'     => 'text/html',
-            '.shtml'    => 'text/html',
-            '.txt'      => 'text/plain',
-            '.xml'      => 'text/xml'
+            'pdf'      => 'application/pdf',
+            'zip'      => 'application/zip',
+            'gif'      => 'image/gif',
+            'jpg'      => 'image/jpeg',
+            'jpeg'     => 'image/jpeg',
+            'jpe'      => 'image/jpeg',
+            'png'      => 'image/png',
+            'tif'      => 'image/tiff',
+            'tiff'     => 'image/tiff',
+            'htm'      => 'text/html',
+            'html'     => 'text/html',
+            'shtml'    => 'text/html',
+            'txt'      => 'text/plain',
+            'xml'      => 'text/xml'
         );
         
         // check
