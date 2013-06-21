@@ -32,7 +32,8 @@ class Toby_MySQL
 
         return self::$instances[$id];
     }
-
+    
+    /* init */
     private function autoInit()
     {
         // cancellation
@@ -78,7 +79,8 @@ class Toby_MySQL
         mysql_close($this->link);
         $this->connected = false;
     }
-
+    
+    /* query methods */
     public function query($q)
     {
         // reset
@@ -122,39 +124,20 @@ class Toby_MySQL
 
     public function insert($table, $data)
     {
-        $query = 'INSERT INTO '.$table.' SET ';
-
-        foreach($data as $key => $value) $query .= "`$key`={$this->verifyValue($value)}, ";
-        $query = substr($query, 0, strlen($query) - 2).';';
-
+        $query = "INSERT INTO $table SET {$this->buildDataDefinition($data)}";
         return $this->query($query);
     }
 
     public function update($table, $data, $appendix = '')
     {
-        $query = 'UPDATE '.$table.' SET ';
-
-        foreach($data as $key => $value) $query .= "`$key`={$this->verifyValue($value)}, ";
-        $query = substr($query, 0, strlen($query) - 2).' '.$appendix.';';
-
+        $query = "UPDATE $table SET {$this->buildDataDefinition($data)} $appendix";
         return $this->query($query);
     }
 
     public function replace($table, $data)
     {
-        $query = 'REPLACE INTO '.$table.' SET ';
-
-        foreach($data as $key => $value) $query .= "`$key`={$this->verifyValue($value)}, ";
-        $query = substr($query, 0, strlen($query) - 2).';';
-
+        $query = "REPLACE INTO $table SET {$this->buildDataDefinition($data)}";
         return $this->query($query);
-    }
-
-    private function verifyValue($value)
-    {
-        if($value === null) return 'NULL';
-        elseif(is_string($value)) return "'".mysql_real_escape_string($value)."'";
-        else return $value;
     }
 
     public function delete($table, $appendix = '')
@@ -167,7 +150,40 @@ class Toby_MySQL
     {
         return $this->delete($table, $appendix);
     }
-
+    
+    public function executeTQuery(Toby_MySQLQuery &$tQuery)
+    {
+        return $this->query($tQuery->build());
+    }
+    
+    /* supporting methods */
+    private function verifyValue($value)
+    {
+        if($value === null) return 'NULL';
+        elseif(is_string($value)) return "'".mysql_real_escape_string($value)."'";
+        else return $value;
+    }
+    
+    private function buildDataDefinition(&$data)
+    {
+        // init
+        $dataDef = '';
+        
+        // build
+        $first = true;
+        foreach($data as $key => $value)
+        {
+            if($first === false) $dataDef.=', ';
+            else $first = false;
+            
+            $dataDef .= "`$key`={$this->verifyValue($value)}";
+        }
+        
+        // return
+        return $dataDef;
+    }
+    
+    /* result management */
     public function fetchElementByIndex($index = 0)
     {
         $row = mysql_fetch_row($this->result);
@@ -233,7 +249,8 @@ class Toby_MySQL
     {
         return mysql_insert_id($this->link);
     }
-
+    
+    /* settings */
     public function initQueryLogging()
     {
         $this->logQueries = true;

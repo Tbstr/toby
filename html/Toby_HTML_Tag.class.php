@@ -1,6 +1,6 @@
 <?php
 
-class Toby_Html_Tag
+class Toby_HTML_Tag
 {
     private $name           = null;
     private $content        = false;
@@ -57,7 +57,7 @@ class Toby_Html_Tag
     public static function render($name, $attributes = false, $content = false)
     {
         // tag
-        $tag = new Toby_Html_Tag($name);
+        $tag = new Toby_HTML_Tag($name);
         
         // attributes
         if(is_array($attributes)) $tag->addAttributes($attributes);
