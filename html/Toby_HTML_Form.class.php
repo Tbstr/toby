@@ -1,6 +1,6 @@
 <?php
 
-class Toby_Html_Form
+class Toby_HTML_Form
 {
     private $name;
     private $action;
