@@ -135,17 +135,17 @@ class Toby_Session
     }
     
     /* event handler */
-    private function handleMySQLSessionOpen()
+    public function handleMySQLSessionOpen()
     {
         return $this->mysql->connected;
     }
     
-    private function handleMySQLSessionClose()
+    public function handleMySQLSessionClose()
     {
         return true;
     }
     
-    private function handleMySQLSessionRead($id)
+    public function handleMySQLSessionRead($id)
     {
         $id = mysql_real_escape_string($id);
         
@@ -155,7 +155,7 @@ class Toby_Session
         return '';
     }
     
-    private function handleMySQLSessionWrite($id, $data)
+    public function handleMySQLSessionWrite($id, $data)
     {
         $this->mysql->replace('pd_sessions', array(
             'id' => $id,
@@ -166,7 +166,7 @@ class Toby_Session
         return $this->mysql->result;
     }
     
-    private function handleMySQLSessionDestroy($id)
+    public function handleMySQLSessionDestroy($id)
     {
         $id = mysql_real_escape_string($id);
         
@@ -174,7 +174,7 @@ class Toby_Session
         return $this->mysql->result;
     }
     
-    private function handleMySQLSessionClean($max)
+    public function handleMySQLSessionClean($max)
     {
         $old = mysql_real_escape_string(time() - $max);
         
