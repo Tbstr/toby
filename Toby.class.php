@@ -208,6 +208,8 @@ class Toby
     {
         // prepare
         $elements = explode('_', $className);
+        
+        if(count($elements) === 1) return;
         array_pop($elements);
         
         // resolve toby related
