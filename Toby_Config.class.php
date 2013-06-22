@@ -35,15 +35,23 @@ class Toby_Config
         
         foreach($list as $filename)
         {
-            if(strpos($filename, '.') === 0) continue;
-            if(preg_match('/\.cfg.php$/', $filename) === 0) continue;
+            if($filename[0] == '.') continue;
+            if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
 
             $filePath = "$dir/$filename";
 
             if(is_readable($filePath))
             {
                 $key = substr($filename, 0, strrpos($filename, '.cfg.php'));
-                $this->$key = $this->getConfigVars($filePath);
+                
+                if(isset($this->$key))
+                {
+                    $this->$key = array_merge($this->$key, $this->getConfigVars($filePath));
+                }
+                else
+                {
+                    $this->$key = $this->getConfigVars($filePath);
+                }
             }
         }
         

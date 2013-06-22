@@ -40,8 +40,9 @@ class Toby
         // add lib to include path
         set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
         
-        // init config
+        // init config & hook
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
+        if(file_exists(APP_ROOT.'/hooks/config.hook.php')) include APP_ROOT.'/hooks/config.hook.php';
 
         // define web constants
         if($request == null)
