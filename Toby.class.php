@@ -23,10 +23,6 @@ class Toby
         
         // change directory
         chdir(PROJECT_ROOT);
-        
-        // error handling
-        error_reporting(E_ALL);
-        ini_set('display_errors', '1');
 
         // define constants
         define('DS', DIRECTORY_SEPARATOR);
@@ -43,7 +39,11 @@ class Toby
         // init config & hook
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
         if(file_exists(APP_ROOT.'/hooks/config.hook.php')) include APP_ROOT.'/hooks/config.hook.php';
-
+        
+        // error handling
+        error_reporting(E_ALL);
+        ini_set('display_errors', Toby_Config::_getValue('toby', 'displayErrors') ? '1' : '0');
+        
         // define web constants
         if($request == null)
         {
