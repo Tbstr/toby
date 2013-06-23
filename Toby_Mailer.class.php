@@ -137,7 +137,7 @@ class Toby_Mailer
         /* @var $sender Mail_mail */
         $sender = Mail::factory("mail");
         $result = $sender->send(array($this->recipient), $headers, $body);
-        if($result !== true) return false;
+        if(PEAR::isError($result)) return false;
 
         return true;
     }
