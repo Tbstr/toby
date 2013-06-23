@@ -3,14 +3,18 @@
 class Toby_HTML_Tag
 {
     private $name           = null;
-    private $content        = false;
+    
     private $attributes     = array();
+    private $classes        = array();
+    
+    private $content        = false;
     
     function __construct($name)
     {
         $this->name = $name;
     }
     
+    /* attribute management */
     public function addAttribute($name, $value)
     {
         $this->attributes[$name] = $value;
@@ -25,6 +29,13 @@ class Toby_HTML_Tag
         return $this;
     }
     
+    public function addClass($className)
+    {
+        $this->classes[] = $className;
+        return $this;
+    }
+    
+    /* content management */
     public function setContent($content)
     {
         $this->content = $content;
@@ -37,15 +48,19 @@ class Toby_HTML_Tag
         return $this;
     }
     
+    /* build */
     public function build()
     {
-        // tag name
+        // open tag with name
         $html = "<$this->name";
         
-        // attributes
+        // prepare classes
+        if(!empty($this->classes)) $this->attributes['class'] = implode(' ', $this->classes);
+        
+        // write attributes
         foreach($this->attributes as $attrName => $attrValue) $html .= " $attrName=\"$attrValue\"";
         
-        // tag close
+        // close tag
         if($this->content === false) $html .= '/>';
         else $html .= ">$this->content</$this->name>";
         
