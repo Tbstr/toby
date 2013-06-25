@@ -165,6 +165,21 @@ class Toby
                     // return
                     return $controllerInstance;
                 }
+                else
+                {
+                    if($action !== 'default')
+                    {
+                        // stop timing
+                        if(self::$logRequestTime)
+                        {
+                            $deltatime = number_format(microtime() - $starttime, 3);
+                            Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms]", 'request-times', true);
+                        }
+
+                        // return
+                        return self::runAction($controller, 'default', $vars);
+                    }
+                }
             }
         }
         
