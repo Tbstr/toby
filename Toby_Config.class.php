@@ -68,7 +68,7 @@ class Toby_Config
     
     public function hasKey($config, $key)
     {
-        if(!isset($this->$config)) exit("config '$config' does not exist");
+        if(!isset($this->$config)) Toby::finalize("config '$config' does not exist");
         
         $configLink = $this->$config;
         return isset($configLink[$key]);
@@ -77,7 +77,7 @@ class Toby_Config
     public function getValue($config, $key, $datatype = '')
     {
         // cancellate
-        if(!isset($this->$config)) exit("config '$config' does not exist");
+        if(!isset($this->$config)) Toby::finalize("config '$config' does not exist");
         
         $configLink = &$this->$config;
         

@@ -26,7 +26,7 @@ class Toby_Session
     public function __construct($openOnInit = true)
     {
         // singleton check
-        if(self::$instance !== null) exit('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
+        if(self::$instance !== null) Toby::finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
         
         // open
         if($openOnInit) $this->open();

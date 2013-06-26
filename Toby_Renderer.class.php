@@ -17,7 +17,7 @@ class Toby_Renderer
         
         // layout
         $layoutPath = self::findLayout($controller->layoutName);
-        if($layoutPath ===  false) exit('Toby_Layout "'.$controller->layoutName.'" could not be found.');
+        if($layoutPath ===  false) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
         $layout = new Toby_Layout($layoutPath, get_object_vars($controller->layout));
         
@@ -40,7 +40,7 @@ class Toby_Renderer
         
         // get view script
         $scriptPath = self::findViewScript($scriptName);
-        if($scriptPath === false) exit('Script "'.$scriptName.'" could not be found.');
+        if($scriptPath === false) Toby::finalize('Script "'.$scriptName.'" could not be found.');
         
         // render & return
         $scriptView = new Toby_View($scriptPath, $vars);
@@ -77,6 +77,6 @@ class Toby_Renderer
     {
         // cancellation
         if(Toby_ThemeManager::$initialized) return;
-        if(!Toby_ThemeManager::init()) exit('unable to init theme manager');
+        if(!Toby_ThemeManager::init()) Toby::finalize('unable to init theme manager');
     }
 }

@@ -3,10 +3,13 @@
 // core class
 class Toby
 {
-    private static $logRequestTime  = false;
+    /* variables */
+    private static $logRequestTime      = false;
+    private static $requestLogData      = array();
     
-    public static $SCOPE_WEB        = 'web';
-    public static $SCOPE_LOCAL      = 'local';
+    /* constants */
+    const SCOPE_WEB                     = 'web';
+    const SCOPE_LOCAL                   = 'local';
     
     public static function init($request = null, $scope = 'local')
     {
@@ -17,7 +20,7 @@ class Toby
             case defined('APP_ROOT'):
             case defined('PUBLIC_ROOT'):
             case defined('TOBY_ROOT'):
-                exit('necessary environment variables not set');
+                Toby::finalize('necessary environment variables not set');
                 break;
         }
         
@@ -129,12 +132,8 @@ class Toby
     
     public static function runAction($controller, $action = 'index', $vars = null)
     {
-        // start timing
-        if(self::$logRequestTime)
-        {
-            $starttime = microtime();
-            Toby_Logger::log("running action: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars)), 'request-times', true);
-        }
+        // start timing;
+        self::requestTimeLogStart("$controller/$action".($vars === null ? '' : '/'.implode('/', $vars)));
         
         // vars
         $controllerFullName = 'Controller_'.strtoupper(substr($controller, 0, 1)).substr($controller, 1);
@@ -156,11 +155,7 @@ class Toby
                     else call_user_func_array (array($controllerInstance, $actionFullName), $vars);
                     
                     // stop timing
-                    if(self::$logRequestTime)
-                    {
-                        $deltatime = number_format(microtime() - $starttime, 3);
-                        Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms]", 'request-times', true);
-                    }
+                    self::requestTimeLogStop(true);
                     
                     // return
                     return $controllerInstance;
@@ -170,11 +165,7 @@ class Toby
                     if($action !== 'default')
                     {
                         // stop timing
-                        if(self::$logRequestTime)
-                        {
-                            $deltatime = number_format(microtime() - $starttime, 3);
-                            Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms]", 'request-times', true);
-                        }
+                        self::requestTimeLogStop(false);
 
                         // return
                         return self::runAction($controller, 'default', $vars);
@@ -184,14 +175,35 @@ class Toby
         }
         
         // stop timing
-        if(self::$logRequestTime)
-        {
-            $deltatime = number_format(microtime() - $starttime, 3);
-            Toby_Logger::log("action done: $controller/$action".($vars == null ? '' : '/'.implode('/', $vars))." [{$deltatime}ms] [action not found]", 'request-times', true);
-        }
+        self::requestTimeLogStop(false);
         
         // return
         return false;
+    }
+    
+    private static function requestTimeLogStart($title)
+    {
+        // cancellation
+        if(self::$logRequestTime !== true) return;
+        
+        // store time and title
+        self::$requestLogData[]  = array($title, microtime());
+        
+        // log
+        Toby_Logger::log("running action: $title", 'request-times', true);
+    }
+    
+    private static function requestTimeLogStop($success)
+    {
+        // cancellation
+        if(self::$logRequestTime !== true) return;
+        
+        // get time and title
+        list($title, $startTime) = array_pop(self::$requestLogData);
+        
+        // log
+        $deltatime = number_format(microtime() - $startTime, 3);
+        Toby_Logger::log("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'), 'request-times', true);
     }
     
     public static function renderController(Toby_Controller &$controller)
@@ -203,7 +215,7 @@ class Toby
         if(self::$logRequestTime) $starttime = microtime();
         
         // prepare theme manager
-        if(!Toby_ThemeManager::initByController($controller)) exit('unable to set theme '.Toby_ThemeManager::$themeName);
+        if(!Toby_ThemeManager::initByController($controller)) Toby::finalize('unable to set theme '.Toby_ThemeManager::$themeName);
         
         // render content
         $content = Toby_Renderer::renderPage($controller);
@@ -244,5 +256,21 @@ class Toby
         
         // require
         if(file_exists($path)) require_once($path);
+    }
+    
+    public static function finalize($exitCode = 0)
+    {
+        // complete time logging
+        $count = count(self::$requestLogData);
+        while($count > 0)
+        {
+            self::requestTimeLogStop(true);
+            $count--;
+        }
+        
+        if(self::$logRequestTime === true) Toby_Logger::log('[app end]', 'request-times', true);
+        
+        // exit
+        exit($exitCode);
     }
 }

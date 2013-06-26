@@ -78,7 +78,7 @@ class Toby_ThemeManager
     public static function placeHeaderInformation()
     {
         // cancellation
-        if(empty(self::$themeConfig))   exit('No theme set.');
+        if(empty(self::$themeConfig))   Toby::finalize('No theme set.');
         
         // set groups
         $groups = array();

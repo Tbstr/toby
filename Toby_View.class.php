@@ -73,7 +73,7 @@ class Toby_View
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
         $controller = Toby::runAction($controllerName, $actionName, $vars);
-        if($controller === false) exit("includeAction: $controllerName/$actionName does not exist");
+        if($controller === false) Toby::finalize("includeAction: $controllerName/$actionName does not exist");
         
         return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
     }

@@ -49,13 +49,13 @@ abstract class Toby_Controller
         else Toby::boot($controller, $action, $vars);
         
         // exit
-        exit(0);
+        Toby::finalize(0);
     }
     
     protected function forwardToURL($url)
     {
         header('Location: '.$url);
-        exit(0);
+        Toby::finalize(0);
     }
     
     protected function returnFile($filePath, $nameOverride = null,  $mimeType = 'auto')
@@ -72,7 +72,7 @@ abstract class Toby_Controller
         
         // read file & exit
         readfile($filePath);
-        exit(0);
+        Toby::finalize(0);
     }
     
     /* set theme */
