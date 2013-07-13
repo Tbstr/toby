@@ -36,17 +36,17 @@ class Toby_Logger
     
     public static function error($content)
     {
-        self::log('[ERROR] '.$content, 'error');
+        self::log("[ERROR] $content".self::traceStamp(), 'error');
     }
     
     public static function warn($content)
     {
-        self::log('[WARNING] '.$content, 'error');
+        self::log('[WARNING] '.$content.self::traceStamp(), 'error');
     }
     
     public static function notice($content)
     {
-        self::log('[NOTICE] '.$content);
+        self::log('[NOTICE] '.$content.self::traceStamp());
     }
     
     public static function logErrors()
@@ -60,7 +60,21 @@ class Toby_Logger
             self::$logErrors = true;
         }
     }
-
+    
+    public static function traceStamp()
+    {
+        $dbt = debug_backtrace();
+        $entry = $dbt[1];
+        
+        return " > {$entry['file']}:{$entry['line']}";
+    }
+    
+    public static function rotate()
+    {
+        Toby_Logger::log('log rotate');
+    }
+    
+    /* event handler */
     public static function handleError($errno, $errstr, $errfile = '', $errline = 0, $errcontex = array())
     {
         $errCode = '';
@@ -90,7 +104,7 @@ class Toby_Logger
                 break;
         }
         
-        self::log("[$errCode] $errstr in $errfile:$errline", 'error');
+        self::log("[$errCode] $errstr > $errfile:$errline", 'error');
         
         return false;
     }
@@ -109,22 +123,17 @@ class Toby_Logger
             if($error['type'] == 1)
             {
                 // log
-                self::log("[FATAL ERROR] $error[message] in $error[file]:$error[line]", 'error');
+                self::log("[FATAL ERROR] $error[message] > $error[file]:$error[line]", 'error');
                 
                 // send mail
                 if(APP_URL !== false)
                 {
                     if($_SERVER['HTTP_HOST'] != 'localhost' && $_SERVER['HTTP_HOST'] != '127.0.0.1')
                     {
-                        if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] in $error[file]:$error[line]");
+                        if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
                     }
                 }
             }
         }
-    }
-    
-    public function logRotate()
-    {
-        Toby_Logger::log('log rotate');
     }
 }
