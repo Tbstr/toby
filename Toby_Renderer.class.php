@@ -7,7 +7,7 @@ class Toby_Renderer
     private static $defaultViewsPath = '/view';
 
     /* static methods */
-    public static function renderPage(Toby_Controller &$controller)
+    public static function renderPage(Toby_Controller $controller)
     {
         // auto init theme manager
         self::themeManagerAutoInit();

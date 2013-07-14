@@ -54,7 +54,7 @@ class Toby_ThemeManager
         return false;
     }
     
-    public static function initByController(Toby_Controller &$controller)
+    public static function initByController(Toby_Controller $controller)
     {
         // vars
         $theme = false;

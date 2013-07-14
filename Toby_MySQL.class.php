@@ -151,7 +151,7 @@ class Toby_MySQL
         return $this->delete($table, $appendix);
     }
     
-    public function executeTQuery(Toby_MySQLQuery &$tQuery)
+    public function executeTQuery(Toby_MySQLQuery $tQuery)
     {
         return $this->query($tQuery->build());
     }
@@ -164,7 +164,7 @@ class Toby_MySQL
         else return $value;
     }
     
-    private function buildDataDefinition(&$data)
+    private function buildDataDefinition($data)
     {
         // init
         $dataDef = '';

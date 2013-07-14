@@ -206,7 +206,7 @@ class Toby
         Toby_Logger::log("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'), 'request-times', true);
     }
     
-    public static function renderController(Toby_Controller &$controller)
+    public static function renderController(Toby_Controller $controller)
     {
         // cancellation
         if(!$controller->renderView) return;
