@@ -258,7 +258,7 @@ class Toby
         if(file_exists($path)) require_once($path);
     }
     
-    public static function finalize($exitCode = 0)
+    public static function finalize($status = 0)
     {
         // complete time logging
         $count = count(self::$requestLogData);
@@ -271,6 +271,11 @@ class Toby
         if(self::$logRequestTime === true) Toby_Logger::log('[app end]', 'request-times', true);
         
         // exit
-        exit($exitCode);
+        if(is_int($status)) exit($status);
+        else
+        {
+            echo Toby_Utils::printr($status);
+            exit(1);
+        }
     }
 }
