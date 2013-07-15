@@ -7,6 +7,8 @@ class Toby
     private static $logRequestTime      = false;
     private static $requestLogData      = array();
     
+    public static $ENCODING             = null;
+    
     /* constants */
     const SCOPE_WEB                     = 'web';
     const SCOPE_LOCAL                   = 'local';
@@ -80,6 +82,9 @@ class Toby
         
         // include init hook
         if(file_exists(APP_ROOT.'/hooks/init.hook.php')) include APP_ROOT.'/hooks/init.hook.php';
+        
+        // set encoding
+        if(empty(self::$ENCODING)) self::setEncoding('UTF-8');
         
         // force resolve
         if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
@@ -231,7 +236,17 @@ class Toby
         return $content;
     }
     
-    // autoloader
+    /* settings */
+    public static function setEncoding($encoding)
+    {
+        // set
+        self::$ENCODING = $encoding;
+        
+        // set mb
+        mb_internal_encoding($encoding);
+    }
+    
+    /* autoloader */
     public static function autoload($className)
     {
         // prepare
@@ -258,6 +273,7 @@ class Toby
         if(file_exists($path)) require_once($path);
     }
     
+    /* finalization */
     public static function finalize($status = 0)
     {
         // complete time logging

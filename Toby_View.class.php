@@ -77,4 +77,10 @@ class Toby_View
         
         return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
     }
+    
+    /* helpers */
+    protected function esc($string)
+    {
+        return htmlentities($string, ENT_COMPAT, Toby::$ENCODING);
+    }
 }
