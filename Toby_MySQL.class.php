@@ -97,7 +97,10 @@ class Toby_MySQL
             Toby_Utils::printr($q);
             return true;
         }
-
+        
+        // auto escape
+        $q = preg_replace_callback('/esc\[([^\[\]]*)\]/', array($this, 'autoEscapeCallback'), $q);
+        
         // query
         $result = @mysql_query($q, $this->link);
         
@@ -162,6 +165,11 @@ class Toby_MySQL
         if($value === null) return 'NULL';
         elseif(is_string($value)) return "'".mysql_real_escape_string($value)."'";
         else return $value;
+    }
+    
+    private function autoEscapeCallback($arr)
+    {
+        return mysql_real_escape_string($arr[1]);
     }
     
     private function buildDataDefinition($data)
