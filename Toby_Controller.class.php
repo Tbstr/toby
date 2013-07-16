@@ -112,7 +112,7 @@ abstract class Toby_Controller
     
     protected function addBodyClass()
     {
-        for($i = 0; $i < func_num_args(); $i++)
+        for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
             $arg = func_get_arg($i);
             if(!is_string($arg)) continue;
@@ -123,7 +123,7 @@ abstract class Toby_Controller
     
     protected function removeBodyClass()
     {
-        for($i = 0; $i < func_num_args(); $i++)
+        for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
             $key = array_search(func_get_arg($i), $this->layoutBodyClasses);
             if($key !== false) array_splice($this->layoutBodyClasses, $key, 1);
