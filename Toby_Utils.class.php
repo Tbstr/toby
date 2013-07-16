@@ -288,4 +288,22 @@ class Toby_Utils
                 break;
         }
     }
+    
+    public static function benchmark($method, $iterations = 1, $arguments = null)
+    {
+        // init
+        $methodName = is_array($method) ? implode('::', $method) : (string)$method;
+        
+        // iterate
+        $startTime = microtime(true);
+        $c = $iterations; while($c--)
+        {
+            if(empty($arguments)) call_user_func($method);
+            else call_user_func_array($method, $arguments);
+        }
+        $endTime = microtime(true);
+        
+        // report
+        Toby_Utils::printr("$methodName with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
+    }
 }

@@ -85,4 +85,10 @@ class Toby_Config
         $value = isset($configLink[$key]) ? $configLink[$key] : null;
         return Toby_Utils::parseValue($value, $datatype);
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return 'Toby_Config';
+    }
 }

@@ -186,4 +186,10 @@ class Toby_Session
     {
         $this->close();
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_Session[$this->id]";
+    }
 }

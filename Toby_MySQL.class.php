@@ -264,4 +264,10 @@ class Toby_MySQL
         $this->logQueries = true;
         Toby_Logger::log('[MySQL log start] '.REQUEST, 'mysql-queries', true);
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_MySQL[$this->user@$this->host]";
+    }
 }

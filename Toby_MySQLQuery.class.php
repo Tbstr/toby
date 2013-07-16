@@ -256,4 +256,10 @@ class Toby_MySQLQuery
         // return
         return $cond;
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return 'Toby_MySQLQuery';
+    }
 }

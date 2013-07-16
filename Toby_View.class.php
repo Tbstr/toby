@@ -83,4 +83,10 @@ class Toby_View
     {
         return htmlentities($string, ENT_COMPAT, Toby::$ENCODING);
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_View[$this->scriptPath]";
+    }
 }

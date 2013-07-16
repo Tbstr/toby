@@ -76,4 +76,10 @@ class Toby_Layout extends Toby_View
             echo "class=\"".implode(' ', $this->bodyClass)."\"";
         }
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_Layout[$this->title]";
+    }
 }

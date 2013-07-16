@@ -143,9 +143,9 @@ abstract class Toby_Controller
     }
     
     /* to string */
-    public function toString()
+    public function __toString()
     {
-        return "[Toby_Controller {$this->serialize()}]";
+        return "Toby_Controller[{$this->serialize()}]";
     }
     
     public function serialize()

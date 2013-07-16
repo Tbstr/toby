@@ -83,4 +83,10 @@ class Toby_HTML_Tag
         // return
         return $tag->build();
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_HTML_Tag[$this->name]";
+    }
 }

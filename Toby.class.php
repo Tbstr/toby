@@ -192,7 +192,7 @@ class Toby
         if(self::$logRequestTime !== true) return;
         
         // store time and title
-        self::$requestLogData[]  = array($title, microtime());
+        self::$requestLogData[]  = array($title, microtime(true));
         
         // log
         Toby_Logger::log("running action: $title", 'request-times', true);
@@ -207,7 +207,7 @@ class Toby
         list($title, $startTime) = array_pop(self::$requestLogData);
         
         // log
-        $deltatime = number_format(microtime() - $startTime, 3);
+        $deltatime = number_format((microtime(true) - $startTime) * 1000, 2);
         Toby_Logger::log("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'), 'request-times', true);
     }
     
@@ -217,7 +217,7 @@ class Toby
         if(!$controller->renderView) return;
         
         // start timing
-        if(self::$logRequestTime) $starttime = microtime();
+        if(self::$logRequestTime) $starttime = microtime(true);
         
         // prepare theme manager
         if(!Toby_ThemeManager::initByController($controller)) Toby::finalize('unable to set theme '.Toby_ThemeManager::$themeName);
@@ -228,7 +228,7 @@ class Toby
         // stop timing
         if(self::$logRequestTime)
         {
-            $deltatime = number_format(microtime() - $starttime, 3);
+            $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
             Toby_Logger::log("rendering controller: {$controller->serialize()} [{$deltatime}ms]", 'request-times', true);
         }
         

@@ -141,5 +141,10 @@ class Toby_Mailer
 
         return true;
     }
-
+    
+    /* to string */
+    public function __toString()
+    {
+        return 'Toby_Mailer';
+    }
 }

@@ -160,4 +160,10 @@ class Toby_HTML_Form
         if($formTag === null) return $elements;
         else return $formTag->build();
     }
+    
+    /* to string */
+    public function __toString()
+    {
+        return "Toby_HTML_Form[$this->name]";
+    }
 }
