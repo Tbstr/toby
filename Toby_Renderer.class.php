@@ -23,6 +23,7 @@ class Toby_Renderer
         
         $layout->title = $controller->layoutTitle;
         $layout->jsVars = get_object_vars($controller->javascript);
+        $layout->headContent = $controller->layoutHeadContent;
         
         $layout->bodyId = $controller->layoutBodyId;
         $layout->bodyClass = $controller->layoutBodyClasses;

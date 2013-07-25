@@ -2,13 +2,15 @@
 
 class Toby_Layout extends Toby_View
 {
-    public $title              = '';
-    public $jsVars             = null;
+    public $title               = '';
+    public $jsVars              = null;
     
-    public $bodyId             = ''; 
-    public $bodyClass          = '';
+    public $headContent         = '';
     
-    public $content            = '';
+    public $bodyId              = ''; 
+    public $bodyClass           = '';
+    
+    public $content             = '';
     
     function __construct($scriptPath, $vars = null)
     {
@@ -24,9 +26,12 @@ class Toby_Layout extends Toby_View
         
         // theme related
         Toby_ThemeManager::placeHeaderInformation();
+        
+        // additional header content
+        if(!empty($this->headContent)) echo $this->headContent;
     }
     
-    protected function placeJSVars()
+    private function placeJSVars()
     {
         // cancellation
         if(empty($this->jsVars)) return;

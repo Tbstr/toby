@@ -6,7 +6,10 @@ abstract class Toby_Controller
     public $action;
     
     public $layoutName              = 'default';
+    
     public $layoutTitle             = '';
+    public $layoutHeadContent       = '';
+    
     public $layoutBodyId            = '';
     public $layoutBodyClasses       = array();
     
@@ -94,14 +97,21 @@ abstract class Toby_Controller
         $this->layoutTitle = $value;
     }
     
-    protected function appendTitle($value)
+    protected function appendToTitle($value)
     {
         $this->layoutTitle = $this->layoutTitle.$value;
     }
     
-    protected function prependTitle($value)
+    protected function prependToTitle($value)
     {
         $this->layoutTitle = $value.$this->layoutTitle;
+    }
+    
+    /* set head information */
+    protected function setHeadContent($content, $append = false)
+    {
+        if($append === true) $this->layoutHeadContent .= $content;
+        else $this->layoutHeadContent = $content;
     }
     
     /* set body attributes */
