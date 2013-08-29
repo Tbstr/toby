@@ -34,10 +34,11 @@ class Toby_Session
     
     public function open()
     {
+        // set handlers
         if(Toby_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
         {
             $this->mysqlMode = true;
-            $this->mysql = &Toby_MySQL::getInstance();
+            $this->mysql = Toby_MySQL::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),
@@ -49,6 +50,11 @@ class Toby_Session
                 );
         }
         
+        // settings
+        session_name('tobysess');
+        ini_set('session.cookie_domain', preg_replace('/^https?:\/\//', '', APP_URL));
+        
+        // start
         if(session_start())
         {
             $this->id = session_id();
@@ -72,6 +78,7 @@ class Toby_Session
             $this->valid = true;
             $this->closed = false;
         }
+        else Toby_Logger::error('unable to start session');
     }
     
     public function close()
