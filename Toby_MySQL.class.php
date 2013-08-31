@@ -154,6 +154,20 @@ class Toby_MySQL
         return $this->delete($table, $appendix);
     }
     
+    public function hasTable($tableName)
+    {
+        $this->query("SELECT * FROM information_schema.TYBLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
+        if($this->result === false) return false;
+        return $this->getNumRows() > 0;
+    }
+    
+    public function hasColumn($tableName, $columnName)
+    {
+        $this->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName' AND COLUMN_NAME='$columnName'");
+        if($this->result === false) return false;
+        return $this->getNumRows() > 0;
+    }
+    
     public function executeTQuery(Toby_MySQLQuery $tQuery)
     {
         return $this->query($tQuery->build());
