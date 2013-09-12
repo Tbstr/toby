@@ -121,12 +121,12 @@ class Toby_HTML_Form
                     
                     $tag = new Toby_HTML_Tag('input');
                     
-                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
-                    
                     $tag->addAttribute('type', 'text')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
                         ->addAttribute('value', isset($_POST[$this->name][$elm['name']]) ? $_POST[$this->name][$elm['name']] : $elm['value']);
                     
+                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
+                        
                     $elements .= $tag->build().NL;
                     
                     break;
@@ -135,12 +135,12 @@ class Toby_HTML_Form
                     
                     $tag = new Toby_HTML_Tag('input');
                     
-                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
-                    
                     $tag->addAttribute('type', 'password')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
                         ->addAttribute('value', isset($_POST[$this->name][$elm['name']]) ? $_POST[$this->name][$elm['name']] : $elm['value']);
                     
+                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
+                        
                     $elements .= $tag->build().NL;
                     
                     break;
@@ -149,11 +149,11 @@ class Toby_HTML_Form
                     
                     $tag = new Toby_HTML_Tag('input');
                     
-                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
-                    
                     $tag->addAttribute('type', 'hidden')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
                         ->addAttribute('value', isset($_POST[$this->name][$elm['name']]) ? $_POST[$this->name][$elm['name']] : $elm['value']);
+                        
+                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
                     
                     $elements .= $tag->build().NL;
                     
@@ -163,10 +163,10 @@ class Toby_HTML_Form
                     
                     $tag = new Toby_HTML_Tag('textarea');
                     
-                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
-                    
                     $tag->addAttribute('name', "$this->name[{$elm['name']}]")
                         ->setContent(isset($_POST[$this->name][$elm['name']]) ? $_POST[$this->name][$elm['name']] : $elm['value']);
+                    
+                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
                     
                     $elements .= $tag->build().NL;
                     
@@ -176,12 +176,11 @@ class Toby_HTML_Form
                     
                     $tag = new Toby_HTML_Tag('input');
                     
-                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
-                    
                     $tag->addAttribute('type', 'checkbox')
                         ->addAttribute('name', "$this->name[{$elm['name']}]");
-                        
-                    if($elm['checked'] === true) $tag->addAttribute('checked', 'checked');
+                    
+                    if(isset($_POST[$this->name][$elm['name']]) || $elm['checked'] === true) $tag->addAttribute('checked', 'checked');
+                    if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
                     
                     $elements .= $tag->build().NL;
                     
