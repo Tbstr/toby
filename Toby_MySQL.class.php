@@ -168,9 +168,9 @@ class Toby_MySQL
         return $this->getNumRows() > 0;
     }
     
-    public function executeTQuery(Toby_MySQLQuery $tQuery)
+    public function executeQuery(Toby_MySQLQuery $query)
     {
-        return $this->query($tQuery->build());
+        return $this->query($query->build());
     }
     
     /* supporting methods */
@@ -206,10 +206,16 @@ class Toby_MySQL
     }
     
     /* result management */
-    public function fetchElementByIndex($index = 0)
+    public function fetchElementByIndex($index)
     {
         $row = mysql_fetch_row($this->result);
         return $row[$index];
+    }
+    
+    public function fetchFirstElement()
+    {
+        $row = mysql_fetch_row($this->result);
+        return $row[0];
     }
 
     public function fetchElementByName($name)

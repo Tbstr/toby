@@ -306,4 +306,13 @@ class Toby_Utils
         // report
         Toby_Utils::printr("$methodName with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
     }
+    
+    public static function vaidateMail($mail)
+    {
+        // cancellation
+        if(empty($mail)) return false;
+        
+        // check
+        return (boolean)preg_match('/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i', $mail);
+    }
 }
