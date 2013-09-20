@@ -8,9 +8,7 @@ class Toby_MySQLQuery
     
     private $tables         = array();
     private $fields         = array();
-    
     private $data           = array();
-    
     private $conds          = array();
     
     private $orderBy        = null;
@@ -66,6 +64,11 @@ class Toby_MySQLQuery
         return $this;
     }
     
+    public function getNumTables()
+    {
+        return count($this->tables);
+    }
+    
     /* field management */
     public function setFields($fields)
     {
@@ -86,6 +89,11 @@ class Toby_MySQLQuery
         
         // return
         return $this;
+    }
+    
+    public function getNumFields()
+    {
+        return count($this->fields);
     }
     
     /* data management */
@@ -110,6 +118,11 @@ class Toby_MySQLQuery
         return $this;
     }
     
+    public function getNumData()
+    {
+        return count($this->data);
+    }
+    
     /* condition mamagement */
     public function condAND($cond)
     {
@@ -130,6 +143,11 @@ class Toby_MySQLQuery
     private function addCond($cond, $tie = 'AND')
     {
         $this->conds[] = (empty($this->conds) ? '' : $tie.' ') . $cond;
+    }
+    
+    public function getNumConditions()
+    {
+        return count($this->conds);
     }
     
     public function orderBy($fieldName, $asc = false)
