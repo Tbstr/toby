@@ -27,19 +27,23 @@ abstract class Toby_Controller
     function __construct($name, $action)
     {
         // vars
-        $this->name         = $name;
-        $this->action       = $action;
+        $this->name             = $name;
+        $this->action           = $action;
         
         if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
         
         // holders
-        $this->layout       = new stdClass();
-        $this->view         = new stdClass();
-        $this->javascript   = new stdClass();
+        $this->layout           = new stdClass();
+        $this->view             = new stdClass();
+        $this->javascript       = new stdClass();
+        
+        // layout default vars
+        $this->layout->appURL   = APP_URL;
+        $this->layout->url      = APP_URL.DS.REQUEST;
         
         // view default vars
-        $this->view->appURL = APP_URL;
-        $this->view->url    = APP_URL.DS.REQUEST;
+        $this->view->appURL     = APP_URL;
+        $this->view->url        = APP_URL.DS.REQUEST;
     }
     
     protected function forward($controller, $action = 'index', $vars = null, $externalForward = false, $forceSecure = false)
