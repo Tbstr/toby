@@ -156,7 +156,7 @@ class Toby_MySQL
     
     public function hasTable($tableName)
     {
-        $this->query("SELECT * FROM information_schema.TYBLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
+        $this->query("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
         if($this->result === false) return false;
         return $this->getNumRows() > 0;
     }
