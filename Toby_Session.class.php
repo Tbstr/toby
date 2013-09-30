@@ -28,12 +28,19 @@ class Toby_Session
         // singleton check
         if(self::$instance !== null) Toby::finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
         
+        // initialize
+        $this->init();
+        
         // open
         if($openOnInit) $this->open();
     }
     
-    public function open()
+    private function init()
     {
+        // settings
+        session_name('tobysess');
+        ini_set('session.cookie_domain', preg_replace('/^https?:\/\//', '', APP_URL));
+        
         // set handlers
         if(Toby_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
         {
@@ -49,10 +56,12 @@ class Toby_Session
                 array($this, 'handleMySQLSessionClean')
                 );
         }
-        
-        // settings
-        session_name('tobysess');
-        ini_set('session.cookie_domain', preg_replace('/^https?:\/\//', '', APP_URL));
+    }
+    
+    public function open()
+    {
+        // cancellation
+        if($this->closed === false) return true;
         
         // start
         if(session_start())
@@ -77,18 +86,32 @@ class Toby_Session
             $_SESSION = false;
             $this->valid = true;
             $this->closed = false;
+            
+            // return
+            return true;
         }
-        else Toby_Logger::error('unable to start session');
+        
+        // return
+        Toby_Logger::error('opening session failed');
+        return false;
     }
     
     public function close()
     {
+        // cancellation
+        if($this->closed === true) return true;
+        
+        // set last seen
         $this->set('last_seen', time());
         
+        // write close
         $_SESSION = $this->SESSION;
         session_write_close();
         
         $this->closed = true;
+        
+        // return
+        return true;
     }
     
     public function destroy()
