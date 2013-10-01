@@ -2,19 +2,21 @@
 
 class Toby_Session
 {
+    /* variables */
     private static $instance = null;
     
     private $id             = -1;
     
-    private $valid          = false;
-    private $closed         = true;
+    private $opened         = false;
     private $resumed        = false;
     
     private $mysqlMode      = false;
     private $mysql;
 
-    private $key;
-    private $SESSION;
+    private $SESSION        = null;
+    
+    /* constants */
+    const KEY               = 'tobysess';
     
     /* static getter */
     public static function getInstance($openOnInit = true)
@@ -61,16 +63,15 @@ class Toby_Session
     public function open()
     {
         // cancellation
-        if($this->closed === false) return true;
+        if($this->opened === true) return true;
         
         // start
         if(session_start())
         {
             $this->id = session_id();
-            $this->key = 'tobysess';
             
             // session resume
-            if(isset($_SESSION[$this->key]))
+            if(isset($_SESSION[self::KEY]))
             {
                 $this->SESSION = $_SESSION;
                 $this->resumed = true;
@@ -79,13 +80,12 @@ class Toby_Session
             // session start
             else
             {
-                $this->SESSION[$this->key] = array('last_seen' => 0);
+                $this->SESSION[self::KEY] = array('last_seen' => 0);
             }
             
             // set vars
-            $_SESSION = false;
-            $this->valid = true;
-            $this->closed = false;
+            $_SESSION       = false;
+            $this->opened   = true;
             
             // return
             return true;
@@ -99,7 +99,7 @@ class Toby_Session
     public function close()
     {
         // cancellation
-        if($this->closed === true) return true;
+        if($this->opened === false) return true;
         
         // set last seen
         $this->set('last_seen', time());
@@ -108,7 +108,7 @@ class Toby_Session
         $_SESSION = $this->SESSION;
         session_write_close();
         
-        $this->closed = true;
+        $this->opened = false;
         
         // return
         return true;
@@ -120,18 +120,24 @@ class Toby_Session
         $_SESSION = false;
         $this->SESSION = false;
         
-        $this->closed = true;
+        $this->opened = false;
+    }
+    
+    private function checkConnection($autoOpen = false)
+    {
+        if($this->opened === false)
+        {
+            if($autoOpen === true) return $this->open();
+            return false;
+        }
+        
+        return true;
     }
     
     /* getter setter */
     public function getId()
     {
         return $this->id;    
-    }
-    
-    public function isValid()
-    {
-        return $this->valid;
     }
     
     public function isResumed()
@@ -141,22 +147,27 @@ class Toby_Session
 
     public function set($key, $value)
     {
-        if($this->valid) if(!$this->closed) $this->SESSION[$this->key][$key] = $value;
+        // check connection
+        if($this->checkConnection(true) === false) return false;
+        
+        // set & return
+        $this->SESSION[self::KEY][$key] = $value;
+        return true;
     }
 
     public function get($key)
     {
-        return $this->has($key) ? $this->SESSION[$this->key][$key] : null;
+        return $this->has($key) ? $this->SESSION[self::KEY][$key] : null;
     }
     
     public function has($key)
     {
-        return isset($this->SESSION[$this->key][$key]);
+        return isset($this->SESSION[self::KEY][$key]);
     }
     
     public function delete($key)
     {
-        unset($this->SESSION[$this->key][$key]);
+        unset($this->SESSION[self::KEY][$key]);
     }
     
     public function printr()
