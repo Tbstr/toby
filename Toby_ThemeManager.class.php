@@ -39,47 +39,15 @@ class Toby_ThemeManager
             self::$themePathRoot    = PUBLIC_ROOT.DS.$themePath;
             self::$themeURL         = Toby_Utils::pathCombine(array(APP_URL_REL, $themePath));
             
-            $configPath = Toby_Utils::pathCombine(array(self::$themePathRoot, ($configName ? $configName : $themeName))).'.info';
-            if(file_exists($configPath))
+            if(self::loadConfig($configName) === false)
             {
-                // read from memcache
-                $dataFromCache = false;
-                $key = ftok($configPath, 't');
-                $shmId = shmop_open($key , 'a', 0644 , 0);
-                if($shmId !== false)
-                {
-                    self::$themeConfig = json_decode(shmop_read($shmId, 0, shmop_size($shmId)));
-                    
-                    $dataFromCache = true;
-                    
-                    Toby_Utils::printr('theme data read from cache');
-                }
-                shmop_close($shmId);
-                
-                // parse from filesystem and cache
-                //if($dataFromCache === false)
-                //{
-                    // read & parse
-                    //self::$themeConfig  = Toby_ConfigFileManager::read($configPath, true);
-                    
-                    // cache
-                    /*
-                    $json = json_encode(self::$themeConfig);
-                    $shmId = shmop_open($key , 'c', 0644 , 5000);
-                    if($shmId !== false)
-                    {
-                        shmop_write($shmId, $json, 0);
-                        
-                        Toby_Utils::printr('theme data written to cache');
-                    }
-                    shmop_close($shmId);
-                     */
-                //}
-                
-                // return success
-                self::$initialized  = true;
-                return true;
+                self::$initialized = false;
+                return false;
             }
+            
+            // return success
+            self::$initialized = true;
+            return true;
         }
         
         // return false
@@ -102,10 +70,76 @@ class Toby_ThemeManager
         
         // set
         if(!self::init($theme, $themeConfig)) return false;
-        self::$controller = &$controller;
+        self::$controller = $controller;
         
         // return
         return true;
+    }
+    
+    private static function loadConfig($configName)
+    {
+        $configPath = Toby_Utils::pathCombine(array(self::$themePathRoot, ($configName !== false ? $configName : self::$themeName))).'.info';
+        $shmop = Toby_Utils::extensionLoaded('shmop');
+        
+        if(file_exists($configPath))
+        {
+            // read from memcache
+            $dataFromCache = false;
+            
+            if($shmop === true)
+            {
+                $key = ftok($configPath, 't');
+                $shmId = @shmop_open($key , 'a', 0644 , 0);
+
+                if($shmId !== false)
+                {
+                    $cacheData = unserialize(shmop_read($shmId, 0, shmop_size($shmId)));
+                    
+                    if($cacheData['time'] > filemtime($configPath))
+                    {
+                        self::$themeConfig = $cacheData['data'];
+                        
+                        $dataFromCache = true;
+                        shmop_close($shmId);
+                    }
+                    else
+                    {
+                        shmop_delete($shmId);
+                        shmop_close($shmId);
+                    }
+                }
+            }
+
+            // parse from filesystem and cache
+            if($dataFromCache === false)
+            {
+                // read & parse
+                self::$themeConfig = Toby_ConfigFileManager::read($configPath, true);
+
+                // cache
+                if($shmop === true)
+                {
+                    $cacheData = array(
+                        'time' => time(),
+                        'data' => self::$themeConfig
+                    );
+                    $serialized = serialize($cacheData);
+                    
+                    $shmId = @shmop_open($key , 'c', 0644 , strlen($serialized));
+                    if($shmId !== false)
+                    {
+                        shmop_write($shmId, $serialized, 0);
+                        shmop_close($shmId);
+                    }
+                }
+            }
+            
+            // return
+            return true;
+        }
+        
+        // return
+        return false;
     }
     
     public static function placeHeaderInformation()

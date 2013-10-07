@@ -116,7 +116,7 @@ class Toby_Utils
         self::printr(get_loaded_extensions());
     }
     
-    public static function extensionInstalled($name)
+    public static function extensionLoaded($name)
     {
         return in_array($name, get_loaded_extensions());
     }
