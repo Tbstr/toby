@@ -315,4 +315,23 @@ class Toby_Utils
         // check
         return (boolean)preg_match('/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i', $mail);
     }
+    
+    public static function randomChars($numChars, $charSet = null)
+    {
+        // vars
+        if($charSet === null) $charSet = str_shuffle('abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ0123456789');
+        $charCount  = strlen($charSet);
+        $out    = '';
+        
+        // generate
+        $i = 0;
+        while($i < $numChars)
+        {
+            $out .= $charSet[rand(0, $charCount - 1)];
+            $i++;
+        }
+        
+        // return
+        return $out;
+    }
 }
