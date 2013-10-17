@@ -19,6 +19,9 @@ class Toby_MySQL
     public $dryRun              = false;
     public $logQueries          = false;
     public $connected           = false;
+    
+    private $queryRec           = false;
+    private $queryRecBuffer;
 
     public static function getInstance($id = null)
     {
@@ -88,8 +91,9 @@ class Toby_MySQL
         if($this->errorMessage != '')   $this->errorMessage = '';
         if($this->errorCode != 0)       $this->errorCode = 0;
 
-        // log
+        // log & rec
         if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
+        if($this->queryRec === true) $this->queryRecBuffer[] = str_replace(array("\n", "\r"), '', $q);
 
         // dry run
         if($this->dryRun)
@@ -283,6 +287,33 @@ class Toby_MySQL
     {
         $this->logQueries = true;
         Toby_Logger::log('[MySQL log start] '.REQUEST, 'mysql-queries', true);
+    }
+    
+    /* query recording */
+    public function startQueryRecording()
+    {
+        // cancellation
+        if($this->queryRec === true) return false;
+        
+        // start
+        $this->queryRec = true;
+        $this->queryRecBuffer = array();
+        
+        // return
+        return true;
+    }
+    
+    public function stopQueryRecording()
+    {
+        // cancellation
+        if($this->queryRec === false) return false;
+        
+        // stop & return
+        $this->queryRec = false;
+        $out = implode("\n", $this->queryRecBuffer);
+        $this->queryRecBuffer = null;
+        
+        return $out;
     }
     
     /* to string */

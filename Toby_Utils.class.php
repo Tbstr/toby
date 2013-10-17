@@ -10,6 +10,31 @@ class Toby_Utils
         foreach($args as $arg) echo '<pre>'.print_r($arg, true).'</pre>';
     }
     
+    public static function debugBacktrace($return = false)
+    {
+        $backtraceInfo = debug_backtrace();
+        $backtrace = array();
+        
+        $str = '';
+        foreach($backtraceInfo as $t)
+        {
+            // reset str
+            $str = '';
+            
+            // class
+            if(isset($t['class'])) $str .= $t['class'].$t['type'];
+            
+            // function
+            $str .= $t['function'];
+            
+            $backtrace[] = $str;
+        }
+        
+        // print or return
+        if($return) return implode("\n", $backtrace);
+        self::printr(implode("\n", $backtrace));
+    }
+    
     public static function clearPath($path)
     {
         if($path == null) return "";

@@ -170,7 +170,7 @@ class Toby_ThemeManager
         
         if(!$groupSet)
         {
-            if(isset(self::$themeConfig['nogroup'])) $links = array_merge_recursive($links, self::$themeConfig['nogroup']);
+            if(isset(self::$themeConfig['default'])) $links = array_merge_recursive($links, self::$themeConfig['default']);
         }
         
         // set version
