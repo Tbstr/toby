@@ -77,14 +77,17 @@ class Toby
             Toby_Logger::log('[app start]', 'request-times', true);
         }
         
+        // set encoding
+        if(empty(self::$ENCODING)) self::setEncoding('UTF-8');
+        
         // init mysql
         if(Toby_Config::_getValue('toby', 'logMySQLQueries', 'bool')) Toby_MySQL::getInstance()->initQueryLogging();
         
+        // init security
+        Toby_Security::init();
+        
         // include init hook
         if(file_exists(APP_ROOT.'/hooks/init.hook.php')) include APP_ROOT.'/hooks/init.hook.php';
-        
-        // set encoding
-        if(empty(self::$ENCODING)) self::setEncoding('UTF-8');
         
         // force resolve
         if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');

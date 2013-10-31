@@ -27,23 +27,27 @@ abstract class Toby_Controller
     function __construct($name, $action)
     {
         // vars
-        $this->name             = $name;
-        $this->action           = $action;
+        $this->name                     = $name;
+        $this->action                   = $action;
         
         if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
         
         // holders
-        $this->layout           = new stdClass();
-        $this->view             = new stdClass();
-        $this->javascript       = new stdClass();
+        $this->layout                   = new stdClass();
+        $this->view                     = new stdClass();
+        $this->javascript               = new stdClass();
         
-        // layout default vars
-        $this->layout->appURL   = APP_URL;
-        $this->layout->url      = APP_URL.DS.REQUEST;
+        // default vars layout
+        $this->layout->appURL           = APP_URL;
+        $this->layout->url              = APP_URL.DS.REQUEST;
         
-        // view default vars
-        $this->view->appURL     = APP_URL;
-        $this->view->url        = APP_URL.DS.REQUEST;
+        // default vars view
+        $this->view->appURL             = APP_URL;
+        $this->view->url                = APP_URL.DS.REQUEST;
+        
+        // default vars javascript
+        $this->javascript->xsrfkeyname  = Toby_Security::XSRFKeyName;
+        $this->javascript->xsrfkey      = Toby_Security::XSRFGetKey();
     }
     
     protected function forward($controller, $action = 'index', $vars = null, $externalForward = false, $forceSecure = false)

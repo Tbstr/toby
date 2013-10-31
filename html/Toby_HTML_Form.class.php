@@ -25,6 +25,7 @@ class Toby_HTML_Form
     
     function __construct($name, $action, $method = 'POST', $attr = null)
     {
+        // set vars
         $this->name     = $name;
         $this->action   = $action;
         $this->method   = $method;
@@ -198,6 +199,9 @@ class Toby_HTML_Form
                     break;
             }
         }
+        
+        // add XSRF input
+        $elements .= Toby_Security::XSRFFormElement();
         
         // form
         $formTag = null;
