@@ -2,14 +2,19 @@
 
 class Toby_Logger
 {
-    public static $initialized = false;
+    public static $initialized              = false;
     public static $logsDirPath;
     
-    private static $logErrors = false;
+    public static $enabled                  = true;
     
+    private static $logErrors               = false;
     private static $fatalNotificationTo;
+    private static $listeners               = array();
     
-    public static $enabled = true;
+    const TYPE_ERROR                        = 'type_error';
+    const TYPE_WARNING                      = 'type_warning';
+    const TYPE_NOTICE                       = 'type_notice';
+    const TYPE_DEFAULT                      = 'type_default';
     
     public static function init($logsDirPath)
     {
@@ -19,7 +24,7 @@ class Toby_Logger
         self::$initialized = true;
     }
     
-    public static function log($content, $log = 'sys', $omitSys = false)
+    private static function _log($content, $log = 'sys', $omitSys = false)
     {
         if(!self::$initialized) return;
         if(!self::$enabled) return;
@@ -36,17 +41,26 @@ class Toby_Logger
     
     public static function error($content)
     {
-        self::log("[ERROR] $content".self::traceStamp(), 'error');
+        self::_log("[ERROR] $content".self::traceStamp(), 'error');
+        self::callLogListener(self::TYPE_ERROR, $content);
     }
     
     public static function warn($content)
     {
-        self::log('[WARNING] '.$content.self::traceStamp(), 'error');
+        self::_log('[WARNING] '.$content.self::traceStamp(), 'error');
+        self::callLogListener(self::TYPE_WARNING, $content);
     }
     
     public static function notice($content)
     {
-        self::log('[NOTICE] '.$content.self::traceStamp());
+        self::_log('[NOTICE] '.$content.self::traceStamp());
+        self::callLogListener(self::TYPE_NOTICE, $content);
+    }
+    
+    public static function log($content, $log = 'sys', $omitSys = false)
+    {
+        self::_log($content, $log, $omitSys);
+        self::callLogListener(self::TYPE_DEFAULT, $content);
     }
     
     public static function logErrors()
@@ -72,6 +86,20 @@ class Toby_Logger
     public static function rotate()
     {
         Toby_Logger::log('log rotate');
+    }
+    
+    /* listeners */
+    public static function setLogListener($type, $callback)
+    {
+        self::$listeners[] = array($type, $callback);
+    }
+    
+    private static function callLogListener($type, $content)
+    {
+        foreach(self::$listeners as $listener)
+        {
+            if($listener[0] === $type) call_user_func($listener[1], $content);
+        }
     }
     
     /* event handler */

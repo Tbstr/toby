@@ -33,11 +33,12 @@ class Toby_Security
         // get key
         if($key === false)
         {
-            if(isset($_POST[self::XSRFKeyName])) $key = $_POST[self::XSRFKeyName];
+            if(isset($_POST[self::XSRFKeyName]))    $key = $_POST[self::XSRFKeyName];
             elseif(isset($_GET[self::XSRFKeyName])) $key = $_GET[self::XSRFKeyName];
             else
             {
                 // log
+                unset($_GET['r']);
                 Toby_Logger::error('XSRF validation failed due to missing key. REQUEST: '.REQUEST.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
 
                 // hang up
@@ -49,6 +50,7 @@ class Toby_Security
         if($key !== self::XSRFGetKey())
         {
             // log
+            unset($_GET['r']);
             Toby_Logger::error('XSRF violation. REQUEST: '.REQUEST.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
             
             // hang up
