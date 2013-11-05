@@ -96,7 +96,7 @@ class Toby
         if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
         
         // resolve and boot
-        if($request != null)
+        if($request !== null)
         {
             // resolve
             $elements = explode('/', $request);
@@ -108,9 +108,6 @@ class Toby
             // boot
             Toby::boot($controllerName, $actionName, $vars, true);
         }
-        
-        // finalize
-        self::finalize(0);
     }
     
     public static function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
@@ -134,7 +131,7 @@ class Toby
         else
         {
             // define resolve
-            define('RESOLVE', "$controllerName/$actionName".($vars == null ? '' : '/'.implode('/', $vars)));
+            define('RESOLVE', "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars)));
             
             // include resolved hook
             self::hook('resolved');
