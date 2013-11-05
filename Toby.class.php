@@ -26,6 +26,9 @@ class Toby
                 break;
         }
         
+        // include pre init hook
+        self::hook('pre_init');
+        
         // change directory
         chdir(PROJECT_ROOT);
 
@@ -43,7 +46,7 @@ class Toby
         
         // init config & hook
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
-        if(file_exists(APP_ROOT.'/hooks/config.hook.php')) include APP_ROOT.'/hooks/config.hook.php';
+        self::hook('configs_loaded');
         
         // error handling
         error_reporting(E_ALL);
@@ -86,8 +89,8 @@ class Toby
         // init security
         Toby_Security::init();
         
-        // include init hook
-        if(file_exists(APP_ROOT.'/hooks/init.hook.php')) include APP_ROOT.'/hooks/init.hook.php';
+        // include post init hook
+        self::hook('post_init');
         
         // force resolve
         if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
@@ -105,6 +108,9 @@ class Toby
             // boot
             Toby::boot($controllerName, $actionName, $vars, true);
         }
+        
+        // finalize
+        self::finalize(0);
     }
     
     public static function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
@@ -131,7 +137,7 @@ class Toby
             define('RESOLVE', "$controllerName/$actionName".($vars == null ? '' : '/'.implode('/', $vars)));
             
             // include resolved hook
-            if(file_exists(APP_ROOT.'/hooks/resolved.hook.php')) include APP_ROOT.'/hooks/resolved.hook.php';
+            self::hook('resolved');
             
             // render
             echo self::renderController($controller);
@@ -217,7 +223,7 @@ class Toby
     public static function renderController(Toby_Controller $controller)
     {
         // cancellation
-        if(!$controller->renderView) return;
+        if(!$controller->renderView) return '';
         
         // start timing
         if(self::$logRequestTime) $starttime = microtime(true);
@@ -274,6 +280,13 @@ class Toby
         
         // require
         if(file_exists($path)) require_once($path);
+    }
+    
+    /* helper */
+    private static function hook($name)
+    {
+        $hookPath = APP_ROOT.'/hooks/'.$name.'.hook.php';
+        if(file_exists($hookPath)) include $hookPath;
     }
     
     /* finalization */

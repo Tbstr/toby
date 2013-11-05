@@ -28,7 +28,7 @@ class Toby_Security
         return '<input type="hidden" name="'.self::XSRFKeyName.'" value="'.self::XSRFGetKey().'" />';
     }
     
-    public static function XSRFValidateKey($key = false)
+    public static function XSRFValidateKey($key = false, $finalizeOnFail = true)
     {
         // get key
         if($key === false)
@@ -41,8 +41,9 @@ class Toby_Security
                 unset($_GET['r']);
                 Toby_Logger::error('XSRF validation failed due to missing key. REQUEST: '.REQUEST.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
 
-                // hang up
-                Toby::finalize();
+                // hang up or return
+                if($finalizeOnFail) Toby::finalize();
+                else return false;
             }
         }
         
@@ -53,8 +54,12 @@ class Toby_Security
             unset($_GET['r']);
             Toby_Logger::error('XSRF violation. REQUEST: '.REQUEST.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
             
-            // hang up
-            Toby::finalize();
+            // hang up or return
+            if($finalizeOnFail) Toby::finalize();
+            else return false;
         }
+        
+        // return success
+        return true;
     }
 }
