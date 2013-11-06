@@ -1,74 +1,91 @@
 <?php
 
+// check env vars
+switch(false)
+{
+    case defined('PROJECT_ROOT'):
+    case defined('APP_ROOT'):
+    case defined('PUBLIC_ROOT'):
+    case defined('TOBY_ROOT'):
+        echo 'necessary environment variables not set';
+        exit(1);
+        break;
+}
+
+// change directory
+chdir(PROJECT_ROOT);
+
+// define constants
+define('DS', DIRECTORY_SEPARATOR);
+define('NL', "\n");
+
+// add lib to include path
+set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
+
 // core class
 class Toby
 {
-    /* variables */
-    private static $logRequestTime      = false;
-    private static $requestLogData      = array();
+    private static $instance            = null;
     
-    public static $ENCODING             = null;
+    /* variables */
+    public $scope                       = false;
+    public $request                     = false;
+    public $resolve                     = false;
+    public $encoding                    = false;
+    
+    public $appURL                      = false;
+    public $appURLSecure                = false;
+    public $appURLRelative              = false;
+    
+    private $logRequestTime             = false;
+    private $requestLogData             = array();
+    
+    private $initialized                = false;
+    private $finalized                  = false;
     
     /* constants */
     const SCOPE_WEB                     = 'web';
     const SCOPE_LOCAL                   = 'local';
     
-    public static function init($request = null, $scope = 'local')
+    /* constructor */
+    function __construct()
     {
-        // check env vars
-        switch(false)
-        {
-            case defined('PROJECT_ROOT'):
-            case defined('APP_ROOT'):
-            case defined('PUBLIC_ROOT'):
-            case defined('TOBY_ROOT'):
-                Toby::finalize('necessary environment variables not set');
-                break;
-        }
-        
+        if(self::$instance === null) self::$instance  = $this;
+        else throw new Exception('Toby is a singleton and therefore can only be accessed through Toby::getInstance().');
+    }
+    
+    /* static getter*/
+    public static function getInstance()
+    {
+        if(self::$instance === null) new self();
+        return self::$instance;
+    }
+            
+    /* object methods */
+    public function init($request = false, $scope = false)
+    {
         // include pre init hook
-        self::hook('pre_init');
+        $this->hook('pre_init');
         
-        // change directory
-        chdir(PROJECT_ROOT);
-
-        // define constants
-        define('DS', DIRECTORY_SEPARATOR);
-        define('NL', "\n");
-        
-        define('SCOPE', $scope);
+        // set vars
+        $this->request  = $request;
+        $this->scope    = $scope;
         
         // register autoloader
-        spl_autoload_register('Toby::autoload');
-        
-        // add lib to include path
-        set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
+        spl_autoload_register(array($this, 'autoload'));
         
         // init config & hook
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
-        self::hook('configs_loaded');
+        $this->hook('configs_loaded');
         
         // error handling
         error_reporting(E_ALL);
         ini_set('display_errors', Toby_Config::_getValue('toby', 'displayErrors') ? '1' : '0');
         
-        // define web constants
-        if($request == null)
-        {
-            define('REQUEST', false);
-            
-            define('APP_URL', false);
-            define('SECURE_APP_URL', false);
-            define('APP_URL_REL', false);
-        }
-        else
-        {
-            define('REQUEST', $request);
-            
-            define('APP_URL', Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '');
-            define('SECURE_APP_URL', Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : APP_URL);
-            define('APP_URL_REL', preg_replace('/https?:\/\/(www\.)?[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', APP_URL));
-        }
+        // set url vars
+        $this->appURL           = Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '';
+        $this->appURLSecure     = Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : $this->appURL;
+        $this->appURLRelative   = preg_replace('/https?:\/\/(www\.)?[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', $this->appURL);
         
         // init logging
         Toby_Logger::init(APP_ROOT.'/logs');
@@ -76,12 +93,12 @@ class Toby
         
         if(Toby_Config::_getValue('toby', 'logRequestTimes'))
         {
-            self::$logRequestTime = true;
-            Toby_Logger::log('[app start]', 'request-times', true);
+            $this->logRequestTime = true;
+            Toby_Logger::log('[APP START]', 'request-times', true);
         }
         
         // set encoding
-        if(empty(self::$ENCODING)) self::setEncoding('UTF-8');
+        if(empty($this->encoding)) $this->setEncoding('UTF-8');
         
         // init mysql
         if(Toby_Config::_getValue('toby', 'logMySQLQueries', 'bool')) Toby_MySQL::getInstance()->initQueryLogging();
@@ -89,14 +106,17 @@ class Toby
         // init security
         Toby_Security::init();
         
+        // set initialized
+        $this->initialized = true;
+        
         // include post init hook
-        self::hook('post_init');
+        $this->hook('post_init');
         
         // force resolve
         if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
         
         // resolve and boot
-        if($request !== null)
+        if($request !== false)
         {
             // resolve
             $elements = explode('/', $request);
@@ -106,14 +126,14 @@ class Toby
             $vars = (count($elements) > 2) ? array_slice($elements, 2) : null;
             
             // boot
-            Toby::boot($controllerName, $actionName, $vars, true);
+            $this->boot($controllerName, $actionName, $vars, true);
         }
     }
     
-    public static function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
+    public function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
     {
         // run action
-        $controller = self::runAction($controllerName, $actionName, $vars);
+        $controller = $this->runAction($controllerName, $actionName, $vars);
         
         if($controller === false)
         {
@@ -124,31 +144,31 @@ class Toby
                 {
                     // reboot
                     list($controllerName, $actionName) = explode('/', Toby_Config::_getValue('toby', 'defaultResolve'));
-                    self::boot($controllerName, $actionName);
+                    $this->boot($controllerName, $actionName);
                 }
             }
         }
         else
         {
-            // define resolve
-            define('RESOLVE', "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars)));
+            // set resolve
+            $this->resolve = "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars));
             
             // include resolved hook
-            self::hook('resolved');
+            $this->hook('resolved');
             
             // render
-            echo self::renderController($controller);
+            echo $this->renderController($controller);
         }
     }
     
-    public static function runAction($controller, $action = 'index', $vars = null)
+    public function runAction($controllerName, $actionName = 'index', $vars = null)
     {
         // start timing;
-        self::requestTimeLogStart("$controller/$action".($vars === null ? '' : '/'.implode('/', $vars)));
+        $this->requestTimeLogStart("$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars)));
         
         // vars
-        $controllerFullName = 'Controller_'.strtoupper(substr($controller, 0, 1)).substr($controller, 1);
-        $actionFullName = $action . 'Action';
+        $controllerFullName = 'Controller_'.strtoupper(substr($controllerName, 0, 1)).substr($controllerName, 1);
+        $actionFullName = $actionName . 'Action';
         
         // exec
         if(file_exists(APP_ROOT."/controller/$controllerFullName.class.php"))
@@ -157,7 +177,7 @@ class Toby
             
             if(class_exists($controllerFullName))
             {
-                $controllerInstance = new $controllerFullName($controller, $action);
+                $controllerInstance = new $controllerFullName($controllerName, $actionName, $this);
                 
                 if(method_exists($controllerInstance, $actionFullName))
                 {
@@ -166,73 +186,73 @@ class Toby
                     else call_user_func_array (array($controllerInstance, $actionFullName), $vars);
                     
                     // stop timing
-                    self::requestTimeLogStop(true);
+                    $this->requestTimeLogStop(true);
                     
                     // return
                     return $controllerInstance;
                 }
                 else
                 {
-                    if($action !== 'default')
+                    if($actionName !== 'default')
                     {
                         // stop timing
-                        self::requestTimeLogStop(false);
+                        $this->requestTimeLogStop(false);
 
                         // return
-                        return self::runAction($controller, 'default', $vars);
+                        return $this->runAction($controllerName, 'default', $vars);
                     }
                 }
             }
         }
         
         // stop timing
-        self::requestTimeLogStop(false);
+        $this->requestTimeLogStop(false);
         
         // return
         return false;
     }
     
-    private static function requestTimeLogStart($title)
+    private function requestTimeLogStart($title)
     {
         // cancellation
-        if(self::$logRequestTime !== true) return;
+        if($this->logRequestTime !== true) return;
         
         // store time and title
-        self::$requestLogData[]  = array($title, microtime(true));
+        $this->requestLogData[]  = array($title, microtime(true));
         
         // log
         Toby_Logger::log("running action: $title", 'request-times', true);
     }
     
-    private static function requestTimeLogStop($success)
+    private function requestTimeLogStop($success)
     {
         // cancellation
-        if(self::$logRequestTime !== true) return;
+        if($this->logRequestTime !== true) return;
         
         // get time and title
-        list($title, $startTime) = array_pop(self::$requestLogData);
+        list($title, $startTime) = array_pop($this->requestLogData);
         
         // log
         $deltatime = number_format((microtime(true) - $startTime) * 1000, 2);
         Toby_Logger::log("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'), 'request-times', true);
     }
     
-    public static function renderController(Toby_Controller $controller)
+    public function renderController(Toby_Controller $controller)
     {
         // cancellation
         if(!$controller->renderView) return '';
         
         // start timing
-        if(self::$logRequestTime) $starttime = microtime(true);
+        if($this->logRequestTime) $starttime = microtime(true);
         
         // prepare theme manager
-        if(!Toby_ThemeManager::initByController($controller)) Toby::finalize('unable to set theme '.Toby_ThemeManager::$themeName);
+        if(!Toby_ThemeManager::initByController($controller)) $this->finalize('unable to set theme '.Toby_ThemeManager::$themeName);
         
         // render content
         $content = Toby_Renderer::renderPage($controller);
         
         // stop timing
-        if(self::$logRequestTime)
+        if($this->logRequestTime)
         {
             $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
             Toby_Logger::log("rendering controller: {$controller->serialize()} [{$deltatime}ms]", 'request-times', true);
@@ -243,17 +263,17 @@ class Toby
     }
     
     /* settings */
-    public static function setEncoding($encoding)
+    public function setEncoding($encoding)
     {
         // set
-        self::$ENCODING = $encoding;
+        $this->encoding = $encoding;
         
         // set mb
         mb_internal_encoding($encoding);
     }
     
     /* autoloader */
-    public static function autoload($className)
+    public function autoload($className)
     {
         // prepare
         $elements = explode('_', $className);
@@ -280,7 +300,7 @@ class Toby
     }
     
     /* helper */
-    private static function hook($name)
+    private function hook($name)
     {
         $hookPath = APP_ROOT.'/hooks/'.$name.'.hook.php';
         if(file_exists($hookPath)) include $hookPath;
@@ -289,16 +309,6 @@ class Toby
     /* finalization */
     public static function finalize($status = 0)
     {
-        // complete time logging
-        $count = count(self::$requestLogData);
-        while($count > 0)
-        {
-            self::requestTimeLogStop(true);
-            $count--;
-        }
-        
-        if(self::$logRequestTime === true) Toby_Logger::log('[app end]', 'request-times', true);
-        
         // exit
         if(is_int($status)) exit($status);
         else
@@ -306,5 +316,18 @@ class Toby
             echo Toby_Utils::printr($status);
             exit(1);
         }
+    }
+    
+    function __destruct()
+    {
+        // complete time logging
+        $count = count($this->requestLogData);
+        while($count > 0)
+        {
+            $this->requestTimeLogStop(true);
+            $count--;
+        }
+        
+        if($this->logRequestTime === true) Toby_Logger::log('[APP END]', 'request-times', true);
     }
 }

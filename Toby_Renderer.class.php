@@ -13,22 +13,22 @@ class Toby_Renderer
         self::themeManagerAutoInit();
 
         // script
-        $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        $content                = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
         
         // layout
-        $layoutPath = self::findLayout($controller->layoutName);
-        if($layoutPath ===  false) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
+        $layoutPath             = self::findLayout($controller->layoutName);
+        if($layoutPath === false) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
-        $layout = new Toby_Layout($layoutPath, get_object_vars($controller->layout));
+        $layout                 = new Toby_Layout($layoutPath, get_object_vars($controller->layout));
         
-        $layout->title = $controller->layoutTitle;
-        $layout->jsVars = get_object_vars($controller->javascript);
-        $layout->headContent = $controller->layoutHeadContent;
+        $layout->title          = $controller->layoutTitle;
+        $layout->jsVars         = get_object_vars($controller->javascript);
+        $layout->headContent    = $controller->layoutHeadContent;
         
-        $layout->bodyId = $controller->layoutBodyId;
-        $layout->bodyClass = $controller->layoutBodyClasses;
+        $layout->bodyId         = $controller->layoutBodyId;
+        $layout->bodyClass      = $controller->layoutBodyClasses;
         
-        $layout->content = $content;
+        $layout->content        = $content;
         
         // render & return
         return $layout->render();

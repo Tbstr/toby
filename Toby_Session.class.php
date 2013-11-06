@@ -41,7 +41,7 @@ class Toby_Session
     {
         // settings
         session_name('tobysess');
-        ini_set('session.cookie_domain', preg_replace('/^https?:\/\//', '', APP_URL));
+        ini_set('session.cookie_domain', preg_replace('/^https?:\/\//', '', Toby::getInstance()->appURL));
         
         // set handlers
         if(Toby_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))

@@ -5,14 +5,17 @@ class Toby_View
     private $scriptPath;
     private $vars;
     
+    private $toby;
+    
     function __construct($scriptPath, $vars = null)
     {
-        // set vars
-        $this->scriptPath = $scriptPath;
-        $this->vars = $vars;
-        
         // apply view vars
-        if($vars != null) foreach($vars as $key => $value) $this->$key = $value;
+        if($vars !== null) foreach($vars as $key => $value) $this->$key = $value;
+        
+        // set vars
+        $this->scriptPath   = $scriptPath;
+        $this->vars         = $vars;
+        $this->toby         = Toby::getInstance();
     }
     
     /* rendering */
@@ -72,7 +75,7 @@ class Toby_View
     
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
-        $controller = Toby::runAction($controllerName, $actionName, $vars);
+        $controller = Toby::getInstance()->runAction($controllerName, $actionName, $vars);
         if($controller === false) Toby::finalize("includeAction: $controllerName/$actionName does not exist");
         
         return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
@@ -81,7 +84,7 @@ class Toby_View
     /* helpers */
     protected function esc($string)
     {
-        return htmlentities($string, ENT_COMPAT, Toby::$ENCODING);
+        return htmlentities($string, ENT_COMPAT, Toby::getInstance()->encoding);
     }
     
     /* to string */

@@ -12,12 +12,6 @@ class Toby_Layout extends Toby_View
     
     public $content             = '';
     
-    function __construct($scriptPath, $vars = null)
-    {
-        // parent call
-        parent::__construct($scriptPath, $vars);
-    }
-    
     /* placements */
     protected function placeHeaderInformation()
     {

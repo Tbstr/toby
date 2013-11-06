@@ -4,6 +4,7 @@ abstract class Toby_Controller
 {
     public $name;
     public $action;
+    public $toby;
     
     public $layoutName              = 'default';
     
@@ -29,6 +30,7 @@ abstract class Toby_Controller
         // vars
         $this->name                     = $name;
         $this->action                   = $action;
+        $this->toby                     = Toby::getInstance();
         
         if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
         
@@ -38,12 +40,12 @@ abstract class Toby_Controller
         $this->javascript               = new stdClass();
         
         // default vars layout
-        $this->layout->appURL           = APP_URL;
-        $this->layout->url              = APP_URL.DS.REQUEST;
+        $this->layout->appURL           = $this->toby->appURL;
+        $this->layout->url              = Toby_Utils::pathCombine(array($this->toby->appURL, Toby::getInstance()->request));
         
         // default vars view
-        $this->view->appURL             = APP_URL;
-        $this->view->url                = APP_URL.DS.REQUEST;
+        $this->view->appURL             = $this->toby->appURL;
+        $this->view->url                = Toby_Utils::pathCombine(array($this->toby->appURL, Toby::getInstance()->request));
         
         // default vars javascript
         $this->javascript->xsrfkeyname  = Toby_Security::XSRFKeyName;
@@ -56,8 +58,8 @@ abstract class Toby_Controller
         if(!empty($vars) && !is_array($vars)) $vars = array((string)$vars);
         
         // forward
-        if($externalForward) header('Location: '.($forceSecure ? SECURE_APP_URL : APP_URL).DS.$controller.DS.$action.($vars ? DS.implode(DS, $vars) : ''));
-        else Toby::boot($controller, $action, $vars);
+        if($externalForward) header('Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($vars ? DS.implode(DS, $vars) : ''));
+        else Toby::getInstance()->boot($controller, $action, $vars);
         
         // exit
         Toby::finalize(0);

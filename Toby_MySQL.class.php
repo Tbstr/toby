@@ -286,7 +286,7 @@ class Toby_MySQL
     public function initQueryLogging()
     {
         $this->logQueries = true;
-        Toby_Logger::log('[MySQL log start] '.REQUEST, 'mysql-queries', true);
+        Toby_Logger::log('[MySQL log start] '.Toby::getInstance()->request, 'mysql-queries', true);
     }
     
     /* query recording */

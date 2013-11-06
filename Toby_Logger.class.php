@@ -146,21 +146,15 @@ class Toby_Logger
     {
         $error = error_get_last();
         
-        if($error != null)
+        if($error !== null)
         {
-            if($error['type'] == 1)
+            if($error['type'] === 1)
             {
                 // log
                 self::log("[FATAL ERROR] $error[message] > $error[file]:$error[line]", 'error');
                 
                 // send mail
-                if(APP_URL !== false)
-                {
-                    if($_SERVER['HTTP_HOST'] != 'localhost' && $_SERVER['HTTP_HOST'] != '127.0.0.1')
-                    {
-                        if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
-                    }
-                }
+                if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
             }
         }
     }

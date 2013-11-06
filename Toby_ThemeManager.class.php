@@ -37,7 +37,7 @@ class Toby_ThemeManager
         {
             self::$themeName        = $themeName;
             self::$themePathRoot    = PUBLIC_ROOT.DS.$themePath;
-            self::$themeURL         = Toby_Utils::pathCombine(array(APP_URL_REL, $themePath));
+            self::$themeURL         = Toby_Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
             
             if(self::loadConfig($configName) === false)
             {

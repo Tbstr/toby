@@ -4,28 +4,35 @@ class Toby_Config
 {
     public static $instance = null;
     
+    /* constructor */
+    function __construct()
+    {
+        if(self::$instance === null) self::$instance  = $this;
+        else throw new Exception('Toby_Config is a singleton and therefore can only be accessed through Toby_Config::getInstance().');
+    }
+    
     /* static getter */
     public static function getInstance()
     {
-        if(self::$instance === null) self::$instance = new self();
+        if(self::$instance === null) new self();
         return self::$instance;
     }
     
     /* ststic shortcuts */
     public static function _hasKey($config, $key)
     {
-        return self::$instance->hasKey($config, $key);
+        return self::getInstance()->hasKey($config, $key);
     }
     
     public static function _getValue($config, $key, $datatype = '')
     {
-        return self::$instance->getValue($config, $key, $datatype);
+        return self::getInstance()->getValue($config, $key, $datatype);
     }
     
     public static function _getConfig($config)
     {
-        if(!isset(self::$instance->$config)) return null;
-        return self::$instance->$config;
+        if(!isset(self::getInstance()->$config)) return null;
+        return self::getInstance()->$config;
     }
     
     /* methods */
