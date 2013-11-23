@@ -73,26 +73,19 @@ class Toby_Utils
         return array_map('object2array', $object);
     }
     
-    public static function formatFileSize($sizeInBytes)
+    public static function formatFileSize($bytes, $precision = 2)
     {
-        $type = " Byte";
+        $units = array('B', 'KB', 'MB', 'GB', 'TB'); 
 
-        if($sizeInBytes > pow(2, 20))
-        {
-            $sizeInBytes = round($sizeInBytes / pow(2, 20) * 100) / 100;
-            $type = " MB";
-        }
-        elseif($sizeInBytes > pow(2, 10))
-        {
-            $sizeInBytes = round($sizeInBytes / pow(2, 10));
-            $type = " kB";
-        }
-        else
-        {
-            $sizeInBytes = round($sizeInBytes * 100) / 100;
-        }
+        $bytes = max($bytes, 0); 
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024)); 
+        $pow = min($pow, count($units) - 1); 
 
-        return $sizeInBytes.$type;
+        // Uncomment one of the following alternatives
+        // $bytes /= pow(1024, $pow);
+        $bytes /= (1 << (10 * $pow)); 
+
+        return round($bytes, $precision).' '.$units[$pow]; 
     }
     
     public static function getMIMEFromExtension($filename)
