@@ -30,6 +30,7 @@ class Toby
     /* variables */
     public $scope                       = false;
     public $request                     = false;
+    public $startupTime                 = 0;
     public $resolve                     = false;
     public $encoding                    = false;
     
@@ -68,8 +69,9 @@ class Toby
         $this->hook('pre_init');
         
         // set vars
-        $this->request  = $request;
-        $this->scope    = $scope;
+        $this->request          = $request;
+        $this->scope            = $scope;
+        $this->startupTime      = time();
         
         // register autoloader
         spl_autoload_register(array($this, 'autoload'));
