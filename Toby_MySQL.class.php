@@ -43,7 +43,7 @@ class Toby_MySQL
         if(Toby_Config::_getValue('toby', 'mySQLAutoConnect') !== true) return;
         
         // vars
-        $mad = &Toby_Config::_getValue('toby', 'mySQLAccessData');
+        $mad = Toby_Config::_getValue('toby', 'mySQLAccessData');
 
         $this->init(
             $mad['host'],
