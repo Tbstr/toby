@@ -183,7 +183,7 @@ class Toby_ThemeManager
             {
                 foreach($stylePaths as $stylePath)
                 {
-                    if(preg_match('/https?:\/\/.*/', $stylePath))
+                    if(preg_match('/^(https?:\/\/|\/)/', $stylePath))
                     {
                         echo "<link rel=\"stylesheet\" type=\"text/css\" media=\"$media\" href=\"{$stylePath}{$versionStr}\" />\n";
                     }
@@ -200,7 +200,7 @@ class Toby_ThemeManager
         {
             foreach($links['javascripts'] as $scriptPath)
             {
-                if(preg_match('/https?:\/\/.*/', $scriptPath))
+                if(preg_match('/^(https?:\/\/|\/)/', $scriptPath))
                 {
                     echo "<script type=\"text/javascript\" src=\"{$scriptPath}{$versionStr}\"></script>\n";
                 }
