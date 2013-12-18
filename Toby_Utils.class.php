@@ -237,7 +237,7 @@ class Toby_Utils
     
     public static function plain2html($text)
     {
-        $text = preg_replace('/>\s*\n/', '>', $text);
+        $text = preg_replace('/>[ \t]*(\n\r?|\r\n?)/', '>', $text);
         $text = nl2br($text);
         
         $text = str_replace("ä", '&auml;', $text);
