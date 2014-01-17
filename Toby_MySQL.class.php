@@ -269,12 +269,13 @@ class Toby_MySQL
 
     public function getNumRows()
     {
+        if($this->result === false) return 0;
         return mysql_num_rows($this->result);
     }
 
-    public function getAffectedRows()
+    public function getNumAffected()
     {
-        return mysql_affected_rows($this->result);
+        return mysql_affected_rows($this->link);
     }
     
     public function getInsertId()

@@ -2,7 +2,9 @@
 
 class Toby_Utils
 {
-    public static $mailDryRun = false;
+    public static $mailDryRun       = false;
+    
+    private static $stoppwatchData  = array();
     
     public static function printr()
     {
@@ -351,5 +353,39 @@ class Toby_Utils
         
         // return
         return $out;
+    }
+    
+    public static function stoppwatchStart()
+    {
+        // id
+        $id = uniqid(self::randomChars(4));
+        
+        // set startpoint
+        self::$stoppwatchData[] = array(
+            'id'    => $id,
+            'st'    => microtime(true)
+        );
+        
+        // return
+        return $id;
+    }
+    
+    public static function stoppwatchStop($id)
+    {
+        // find entry
+        $data = null;
+        foreach(self::$stoppwatchData as $swd)
+        {
+            if($swd['id'] === $id)
+            {
+                $data = &$swd;
+                break;
+            }
+        }
+        
+        if($data === null) return false;
+        
+        // return diff
+        return number_format((microtime(true) - $data['st']) * 1000, 3);
     }
 }
