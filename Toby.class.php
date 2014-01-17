@@ -76,6 +76,9 @@ class Toby
         // register autoloader
         spl_autoload_register(array($this, 'autoload'));
         
+        // sessions
+        if($scope === self::SCOPE_LOCAL) Toby_Session::$enabled = false;
+        
         // init config & hook
         Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
         $this->hook('configs_loaded');

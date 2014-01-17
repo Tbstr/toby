@@ -2,21 +2,23 @@
 
 class Toby_Session
 {
+    /* statics */
+    private static $instance    = null;
+    public  static $enabled     = true;
+    
     /* variables */
-    private static $instance = null;
+    private $id                 = -1;
     
-    private $id             = -1;
+    private $opened             = false;
+    private $resumed            = false;
     
-    private $opened         = false;
-    private $resumed        = false;
-    
-    private $mysqlMode      = false;
+    private $mysqlMode          = false;
     private $mysql;
 
-    private $SESSION        = null;
+    private $SESSION            = array();
     
     /* constants */
-    const KEY               = 'tobysess';
+    const KEY                   = 'tobysess';
     
     /* static getter */
     public static function getInstance($openOnInit = true)
@@ -63,7 +65,8 @@ class Toby_Session
     public function open()
     {
         // cancellation
-        if($this->opened === true) return true;
+        if(self::$enabled !== true) return false;
+        if($this->opened === true)  return true;
         
         // start
         if(session_start())
@@ -99,6 +102,7 @@ class Toby_Session
     public function close()
     {
         // cancellation
+        if(self::$enabled !== true) return false;
         if($this->opened === false) return true;
         
         // set last seen
@@ -125,13 +129,14 @@ class Toby_Session
     
     private function checkConnection($autoOpen = false)
     {
-        if($this->opened === false)
-        {
-            if($autoOpen === true) return $this->open();
-            return false;
-        }
+        // check var
+        if($this->opened === false) return true;
         
-        return true;
+        // auto open
+        if($autoOpen === true) return $this->open();
+        
+        // return fail
+        return false;
     }
     
     /* getter setter */
@@ -167,7 +172,12 @@ class Toby_Session
     
     public function delete($key)
     {
+        // check connection
+        if($this->checkConnection(true) === false) return false;
+        
+        // unset & return
         unset($this->SESSION[self::KEY][$key]);
+        return true;
     }
     
     public function printr()
