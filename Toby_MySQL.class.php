@@ -106,7 +106,7 @@ class Toby_MySQL
         $q = preg_replace_callback('/esc\[([^\[\]]*)\]/', array($this, 'autoEscapeCallback'), $q);
         
         // query
-        $result = @mysql_query($q, $this->link);
+        $result = mysql_query($q, $this->link);
         
         // handle error
         if($result === false)
@@ -125,7 +125,7 @@ class Toby_MySQL
     
     public function select($table, $fields = '*', $appendix = '')
     {
-        $query = 'SELECT '.(is_array($fields) ? implode(',', $fields) : (string)$fields).' FROM '.$table.' '.$appendix.';';
+        $query = 'SELECT '.(is_array($fields) ? implode(',', $fields) : (string)$fields).' FROM '.$table.' '.$appendix;
         return $this->query($query);
     }
 
@@ -149,7 +149,7 @@ class Toby_MySQL
 
     public function delete($table, $appendix = '')
     {
-        $query = 'DELETE FROM '.$table.' '.$appendix.';';
+        $query = 'DELETE FROM '.$table.' '.$appendix;
         return $this->query($query);
     }
     

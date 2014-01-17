@@ -200,23 +200,23 @@ class Toby_MySQLQuery
         switch($this->type)
         {
             case self::TYPE_SELECT:
-                $q = "SELECT {$this->buildFields()} FROM {$this->buildTables()} {$this->buildConditions()};";
+                $q = "SELECT {$this->buildFields()} FROM {$this->buildTables()} {$this->buildConditions()}";
                 break;
             
             case self::TYPE_INSERT:
-                $q = "INSERT INTO {$this->buildTables()} SET {$this->buildDataDefinition()};";
+                $q = "INSERT INTO {$this->buildTables()} SET {$this->buildDataDefinition()}";
                 break;
             
             case self::TYPE_UPDATE:
-               $q = "UPDATE {$this->buildTables()} SET {$this->buildDataDefinition()} {$this->buildConditions()};";
+               $q = "UPDATE {$this->buildTables()} SET {$this->buildDataDefinition()} {$this->buildConditions()}";
                 break;
             
             case self::TYPE_REPLACE:
-                $q = "REPLACE INTO {$this->buildTables()} SET {$this->buildDataDefinition()};";
+                $q = "REPLACE INTO {$this->buildTables()} SET {$this->buildDataDefinition()}";
                 break;
             
             case self::TYPE_DELETE:
-                $q = "DELETE FROM {$this->buildTables()} {$this->buildConditions()};";
+                $q = "DELETE FROM {$this->buildTables()} {$this->buildConditions()}";
                 break;
         }
         
