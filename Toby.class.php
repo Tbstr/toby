@@ -287,7 +287,7 @@ class Toby
         array_pop($elements);
         
         // resolve toby related
-        if(strtolower($elements[0]) == 'toby')
+        if(strtolower($elements[0]) === 'toby')
         {
             $elements[0]    = TOBY_ROOT;
             $path = strtolower(implode('/', $elements))."/$className.class.php";

@@ -174,6 +174,20 @@ class Toby_Utils
         return $lines;
     }
     
+    public static function mkdir($path, $mode = 0777, $recursive = false)
+    {
+        // check for existance
+        if(is_dir($path)) return true;
+        
+        // change umask & create dir
+        $umask = umask(0);
+        $result = mkdir($path, $mode, $recursive);
+        umask($umask);
+
+        // return result
+        return $result;
+    }
+    
     public static function rrmdir($path, $basePath = '', $allowBacklinks = false)
     {
         // cancellation
