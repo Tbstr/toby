@@ -172,6 +172,22 @@ class Toby_MySQL
         return $this->getNumRows() > 0;
     }
     
+    public function hasRow($tableName, $appendix = '')
+    {
+        $this->query("SELECT EXISTS (SELECT 1 FROM $tableName $appendix)");
+        if($this->result === false) return false;
+        
+        return (boolean)$this->fetchFirstElement();
+    }
+    
+    public function countRows($tableName, $appendix = '')
+    {
+        $this->query("SELECT COUNT(*) FROM $tableName $appendix");
+        if($this->result === false) return false;
+        
+        return (int)$this->fetchFirstElement();
+    }
+    
     public function executeQuery(Toby_MySQLQuery $query)
     {
         return $this->query($query->build());
