@@ -183,7 +183,7 @@ class Toby_MySQL
     public function countRows($tableName, $appendix = '')
     {
         $this->query("SELECT COUNT(*) FROM $tableName $appendix");
-        if($this->result === false) return false;
+        if($this->result === false) return -1;
         
         return (int)$this->fetchFirstElement();
     }
