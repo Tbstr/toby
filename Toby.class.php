@@ -137,6 +137,9 @@ class Toby
     
     public function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
     {
+        // set resolve
+        $this->resolve = "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars));
+
         // run action
         $controller = $this->runAction($controllerName, $actionName, $vars);
         
@@ -155,9 +158,6 @@ class Toby
         }
         else
         {
-            // set resolve
-            $this->resolve = "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars));
-            
             // include resolved hook
             $this->hook('resolved');
             
@@ -187,7 +187,7 @@ class Toby
                 if(method_exists($controllerInstance, $actionFullName))
                 {
                     // call
-                    if($vars == null) call_user_func(array($controllerInstance, $actionFullName));
+                    if($vars === null) call_user_func(array($controllerInstance, $actionFullName));
                     else call_user_func_array (array($controllerInstance, $actionFullName), $vars);
                     
                     // stop timing
