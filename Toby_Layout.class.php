@@ -27,29 +27,8 @@ class Toby_Layout extends Toby_View
     
     private function placeJSVars()
     {
-        // cancellation
         if(empty($this->jsVars)) return;
-        
-        echo "<script type=\"text/javascript\">window.TobyVars = {";
-        
-        $varLength = count($this->jsVars);
-        $counter = 0;
-        foreach($this->jsVars as $key => $var)
-        {
-            if(is_string($var))
-            {
-                if(preg_match('/(^\[.*\]$)|(^{.*}$)|(^\(.*\)$)/', $var))    echo "$key:$var";
-                else                                                        echo "$key:\"$var\"";
-            }
-            elseif(is_numeric($var))                                        echo "$key:$var";
-            elseif(is_bool($var))                                           echo "$key:".($var ? 'true' : 'false');
-            elseif($var == null)                                            echo "$key:null";
-            
-            $counter++;
-            if($counter != $varLength)                                      echo ',';
-        }
-
-        echo'};</script>';
+        echo '<script type="text/javascript">window.TobyVars = '.json_encode($this->jsVars).';</script>';
     }
     
     protected function placeBodyAttributes()
