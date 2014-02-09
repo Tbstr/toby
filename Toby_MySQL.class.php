@@ -25,12 +25,12 @@ class Toby_MySQL
 
     public static function getInstance($id = null)
     {
-        if($id == null) $id = 'default';
+        if($id === null) $id = 'default';
 
         if(!isset(self::$instances[$id]))
         {
             self::$instances[$id] = new self();
-            if($id == 'default') self::$instances[$id]->autoInit();
+            if($id === 'default') self::$instances[$id]->autoInit();
         }
 
         return self::$instances[$id];
@@ -66,13 +66,24 @@ class Toby_MySQL
 
     public function connect()
     {
+        // reset connected state
+        $this->connected = false;
+        
+        // connect
         $this->link = mysql_connect($this->host, $this->user, $this->pass);
         if($this->link === false) return false;
 
-        if(isset($this->db)) if(!mysql_select_db($this->db, $this->link)) return false;
+        // select db
+        if(isset($this->db)) if(!mysql_select_db($this->db, $this->link))
+        {
+            mysql_close($this->link);
+            return false;
+        }
 
+        // set charset
         mysql_set_charset($this->mysqlCharset, $this->link);
 
+        // set & return
         $this->connected = true;
         return true;
     }
@@ -87,9 +98,9 @@ class Toby_MySQL
     public function query($q)
     {
         // reset
-        $this->result = false;
-        if($this->errorMessage != '')   $this->errorMessage = '';
-        if($this->errorCode != 0)       $this->errorCode = 0;
+        $this->result       = false;
+        $this->errorMessage = '';
+        $this->errorCode    = 0;
 
         // log & rec
         if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
@@ -111,9 +122,38 @@ class Toby_MySQL
         // handle error
         if($result === false)
         {
-            $this->errorMessage = mysql_error($this->link);
-            $this->errorCode = mysql_errno($this->link);
+            // set error vars
+            $this->errorMessage     = mysql_error($this->link);
+            $this->errorCode        = mysql_errno($this->link);
             
+            // fetch errors
+            switch($this->errorCode)
+            {
+                // gone away
+                case 2006:
+                    
+                    // reconnect 5 times
+                    $tries = 1;
+                    while(true)
+                    {
+                        // log
+                        Toby_Logger::log('MySQL reconnect, attempt '.$tries, 'mysql-queries');
+                        
+                        // connect
+                        if($this->connect() === true) break;
+                        if($tries++ >= 5) break;
+                        
+                        // delay
+                        sleep(1);
+                    }
+                    
+                    // repeat query if connected
+                    if($this->connected) return $this->query($q);
+                    
+                    break;
+            }
+            
+            // log & return
             Toby_Logger::log("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
             return false;
         }
