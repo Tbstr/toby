@@ -47,19 +47,15 @@ class Toby_Security
             }
         }
         
-        // validate
-        if($key !== self::XSRFGetKey())
-        {
-            // log
-            unset($_GET['r']);
-            Toby_Logger::error('XSRF violation. REQUEST: '.Toby::getInstance()->request.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
-            
-            // hang up or return
-            if($finalizeOnFail) Toby::finalize();
-            else return false;
-        }
+        // validate & return on success
+        if($key === self::XSRFGetKey()) return true;
         
-        // return success
-        return true;
+        // log fail
+        unset($_GET['r']);
+        Toby_Logger::error('XSRF violation. REQUEST: '.Toby::getInstance()->request.(empty($_GET) ? '' : ' GET:'.http_build_query($_GET).(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))).' IP:'.$_SERVER['REMOTE_ADDR']);
+
+        // hang up or return
+        if($finalizeOnFail) Toby::finalize();
+        return false;
     }
 }
