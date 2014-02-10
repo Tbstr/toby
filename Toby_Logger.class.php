@@ -12,6 +12,7 @@ class Toby_Logger
     private static $listeners               = array();
     
     const TYPE_ERROR                        = 'type_error';
+    const TYPE_EXCEPTION                    = 'type_exception';
     const TYPE_WARNING                      = 'type_warning';
     const TYPE_NOTICE                       = 'type_notice';
     const TYPE_DEFAULT                      = 'type_default';
@@ -30,13 +31,13 @@ class Toby_Logger
         if(!self::$enabled) return;
         
         $fileHandle = @fopen(self::$logsDirPath."/$log.log", 'a');
-        if($fileHandle == false) return;
+        if($fileHandle === false) return;
         
         fwrite($fileHandle, '- ['.date('d.m.Y H:i:s').']   '.$content."\n");
         fclose($fileHandle);
         
         // main log
-        if($log != 'sys' && !$omitSys) self::log($content, 'sys');
+        if($log !== 'sys' && !$omitSys) self::_log($content, 'sys');
     }
     
     public static function error($content)
@@ -85,7 +86,7 @@ class Toby_Logger
     
     public static function rotate()
     {
-        Toby_Logger::log('log rotate');
+        Toby_Logger::_log('log rotate');
     }
     
     /* listeners */
@@ -105,53 +106,68 @@ class Toby_Logger
     /* event handler */
     public static function handleError($errno, $errstr, $errfile = '', $errline = 0, $errcontex = array())
     {
-        $errCode = '';
+        // vars
+        $errLogMsg = "$errstr > $errfile:$errline";
+        
+        // typize & log
         switch ($errno)
         {
             case E_RECOVERABLE_ERROR:
-                $errCode = 'FATAL ERROR';
+                $errLogMsg = '[FATAL_ERROR] '.$errLogMsg;
+                self::callLogListener(self::TYPE_ERROR, $errLogMsg);
                 break;
             
             case E_USER_ERROR:
             case E_ERROR:
-                $errCode = 'ERROR';
+                $errLogMsg = '[ERROR] '.$errLogMsg;
+                self::callLogListener(self::TYPE_ERROR, $errLogMsg);
                 break;
             
             case E_USER_WARNING:
             case E_WARNING:
-                $errCode = 'WARNING';
+                $errLogMsg = '[WARNING] '.$errLogMsg;
+                self::callLogListener(self::TYPE_WARNING, $errLogMsg);
                 break;
             
             case E_USER_NOTICE:
             case E_NOTICE:
-                $errCode = 'NOTICE';
+                $errLogMsg = '[NOTICE] '.$errLogMsg;
+                self::callLogListener(self::TYPE_NOTICE, $errLogMsg);
                 break;
             
             default:
-                $errCode = 'UNKNOWN';
+                $errLogMsg = '[UNKNOWN] '.$errLogMsg;                
                 break;
         }
         
-        self::log("[$errCode] $errstr > $errfile:$errline", 'error');
+        // log
+        self::_log($errLogMsg, 'error');
         
+        // return
         return false;
     }
 
     public static function handleException($exception)
     {
-        self::log("[EXCEPTION] $exception", 'error');
+        self::_log("[EXCEPTION] $exception", 'error');
     }
     
     public static function handleShutdown()
     {
+        // check for fatal error before shutdown
         $error = error_get_last();
-        
         if($error !== null)
         {
             if($error['type'] === 1)
             {
+                // msg
+                $logMsg = "[FATAL ERROR] $error[message] > $error[file]:$error[line]";
+                
                 // log
-                self::log("[FATAL ERROR] $error[message] > $error[file]:$error[line]", 'error');
+                self::_log($logMsg, 'error');
+                
+                // call callback
+                self::callLogListener(self::TYPE_ERROR, $logMsg);
                 
                 // send mail
                 if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
