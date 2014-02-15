@@ -347,7 +347,7 @@ class Toby_Utils
         if(empty($mail)) return false;
         
         // check
-        return (boolean)preg_match('/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i', $mail);
+        return (boolean)preg_match('/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,32}$/i', $mail);
     }
     
     public static function vaidateURL($url)
@@ -356,7 +356,7 @@ class Toby_Utils
         if(empty($url)) return false;
         
         // check
-        return (boolean)preg_match('/^(https?:\/\/)?([0-9a-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i', $url);
+        return (boolean)preg_match('/^(https?:\/\/)?([0-9a-z\.-]+)\.([a-z\.]{2,32})([\/\w \.-]*)*\/?$/i', $url);
     }
     
     public static function randomChars($numChars, $charSet = null)
