@@ -159,6 +159,46 @@ class Toby_Session
         $this->SESSION[self::KEY][$key] = $value;
         return true;
     }
+    
+    public function arrAppend($key, $value)
+    {
+        // vars
+        $arr = $this->has($key) ? $this->get($key) : array();
+        if(!is_array($arr)) return false;
+        
+        // append
+        $arr[] = $value;
+        
+        // set & return
+        $this->set($key, $arr);
+        return true;
+    }
+    
+    public function arrRemove($key, $value)
+    {
+        // cancellation
+        if(!$this->has($key)) return false;
+        
+        // get
+        $arr = $this->get($key);
+        if(!is_array($arr)) return false;
+        
+        // append
+        foreach($arr as $arrKey => $arrVal)
+        {
+            if($arrVal === $value)
+            {
+                array_splice($arr, $arrKey, 1);
+                return true;
+            }
+        }
+        
+        // set
+        $this->set($key, $arr);
+        
+        // return fail
+        return false;
+    }
 
     public function get($key)
     {
