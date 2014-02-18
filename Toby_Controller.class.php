@@ -2,25 +2,33 @@
 
 abstract class Toby_Controller
 {
+    /* controller vars */
     public $name;
     public $action;
+    
     public $toby;
     
+     /* theme vars */
+    public $themeOverride;
+    public $themeConfigOverride;
+    
+    /* layout vars */
     public $layoutName              = 'default';
     
     public $layoutTitle             = '';
     public $layoutHeadContent       = '';
     
+    public $layoutScripts           = array();
+    public $layoutStyles            = array();
+    
     public $layoutBodyId            = '';
     public $layoutBodyClasses       = array();
     
+    /* view vars */
     public $renderView              = true;
-    
     private $viewScriptOverride;
     
-    public $themeOverride;
-    public $themeConfigOverride;
-    
+    /* data vars */
     public $layout;
     public $view;
     public $javascript;
@@ -101,7 +109,6 @@ abstract class Toby_Controller
         $this->layoutName = $layoutName;
     }
     
-    /* set title */
     protected function setTitle($value)
     {
         $this->layoutTitle = $value;
@@ -124,7 +131,6 @@ abstract class Toby_Controller
         else $this->layoutHeadContent = $content;
     }
     
-    /* set body attributes */
     protected function setBodyId($id)
     {
         $this->layoutBodyId = $id;
@@ -148,6 +154,21 @@ abstract class Toby_Controller
             $key = array_search(func_get_arg($i), $this->layoutBodyClasses);
             if($key !== false) array_splice($this->layoutBodyClasses, $key, 1);
         }
+    }
+    
+    protected function addScript($scriptPath)
+    {
+        // add
+        $this->layoutScripts[] = $scriptPath;
+    }
+    
+    protected function addStyle($stylePath, $media = 'all')
+    {
+        // init media entry
+        if(!isset($this->layoutStyles[$media])) $this->layoutStyles[$media] = array();
+        
+        // add
+        $this->layoutStyles[$media][] = $stylePath;
     }
     
     /* get set view script */

@@ -64,13 +64,13 @@ class Toby_ThemeManager
         // grab from controller
         if(isset($controller->themeOverride))
         {
-            $theme = $controller->themeOverride;
-            $themeConfig = $controller->themeConfigOverride;
+            $theme          = $controller->themeOverride;
+            $themeConfig    = $controller->themeConfigOverride;
         }
         
         // set
         if(!self::init($theme, $themeConfig)) return false;
-        self::$controller = $controller;
+        self::$controller   = $controller;
         
         // return
         return true;
@@ -147,12 +147,16 @@ class Toby_ThemeManager
         // cancellation
         if(empty(self::$themeConfig))   Toby::finalize('No theme set.');
         
+        // vars
+        $controllerAvailable = !empty(self::$controller);
+        
         // set groups
         $groups = array();
-        if(!empty(self::$controller))
+        if($controllerAvailable)
         {
-            array_push($groups, self::$controller->name);
-            if(!empty(self::$controller->action)) array_push($groups, self::$controller->name.'/'.self::$controller->action);
+            // groups
+            $groups[] = self::$controller->name;
+            if(!empty(self::$controller->action)) $groups[] = self::$controller->name.'/'.self::$controller->action;
         }
         
         // gather links
@@ -171,6 +175,16 @@ class Toby_ThemeManager
         if(!$groupSet)
         {
             if(isset(self::$themeConfig['default'])) $links = array_merge_recursive($links, self::$themeConfig['default']);
+        }
+        
+        if($controllerAvailable)
+        {
+            $controllerLinks = array();
+            
+            if(!empty(self::$controller->layoutStyles))     $controllerLinks['stylesheets'] = self::$controller->layoutStyles;
+            if(!empty(self::$controller->layoutScripts))    $controllerLinks['javascripts'] = self::$controller->layoutScripts;
+            
+            if(!empty($controllerLinks)) $links = array_merge_recursive($links, $controllerLinks);
         }
         
         // set version
