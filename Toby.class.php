@@ -172,8 +172,8 @@ class Toby
         $this->requestTimeLogStart("$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars)));
         
         // vars
-        $controllerFullName = 'Controller_'.strtoupper(substr($controllerName, 0, 1)).substr($controllerName, 1);
-        $actionFullName = $actionName . 'Action';
+        $controllerFullName = 'Controller_'.strtoupper($controllerName[0]).substr($controllerName, 1);
+        $actionFullName     = $actionName . 'Action';
         
         // exec
         if(file_exists(APP_ROOT."/controller/$controllerFullName.class.php"))

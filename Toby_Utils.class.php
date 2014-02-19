@@ -378,10 +378,10 @@ class Toby_Utils
         return $out;
     }
     
-    public static function stoppwatchStart()
+    public static function stoppwatchStart($id = false)
     {
         // id
-        $id = uniqid(self::randomChars(4));
+        if($id === false) $id = uniqid(self::randomChars(4));
         
         // set startpoint
         self::$stoppwatchData[] = array(

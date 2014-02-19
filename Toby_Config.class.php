@@ -18,7 +18,7 @@ class Toby_Config
         return self::$instance;
     }
     
-    /* ststic shortcuts */
+    /* static shortcuts */
     public static function _hasKey($config, $key)
     {
         return self::getInstance()->hasKey($config, $key);
