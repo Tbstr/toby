@@ -169,9 +169,11 @@ class Toby_MySQL
         return $this->query($query);
     }
 
-    public function insert($table, $data)
+    public function insert($table, $data, $onUpdate = false)
     {
         $query = "INSERT INTO $table SET {$this->buildDataDefinition($data)}";
+        if($onUpdate !== false) $query .= ' ON DUPLICATE KEY UPDATE '.$this->buildDataDefinition($onUpdate);
+        
         return $this->query($query);
     }
 
