@@ -248,15 +248,26 @@ class Toby_Session
     
     public function handleMySQLSessionWrite($id, $data)
     {
-        $this->mysql->insert('pd_sessions', array(
-            'id' => $id,
-            'access_time' => time(),
-            'data' => $data
-        ), array(
-            'access_time' => time(),
-            'data' => $data
-        ));
+        // update
+        if($this->mysql->hasRow('pd_sessions', "WHERE `id`='$id'"))
+        {
+            $this->mysql->update('pd_sessions', array(
+                'access_time' => time(),
+                'data' => $data
+            ), "WHERE `id`='$id'");
+        }
         
+        // insert
+        else
+        {
+            $this->mysql->insert('pd_sessions', array(
+                'id' => $id,
+                'access_time' => time(),
+                'data' => $data
+            ));
+        }
+        
+        // return result
         return $this->mysql->result;
     }
     
