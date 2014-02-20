@@ -12,6 +12,7 @@ class Toby_MySQLQuery
     private $conds          = array();
     
     private $orderBy        = null;
+    private $groupBy        = null;
     private $limit          = null;
     
     /* constants */
@@ -166,6 +167,18 @@ class Toby_MySQLQuery
         return $this;
     }
     
+    public function groupBy($fieldName)
+    {
+        // cancellate
+        if(empty($fieldName)) return $this;
+        
+        // set
+        $this->groupBy = $fieldName;
+        
+        // return
+        return $this;
+    }
+    
     public function limit($amount, $startIndex = 0)
     {
         // cancellate
@@ -267,6 +280,9 @@ class Toby_MySQLQuery
         
         // order
         if($this->orderBy !== null) $cond .= " ORDER BY $this->orderBy";
+        
+        // group
+        if($this->groupBy !== null) $cond .= " GROUP BY $this->groupBy";
         
         // limit
         if($this->limit !== null) $cond .= " LIMIT $this->limit";

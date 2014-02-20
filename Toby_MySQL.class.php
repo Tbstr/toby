@@ -104,7 +104,24 @@ class Toby_MySQL
 
         // log & rec
         if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
-        if($this->queryRec === true) $this->queryRecBuffer[] = str_replace(array("\n", "\r"), '', $q);
+        
+        if($this->queryRec === true)
+        {
+            $dbt = debug_backtrace();
+            $dbtEntry = false;
+            
+            for($i = 0, $c = count($dbt); $i < $c; $i++)
+            {
+                if($dbt[$i]['class'] !== 'Toby_MySQL')
+                {
+                    $dbtEntry = $dbt[$i];
+                    break;
+                }
+            }
+            
+            if($dbtEntry !== false) $this->queryRecBuffer[] = "{$dbtEntry['file']}:{$dbtEntry['line']}";
+            $this->queryRecBuffer[] = str_replace(array("\n", "\r"), '', $q)."\n";
+        }
 
         // dry run
         if($this->dryRun)

@@ -12,6 +12,7 @@ class Toby_Utils
         foreach($args as $arg) echo '<pre>'.print_r($arg, true).'</pre>';
     }
     
+    /* debug */
     public static function debugBacktrace($return = false)
     {
         $backtraceInfo = debug_backtrace();
@@ -35,6 +36,20 @@ class Toby_Utils
         // print or return
         if($return) return implode("\n", $backtrace);
         self::printr(implode("\n", $backtrace));
+    }
+    
+    public static function mySQLRecStart()
+    {
+        return Toby_MySQL::getInstance()->startQueryRecording();
+    }
+    
+    public static function mySQLRecStop($print = true, $finalize = true)
+    {
+        $recLog = Toby_MySQL::getInstance()->stopQueryRecording();
+        
+        if($print) Toby_Utils::printr($recLog);
+        if($finalize) Toby::finalize(0);
+        return $recLog;
     }
     
     public static function clearPath($path)
