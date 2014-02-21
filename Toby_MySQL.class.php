@@ -188,7 +188,55 @@ class Toby_MySQL
 
     public function insert($table, $data)
     {
-        $query = "INSERT INTO $table SET {$this->buildDataDefinition($data)}";
+        // cancellation
+        if(empty($table)) return false;
+        if(empty($data)) return false;
+        
+        // detect query type
+        $single = false;
+        foreach($data as $value)
+        {
+            if(!is_array($value))
+            {
+                $single = true;
+                break;
+            }
+        }
+        
+        // single insert
+        if($single)
+        {
+            $query = "INSERT INTO $table SET {$this->buildDataDefinition($data)}";
+        }
+        
+        // multi insert
+        else
+        {
+            // vars
+            $keys       = array_keys($data);
+            
+            $keyCount   = count($keys);
+            if($keyCount === 0) return false;
+            
+            $dataCount  = count($data[$keys[0]]);
+            if($dataCount === 0) return false;
+            
+            $values = array();
+            $valueElements = null;
+            
+            for($i = 0; $i < $dataCount; $i++)
+            {
+                $valueElements = array();
+                for($j = 0; $j < $keyCount; $j++) $valueElements[] = $data[$keys[$j]][$i];
+                
+                $values[] = $this->buildValueSet($valueElements);
+            }
+            
+            foreach($keys as $key => $value) $keys[$key] = '`'.$value.'`';
+            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES '.implode(',',$values);
+        }
+        
+        // query & return;
         return $this->query($query);
     }
 
@@ -280,6 +328,16 @@ class Toby_MySQL
         
         // return
         return $dataDef;
+    }
+    
+    private function buildValueSet($values)
+    {
+        // build
+        $valueEnries = array();
+        foreach($values as $value) $valueEnries[] = $this->verifyValue($value);
+        
+        // return
+        return '('.implode(',', $valueEnries).')';
     }
     
     /* result management */
