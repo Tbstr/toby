@@ -356,7 +356,7 @@ class Toby_Utils
         Toby_Utils::printr("$methodName with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
     }
     
-    public static function vaidateMail($mail)
+    public static function validateMail($mail)
     {
         // cancellation
         if(empty($mail)) return false;
@@ -365,7 +365,7 @@ class Toby_Utils
         return (boolean)preg_match('/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,32}$/i', $mail);
     }
     
-    public static function vaidateURL($url)
+    public static function validateURL($url)
     {
         // cancellation
         if(empty($url)) return false;
