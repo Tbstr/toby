@@ -279,12 +279,21 @@ class Toby_Session
         return $this->mysql->result;
     }
     
-    public function handleMySQLSessionClean($max)
+    public function handleMySQLSessionClean($maxLifeTime)
     {
-        $old = mysql_real_escape_string(time() - $max);
+        // clean db
+        $this->mysql->delete('pd_sessions', 'WHERE access_time < '.(time() - (int)$maxLifeTime));
         
-        $this->mysql->delete('pd_sessions', "WHERE access_time < $old");
-        return $this->mysql->result;
+        // log & return fail
+        if($this->mysql->result === false)
+        {
+            Toby_Logger::error('session garbage collection failed');
+            return false;
+        }
+        
+        // log & return success
+        Toby_Logger::log('session garbage collection: '.$this->mysql->getNumAffected().' entries removed');
+        return true;
     }
     
     public function __destruct()
