@@ -1,19 +1,20 @@
 <?php
 
-class Toby_MySQL
+class Toby_MySQLi
 {
     private static $instances   = array();
 
-    private $link;
+    private $mysqli             = null;
+    
     private $host;
     private $user;
     private $pass;
     private $db;
-
+    
     public $result              = false;
     
-    public $errorMessage;
-    public $errorCode;
+    public $errorMessage        = '';
+    public $errorCode           = '';
 
     public $mysqlCharset        = 'utf8';
     public $dryRun              = false;
@@ -36,7 +37,7 @@ class Toby_MySQL
         return self::$instances[$id];
     }
     
-    /* init */
+    /* init & connect */
     private function autoInit()
     {
         // cancellation
@@ -53,12 +54,12 @@ class Toby_MySQL
             );
     }
 
-    public function init($host, $user, $pass, $db = null)
+    public function init($host, $user, $pass, $db = false)
     {
         $this->host = $host;
         $this->user = $user;
         $this->pass = $pass;
-        if($db != null) $this->db   = $db;
+        if($db !== false) $this->db = $db;
 
         if($this->connected) $this->disconnect();
         return $this->connect();
@@ -70,18 +71,17 @@ class Toby_MySQL
         $this->connected = false;
         
         // connect
-        $this->link = mysql_connect($this->host, $this->user, $this->pass);
-        if($this->link === false) return false;
-
-        // select db
-        if(isset($this->db)) if(!mysql_select_db($this->db, $this->link))
+        if($this->db === false) $this->mysqli = new mysqli($this->host, $this->user, $this->pass);
+        else                    $this->mysqli = new mysqli($this->host, $this->user, $this->pass, $this->db);
+        
+        if($this->mysqli->connect_errno !== 0)
         {
-            mysql_close($this->link);
+            Toby_Logger::error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
         }
 
         // set charset
-        mysql_set_charset($this->mysqlCharset, $this->link);
+        $this->mysqli->set_charset($this->mysqlCharset);
 
         // set & return
         $this->connected = true;
@@ -90,20 +90,45 @@ class Toby_MySQL
 
     public function disconnect()
     {
-        mysql_close($this->link);
+        if($this->mysqli !== null) $this->mysqli->close();
+        $this->mysqli = null;
+        
         $this->connected = false;
     }
     
-    /* query methods */
-    public function query($q)
+    public function ping()
+    {
+        if(!$this->connected) return false;
+        return $this->mysqli->ping;
+    }
+    
+    public function stat()
+    {
+        return $this->mysqli->stat();
+    }
+    
+    public function selectDatabase($dbName)
+    {
+        return $this->mysqli->select_db($dbName);
+    }
+    
+    /* low level query methods */
+    private function initQuery()
     {
         // free recent result
-        if($this->result !== false) mysql_free_result($this->result);
+        //if($this->result !== false) $this->result->free();
         
         // reset
         $this->result       = false;
-        $this->errorMessage = '';
+        
         $this->errorCode    = 0;
+        $this->errorMessage = '';
+    }
+    
+    public function query($q)
+    {
+        // init
+        $this->initQuery();
 
         // log & rec
         if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
@@ -133,18 +158,15 @@ class Toby_MySQL
             return true;
         }
         
-        // auto escape
-        $q = preg_replace_callback('/esc\[([^\[\]]*)\]/', array($this, 'autoEscapeCallback'), $q);
-        
         // query
-        $result = mysql_query($q, $this->link);
+        $result = $this->mysqli->query($q);
         
         // handle error
         if($result === false)
         {
             // set error vars
-            $this->errorMessage     = mysql_error($this->link);
-            $this->errorCode        = mysql_errno($this->link);
+            $this->errorMessage     = $this->mysqli->error;
+            $this->errorCode        = $this->mysqli->errno;
             
             // fetch errors
             switch($this->errorCode)
@@ -183,6 +205,90 @@ class Toby_MySQL
         return true;
     }
     
+    public function queryPrepared($q, $paramTypes, $paramSet)
+    {
+        // init
+        $this->initQuery();
+        
+        // prepare statement
+        $stmt = $this->mysqli->prepare($q);
+        if($stmt === false)
+        {
+            $this->errorMessage     = $this->mysqli->error;
+            $this->errorCode        = $this->mysqli->errno;
+            
+            Toby_Logger::error('statement preparation failed');
+            return false;
+        }
+        
+        // bind param sets & execute
+        $bind_arr = null;
+        foreach($paramSet as $params)
+        {
+            // prepare params
+            $bind_arr = array($paramTypes);
+            foreach($params as $param) $bind_arr[] = $param;
+            
+            // bind
+            if(!call_user_func_array(array($stmt, 'bind_param'), $bind_arr))
+            {
+                $this->errorMessage     = $this->mysqli->error;
+                $this->errorCode        = $this->mysqli->errno;
+                
+                Toby_Logger::error('param bind failed');
+                return false;
+            }
+            
+            // execute
+            if(!$stmt->execute())
+            {
+                $this->errorMessage     = $this->mysqli->error;
+                $this->errorCode        = $this->mysqli->errno;
+                
+                Toby_Logger::error('statement execution failed');
+                return false;
+            }
+        }
+        
+        // close statement
+        $stmt->close();
+        
+        // return success
+        return true;
+    }
+    
+    /* transactions */
+    public function beginTransaction()
+    {
+        // disable auto commit
+        $this->mysqli->autocommit(false);
+        
+        // begin
+        if(!$this->mysqli->begin_transaction())
+        {
+            Toby_Logger::error('beginning transaction failed');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public function endTransaction($rollback = false)
+    {
+        // rollback or commit
+        $success = false;
+        
+        if($rollback === true)  $success = $this->mysqli->rollback();
+        else                    $success = $this->mysqli->commit();
+        
+        // reenable auto commit
+        $this->mysqli->autocommit(true);
+        
+        // return
+        return $success;
+    }
+    
+    /* high level query methods */
     public function select($table, $fields = '*', $appendix = '')
     {
         $query = 'SELECT '.(is_array($fields) ? implode(',', $fields) : (string)$fields).' FROM '.$table.' '.$appendix;
@@ -261,11 +367,6 @@ class Toby_MySQL
         return $this->query($query);
     }
     
-    public function remove($table, $appendix = '')
-    {
-        return $this->delete($table, $appendix);
-    }
-    
     public function hasTable($tableName)
     {
         $this->query("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
@@ -296,22 +397,17 @@ class Toby_MySQL
         return (int)$this->fetchFirstElement();
     }
     
-    /* supporting methods */
+    /* query supporting methods */
     public function esc($string)
     {
-        return mysql_real_escape_string($string, $this->link);
+        return $this->mysqli->real_escape_string($string);
     }
     
     private function verifyValue($value)
     {
-        if($value === null) return 'NULL';
-        elseif(is_string($value)) return "'".mysql_real_escape_string($value)."'";
-        else return $value;
-    }
-    
-    private function autoEscapeCallback($arr)
-    {
-        return mysql_real_escape_string($arr[1]);
+        if($value === null)         return 'NULL';
+        elseif(is_string($value))   return "'".$this->mysqli->real_escape_string($value)."'";
+        else                        return $value;
     }
     
     private function buildDataDefinition($data)
@@ -346,75 +442,98 @@ class Toby_MySQL
     /* result management */
     public function fetchElementByIndex($index)
     {
-        $row = mysql_fetch_row($this->result);
+        $row = $this->result->fetch_row();
         return $row[$index];
     }
     
     public function fetchFirstElement()
     {
-        $row = mysql_fetch_row($this->result);
+        $row = $this->result->fetch_row();
         return $row[0];
     }
 
     public function fetchElementByName($name)
     {
-        $assoc = mysql_fetch_assoc($this->result);
+        $assoc = $this->result->fetch_assoc();
         return $assoc[$name];
     }
 
     public function fetchRow()
     {
-        return mysql_fetch_row($this->result);
+        if($this->result === false) return null;
+        return $this->result->fetch_row();
     }
 
     public function fetchRowSet()
     {
+        if($this->result === false) return array();
+        
         $entries = array();
-        while($row = mysql_fetch_row($this->result)) $entries[] = $row;
+        while(($row = $this->result->fetch_row()) !== null) $entries[] = $row;
 
         return $entries;
     }
 
     public function fetchAssoc()
     {
-        return mysql_fetch_assoc($this->result);
+        if($this->result === false) return null;
+        return $this->result->fetch_assoc();
     }
 
     public function fetchAssocSet()
     {
+        if($this->result === false) return array();
+        
         $entries = array();
-        while($row = mysql_fetch_assoc($this->result)) $entries[] = $row;
+        while(($row = $this->result->fetch_assoc()) !== null) $entries[] = $row;
 
         return $entries;
     }
 
     public function fetchObject()
     {
-        return mysql_fetch_object($this->result);
+        if($this->result === false) return null;
+        return $this->mysqli->fetch_object();
     }
 
     public function fetchObjectSet()
     {
+        if($this->result === false) return array();
+        
         $entries = array();
-        while($row = mysql_fetch_object($this->result)) $entries[] = $row;
+        while(($row = $this->result->fetch_object()) !== null) $entries[] = $row;
 
         return $entries;
     }
-
+    
+    public function getNumFields()
+    {
+        return $this->mysqli->field_count;
+    }
+    
     public function getNumRows()
     {
         if($this->result === false) return 0;
-        return mysql_num_rows($this->result);
+        return $this->result->num_rows;
     }
 
     public function getNumAffected()
     {
-        return mysql_affected_rows($this->link);
+        return $this->mysqli->affected_rows;
     }
     
     public function getInsertId()
     {
-        return mysql_insert_id($this->link);
+        return $this->mysqli->insert_id;
+    }
+    
+    public function freeResult()
+    {
+        if($this->result !== false)
+        {
+            $this->result->free();
+            $this->result = false;
+        }
     }
     
     /* settings */
@@ -454,6 +573,6 @@ class Toby_MySQL
     /* to string */
     public function __toString()
     {
-        return "Toby_MySQL[$this->user@$this->host]";
+        return "Toby_MySQLi[$this->user@$this->host]";
     }
 }

@@ -49,7 +49,7 @@ class Toby_Session
         if(Toby_Config::_getValue('toby', 'sessionUseMySQL', 'bool'))
         {
             $this->mysqlMode = true;
-            $this->mysql = Toby_MySQL::getInstance();
+            $this->mysql = Toby_MySQLi::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),
@@ -238,7 +238,7 @@ class Toby_Session
     
     public function handleMySQLSessionRead($id)
     {
-        $id = mysql_real_escape_string($id);
+        $id = $this->mysql->esc($id);
         
         $this->mysql->select('pd_sessions', '*', "WHERE id='$id' FOR UPDATE");
         if($this->mysql->getNumRows() != 0) return $this->mysql->fetchElementByName('data');
@@ -273,7 +273,7 @@ class Toby_Session
     
     public function handleMySQLSessionDestroy($id)
     {
-        $id = mysql_real_escape_string($id);
+        $id = $this->mysql->esc($id);
         
         $this->mysql->delete('pd_sessions', "WHERE id='$id'");
         return $this->mysql->result;

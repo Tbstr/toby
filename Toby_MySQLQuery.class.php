@@ -4,6 +4,8 @@
 class Toby_MySQLQuery
 {
     /* variables */
+    public $mysql;
+    
     private $type;
     
     private $tables         = array();
@@ -23,8 +25,11 @@ class Toby_MySQLQuery
     const TYPE_DELETE       = 'delete';
     
     /* construct */
-    function __construct($type, $tables = null, $fields = null)
+    function __construct($mysql, $type, $tables = null, $fields = null)
     {
+        // mysql
+        $this->mysql = $mysql;
+        
         // type
         $this->type = $type;
         
@@ -199,7 +204,7 @@ class Toby_MySQLQuery
     private function verifyValue($value)
     {
         if($value === null) return 'NULL';
-        elseif(is_string($value)) return "'".mysql_real_escape_string($value)."'";
+        elseif(is_string($value)) return "'".$this->mysql->esc($value)."'";
         else return $value;
     }
     
@@ -289,6 +294,12 @@ class Toby_MySQLQuery
         
         // return
         return $cond;
+    }
+    
+    /* execute */
+    public function execute()
+    {
+        return $this->mysql->query($this->build());
     }
     
     /* to string */
