@@ -207,6 +207,9 @@ class Toby_MySQLi
     
     public function queryPrepared($q, $paramTypes, $paramSet)
     {
+        // cancellation
+        if(empty($paramSet)) return false;
+        
         // init
         $this->initQuery();
         
@@ -217,35 +220,36 @@ class Toby_MySQLi
             $this->errorMessage     = $this->mysqli->error;
             $this->errorCode        = $this->mysqli->errno;
             
-            Toby_Logger::error('statement preparation failed');
+            Toby_Logger::error("statement preparation failed ($this->errorCode: $this->errorMessage)");
             return false;
         }
         
         // bind param sets & execute
-        $bind_arr = null;
+        $keyCount = count($paramSet[0]);
+        $bindArr = array($paramTypes);
+        
         foreach($paramSet as $params)
         {
             // prepare params
-            $bind_arr = array($paramTypes);
-            foreach($params as $param) $bind_arr[] = $param;
+            for($i = 0; $i < $keyCount; $i++) $bindArr[$i+1] = &$params[$i];
             
             // bind
-            if(!call_user_func_array(array($stmt, 'bind_param'), $bind_arr))
+            if(call_user_func_array(array($stmt, 'bind_param'), $bindArr) === false)
             {
                 $this->errorMessage     = $this->mysqli->error;
                 $this->errorCode        = $this->mysqli->errno;
                 
-                Toby_Logger::error('param bind failed');
+                Toby_Logger::error("param bind failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
             
             // execute
-            if(!$stmt->execute())
+            if($stmt->execute() === false)
             {
                 $this->errorMessage     = $this->mysqli->error;
                 $this->errorCode        = $this->mysqli->errno;
                 
-                Toby_Logger::error('statement execution failed');
+                Toby_Logger::error("statement execution failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
         }

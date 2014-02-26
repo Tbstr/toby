@@ -254,7 +254,7 @@ class Toby_Session
             $this->mysql->update('pd_sessions', array(
                 'access_time' => time(),
                 'data' => $data
-            ), "WHERE `id`='$id'");
+            ), "WHERE `id`='$id' LIMIT 1");
         }
         
         // insert
