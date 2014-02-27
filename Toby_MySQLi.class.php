@@ -265,25 +265,16 @@ class Toby_MySQLi
     public function beginTransaction()
     {
         // disable auto commit
-        $this->mysqli->autocommit(false);
-        
-        // begin
-        if(!$this->mysqli->begin_transaction())
-        {
-            Toby_Logger::error('beginning transaction failed');
-            return false;
-        }
-        
-        return true;
+        return $this->mysqli->autocommit(false);
     }
     
-    public function endTransaction($rollback = false)
+    public function endTransaction($commit = true)
     {
         // rollback or commit
         $success = false;
         
-        if($rollback === true)  $success = $this->mysqli->rollback();
-        else                    $success = $this->mysqli->commit();
+        if($commit === true)    $success = $this->mysqli->commit();
+        else                    $success = $this->mysqli->rollback();
         
         // reenable auto commit
         $this->mysqli->autocommit(true);
