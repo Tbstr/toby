@@ -84,11 +84,6 @@ class Toby_Logger
         return " > {$entry['file']}:{$entry['line']}";
     }
     
-    public static function rotate()
-    {
-        Toby_Logger::_log('log rotate');
-    }
-    
     /* listeners */
     public static function setLogListener($type, $callback)
     {
