@@ -207,7 +207,7 @@ class Toby_Utils
     {
         // cancellation
         if(!file_exists($path)) return false;
-        if(strncmp($path, $basePath, strlen($basePath)) !== 0) return false;
+        if(!empty($basePath) && strncmp($path, $basePath, strlen($basePath)) !== 0) return false;
         if(!$allowBacklinks) if(strpos($path, '..') !== false) return false;
 
         // rm
@@ -220,8 +220,8 @@ class Toby_Utils
             $subfiles = scandir($path);
             foreach($subfiles as $subfile)
             {
-                if($subfile == '.') continue;
-                if($subfile == '..') continue;
+                if($subfile === '.') continue;
+                if($subfile === '..') continue;
                 
                 if(!self::rrmdir($path.'/'.$subfile, $basePath, $allowBacklinks)) return false;
             }
