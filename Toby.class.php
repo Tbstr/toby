@@ -105,9 +105,6 @@ class Toby
         // set encoding
         if(empty($this->encoding)) $this->setEncoding('UTF-8');
         
-        // init mysql
-        if(Toby_Config::_getValue('toby', 'logMySQLQueries', 'bool')) Toby_MySQLi::getInstance()->initQueryLogging();
-        
         // init security
         Toby_Security::init();
         

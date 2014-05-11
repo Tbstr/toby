@@ -24,14 +24,14 @@ class Toby_MySQLi
     private $queryRec           = false;
     private $queryRecBuffer;
 
-    public static function getInstance($id = null)
+    public static function getInstance($id = null, $autoInit = true)
     {
-        if($id === null) $id = 'default';
+        if(empty($id)) $id = 'default';
 
         if(!isset(self::$instances[$id]))
         {
             self::$instances[$id] = new self();
-            if($id === 'default') self::$instances[$id]->autoInit();
+            if($id === 'default' && $autoInit === true) self::$instances[$id]->autoInit();
         }
 
         return self::$instances[$id];
@@ -56,11 +56,16 @@ class Toby_MySQLi
 
     public function init($host, $user, $pass, $db = false)
     {
+        // vars
         $this->host = $host;
         $this->user = $user;
         $this->pass = $pass;
         if($db !== false) $this->db = $db;
-
+        
+        // setup
+        if(Toby_Config::_getValue('toby', 'logMySQLQueries')) $this->initQueryLogging();
+        
+        // connect
         if($this->connected) $this->disconnect();
         return $this->connect();
     }
