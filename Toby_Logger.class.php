@@ -60,7 +60,7 @@ class Toby_Logger
     
     public static function log($content, $log = 'sys', $omitSys = false)
     {
-        self::_log($content, $log, $omitSys);
+        self::_log($content.self::traceStamp(), $log, $omitSys);
         self::callLogListener(self::TYPE_DEFAULT, $content);
     }
     
