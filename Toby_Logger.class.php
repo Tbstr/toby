@@ -24,8 +24,6 @@ class Toby_Logger
         self::$logsDirPath          = $logsDirPath;
         self::$fatalNotificationTo  = Toby_Config::_getValue('toby', 'fatalNotificationTo', 'string');
         
-        self::$lastbufferFlush      = time();
-        
         self::$initialized          = true;
     }
     
