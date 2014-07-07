@@ -11,6 +11,8 @@ class Toby_Logger
     private static $fatalNotificationTo;
     private static $listeners               = array();
     
+    private static $buffer                  = array();
+        
     const TYPE_ERROR                        = 'type_error';
     const TYPE_EXCEPTION                    = 'type_exception';
     const TYPE_WARNING                      = 'type_warning';
@@ -19,10 +21,12 @@ class Toby_Logger
     
     public static function init($logsDirPath)
     {
-        self::$logsDirPath = $logsDirPath;
-        self::$fatalNotificationTo = Toby_Config::_getValue('toby', 'fatalNotificationTo', 'string');
+        self::$logsDirPath          = $logsDirPath;
+        self::$fatalNotificationTo  = Toby_Config::_getValue('toby', 'fatalNotificationTo', 'string');
         
-        self::$initialized = true;
+        self::$lastbufferFlush      = time();
+        
+        self::$initialized          = true;
     }
     
     private static function _log($content, $log = 'sys', $omitSys = false)
@@ -30,14 +34,28 @@ class Toby_Logger
         if(!self::$initialized) return;
         if(!self::$enabled) return;
         
-        $fileHandle = @fopen(self::$logsDirPath."/$log.log", 'a');
-        if($fileHandle === false) return;
-        
-        fwrite($fileHandle, '- ['.date('d.m.Y H:i:s').']   '.$content."\n");
-        fclose($fileHandle);
+        // writer to buffer
+        if(!isset(self::$buffer[$log])) self::$buffer[$log] = '';
+        self::$buffer[$log] .= '- ['.date('d.m.Y H:i:s').']   '.$content."\n";
         
         // main log
         if($log !== 'sys' && !$omitSys) self::_log($content, 'sys');
+    }
+    
+    public static function flushBuffer()
+    {
+        // write buffer contents
+        foreach(self::$buffer as $log => $content)
+        {
+            $fileHandle = @fopen(self::$logsDirPath."/$log.log", 'a');
+            if($fileHandle === false) continue;
+
+            fwrite($fileHandle, $content);
+            fclose($fileHandle);
+        }
+        
+        // reset buffer
+        self::$buffer = array();
     }
     
     public static function error($content)
@@ -168,5 +186,8 @@ class Toby_Logger
                 if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
             }
         }
+        
+        // flush buffer
+        self::flushBuffer();
     }
 }
