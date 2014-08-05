@@ -71,7 +71,14 @@ class Toby_Session
         // start
         if(session_start())
         {
+            // get session id, regenerate if empty
             $this->id = session_id();
+            
+            if(empty($this->id))
+            {
+                if(session_regenerate_id(true)) $this->id = session_id();
+                return false;
+            }
             
             // session resume
             if(isset($_SESSION[self::KEY]))
