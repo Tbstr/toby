@@ -121,10 +121,10 @@ class Toby_Session
     public function destroy()
     {
         session_destroy();
-        $_SESSION = false;
-        $this->SESSION = false;
+        $_SESSION       = false;
+        $this->SESSION  = false;
         
-        $this->opened = false;
+        $this->opened   = false;
     }
     
     private function checkConnection($autoOpen = false)
@@ -240,10 +240,11 @@ class Toby_Session
     {
         $id = $this->mysql->esc($id);
         
-        $this->mysql->select('pd_sessions', '*', "WHERE id='$id' FOR UPDATE");
-        if($this->mysql->getNumRows() != 0) return $this->mysql->fetchElementByName('data');
+        $this->mysql->select('pd_sessions', '*', "WHERE `id`='$id' LIMIT 1 FOR UPDATE");
+        if($this->mysql->getNumRows() === 0) return '';
         
-        return '';
+        // return data
+        return $this->mysql->fetchElementByName('data');
     }
     
     public function handleMySQLSessionWrite($id, $data)
@@ -252,8 +253,8 @@ class Toby_Session
         if($this->mysql->hasRow('pd_sessions', "WHERE `id`='$id'"))
         {
             $this->mysql->update('pd_sessions', array(
-                'access_time' => time(),
-                'data' => $data
+                'access_time'   => time(),
+                'data'          => $data
             ), "WHERE `id`='$id' LIMIT 1");
         }
         
@@ -261,9 +262,9 @@ class Toby_Session
         else
         {
             $this->mysql->insert('pd_sessions', array(
-                'id' => $id,
-                'access_time' => time(),
-                'data' => $data
+                'id'            => $id,
+                'access_time'   => time(),
+                'data'          => $data
             ));
         }
         
@@ -275,14 +276,14 @@ class Toby_Session
     {
         $id = $this->mysql->esc($id);
         
-        $this->mysql->delete('pd_sessions', "WHERE id='$id'");
+        $this->mysql->delete('pd_sessions', "WHERE id='$id' LIMIT 1");
         return $this->mysql->result;
     }
     
     public function handleMySQLSessionClean($maxLifeTime)
     {
         // clean db
-        $this->mysql->delete('pd_sessions', 'WHERE access_time < '.(time() - (int)$maxLifeTime));
+        $this->mysql->delete('pd_sessions', 'WHERE access_time<'.(time() - (int)$maxLifeTime));
         
         // log & return fail
         if($this->mysql->result === false)
