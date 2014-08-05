@@ -238,17 +238,25 @@ class Toby_Session
     
     public function handleMySQLSessionRead($id)
     {
+        // cancellation
+        if(empty($id)) return '';
+        
+        // sanitize input
         $id = $this->mysql->esc($id);
         
+        // fetch data
         $this->mysql->select('pd_sessions', '*', "WHERE `id`='$id' LIMIT 1 FOR UPDATE");
         if($this->mysql->getNumRows() === 0) return '';
         
-        // return data
+        // return
         return $this->mysql->fetchElementByName('data');
     }
     
     public function handleMySQLSessionWrite($id, $data)
     {
+        // cancellation
+        if(empty($id)) return false;
+        
         // update
         if($this->mysql->hasRow('pd_sessions', "WHERE `id`='$id'"))
         {
@@ -274,8 +282,13 @@ class Toby_Session
     
     public function handleMySQLSessionDestroy($id)
     {
+        // cancellation
+        if(empty($id)) return false;
+        
+        // sanitize input
         $id = $this->mysql->esc($id);
         
+        // query & return
         $this->mysql->delete('pd_sessions', "WHERE id='$id' LIMIT 1");
         return $this->mysql->result;
     }
