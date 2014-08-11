@@ -253,7 +253,8 @@ class Toby_Session
         
         // fetch data
         $this->mysql->select('pd_sessions', '*', "WHERE `id`='$id' LIMIT 1 FOR UPDATE");
-        if($this->mysql->getNumRows() === 0) return '';
+        if($this->mysql->result === false)      return '';
+        if($this->mysql->getNumRows() === 0)    return '';
         
         // return
         return $this->mysql->fetchElementByName('data');
