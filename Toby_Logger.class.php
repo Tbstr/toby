@@ -180,8 +180,13 @@ class Toby_Logger
                 // call callback
                 self::callLogListener(self::TYPE_ERROR, $logMsg);
                 
-                // send mail
-                if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', "$error[message] > $error[file]:$error[line]");
+                // create backtrace & send mail
+                ob_start(); 
+                debug_print_backtrace(); 
+                $backTrace = ob_get_contents(); 
+                ob_end_clean();
+                
+                if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', date('d.m.Y H:i:s')." $error[message] > $error[file]:$error[line]\n\n$backTrace");
             }
         }
         
