@@ -148,15 +148,15 @@ class Toby_ThemeManager
         if(empty(self::$themeConfig))   Toby::finalize('No theme set.');
         
         // vars
-        $controllerAvailable = !empty(self::$controller);
+        $controllerAvailable    = !empty(self::$controller);
+        $actionAvailable        = $controllerAvailable && !empty(self::$controller->action);
         
         // set groups
         $groups = array();
         if($controllerAvailable)
         {
-            // groups
             $groups[] = self::$controller->name;
-            if(!empty(self::$controller->action)) $groups[] = self::$controller->name.'/'.self::$controller->action;
+            if($actionAvailable) $groups[] = self::$controller->name.'/'.self::$controller->action;
         }
         
         // gather links
