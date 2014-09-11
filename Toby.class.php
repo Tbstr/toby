@@ -124,21 +124,21 @@ class Toby
             $elements = explode('/', $request);
 
             $controllerName = !empty($elements[0]) ? strtolower($elements[0]) : 'index';
-            $actionName = !empty($elements[1]) ? strtolower($elements[1]) : 'index';
-            $vars = (count($elements) > 2) ? array_slice($elements, 2) : null;
+            $actionName     = !empty($elements[1]) ? strtolower($elements[1]) : 'index';
+            $attributes     = (count($elements) > 2) ? array_slice($elements, 2) : null;
             
             // boot
-            $this->boot($controllerName, $actionName, $vars, true);
+            $this->boot($controllerName, $actionName, $attributes, true);
         }
     }
     
-    public function boot($controllerName, $actionName = 'index', $vars = null, $stdResolveOnFail = false)
+    public function boot($controllerName, $actionName = 'index', $attributes = null, $stdResolveOnFail = false)
     {
         // set resolve
-        $this->resolve = "$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars));
+        $this->resolve = "$controllerName/$actionName".($attributes === null ? '' : '/'.implode('/', $attributes));
 
         // run action
-        $controller = $this->runAction($controllerName, $actionName, $vars);
+        $controller = $this->runAction($controllerName, $actionName, $attributes);
         
         if($controller === false)
         {
@@ -163,10 +163,10 @@ class Toby
         }
     }
     
-    public function runAction($controllerName, $actionName = 'index', $vars = null)
+    public function runAction($controllerName, $actionName = 'index', $attributes = null)
     {
         // start timing;
-        $this->requestTimeLogStart("$controllerName/$actionName".($vars === null ? '' : '/'.implode('/', $vars)));
+        $this->requestTimeLogStart("$controllerName/$actionName".($attributes === null ? '' : '/'.implode('/', $attributes)));
         
         // vars
         $controllerFullName = 'Controller_'.strtoupper($controllerName[0]).substr($controllerName, 1);
@@ -179,13 +179,13 @@ class Toby
             
             if(class_exists($controllerFullName))
             {
-                $controllerInstance = new $controllerFullName($controllerName, $actionName, $this);
+                $controllerInstance = new $controllerFullName($controllerName, $actionName, $attributes);
                 
                 if(method_exists($controllerInstance, $actionFullName))
                 {
                     // call
-                    if($vars === null) call_user_func(array($controllerInstance, $actionFullName));
-                    else call_user_func_array (array($controllerInstance, $actionFullName), $vars);
+                    if($attributes === null) call_user_func(array($controllerInstance, $actionFullName));
+                    else call_user_func_array (array($controllerInstance, $actionFullName), $attributes);
                     
                     // stop timing
                     $this->requestTimeLogStop(true);
@@ -201,7 +201,7 @@ class Toby
                         $this->requestTimeLogStop(false);
 
                         // return
-                        return $this->runAction($controllerName, 'default', $vars);
+                        return $this->runAction($controllerName, 'default', $attributes);
                     }
                 }
             }

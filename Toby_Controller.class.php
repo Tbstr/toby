@@ -5,6 +5,7 @@ abstract class Toby_Controller
     /* controller vars */
     public $name;
     public $action;
+    public $attributes;
     
     public $toby;
     
@@ -33,11 +34,13 @@ abstract class Toby_Controller
     public $view;
     public $javascript;
     
-    function __construct($name, $action)
+    function __construct($name, $action, $attributes = null)
     {
         // vars
         $this->name                     = $name;
         $this->action                   = $action;
+        $this->attributes               = $attributes;
+        
         $this->toby                     = Toby::getInstance();
         
         if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
@@ -49,25 +52,25 @@ abstract class Toby_Controller
         
         // default vars layout
         $this->layout->appURL           = $this->toby->appURL;
-        $this->layout->url              = Toby_Utils::pathCombine(array($this->toby->appURL, Toby::getInstance()->request));
+        $this->layout->url              = Toby_Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
         // default vars view
         $this->view->appURL             = $this->toby->appURL;
-        $this->view->url                = Toby_Utils::pathCombine(array($this->toby->appURL, Toby::getInstance()->request));
+        $this->view->url                = Toby_Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
         // default vars javascript
         $this->javascript->xsrfkeyname  = Toby_Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Toby_Security::XSRFGetKey();
     }
     
-    protected function forward($controller, $action = 'index', $vars = null, $externalForward = false, $forceSecure = false)
+    protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
     {
         // convert attributes to array
-        if(!empty($vars) && !is_array($vars)) $vars = array((string)$vars);
+        if(!empty($attributes) && !is_array($attributes)) $attributes = array((string)$attributes);
         
         // forward
-        if($externalForward) header('Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($vars ? DS.implode(DS, $vars) : ''));
-        else Toby::getInstance()->boot($controller, $action, $vars);
+        if($externalForward) header('Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : ''));
+        else Toby::getInstance()->boot($controller, $action, $attributes);
         
         // exit
         Toby::finalize(0);

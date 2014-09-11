@@ -150,13 +150,34 @@ class Toby_ThemeManager
         // vars
         $controllerAvailable    = !empty(self::$controller);
         $actionAvailable        = $controllerAvailable && !empty(self::$controller->action);
+        $attributesAvailable    = $actionAvailable && !empty(self::$controller->attributes);
         
         // set groups
         $groups = array();
         if($controllerAvailable)
         {
-            $groups[] = self::$controller->name;
-            if($actionAvailable) $groups[] = self::$controller->name.'/'.self::$controller->action;
+            $groupsStr = '';
+            
+            // controller
+            $groupsStr = self::$controller->name;
+            $groups[] = $groupsStr;
+            
+            // action
+            if($actionAvailable)
+            {
+                $groupsStr .= '/'.self::$controller->action;
+                $groups[] = $groupsStr;
+                
+                // attributes
+                if($attributesAvailable)
+                {
+                    foreach(self::$controller->attributes as $attribute)
+                    {
+                        $groupsStr .= '/'.$attribute;
+                        $groups[] = $groupsStr;
+                    }
+                }
+            }
         }
         
         // gather links
