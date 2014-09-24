@@ -66,7 +66,7 @@ abstract class Toby_Controller
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
     {
         // convert attributes to array
-        if(!empty($attributes) && !is_array($attributes)) $attributes = array((string)$attributes);
+        if(!empty($attributes) && !is_array($attributes)) $attributes = array($attributes);
         
         // forward
         if($externalForward) header('Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : ''));
