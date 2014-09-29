@@ -224,16 +224,22 @@ class Toby_Utils
         }
         else
         {
+            // remove dir contents
             $subfiles = scandir($path);
-            foreach($subfiles as $subfile)
-            {
-                if($subfile === '.') continue;
-                if($subfile === '..') continue;
-                
-                if(!self::rrmdir($path.'/'.$subfile, $basePath, $allowBacklinks)) return false;
+            
+            if($subfiles !== false) 
+            {    
+                foreach($subfiles as $subfile)
+                {
+                    if($subfile === '.') continue;
+                    if($subfile === '..') continue;
+
+                    if(!self::rrmdir($path.'/'.$subfile, $basePath, $allowBacklinks)) return false;
+                }
             }
             
-            return @rmdir($path);
+            // remove dir
+            return rmdir($path);
         }
     }
     
