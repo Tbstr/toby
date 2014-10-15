@@ -299,6 +299,20 @@ class Toby_Utils
         return $text;
     }
     
+    public static function replaceChars($chars, $replacement, $subject)
+    {
+        $strlen = mb_strlen($subject);
+        $result = '';
+        
+        for($i = 0; $i < $strlen; $i++)
+        {
+            $chr = mb_substr($subject, $i, 1);
+            $result .= (mb_strpos($chars, $chr) === false) ? $chr : $replacement;
+        }
+        
+        return $result;
+    }
+    
     public static function parseValue($value, $datatype)
     {
         switch(strtolower($datatype))
