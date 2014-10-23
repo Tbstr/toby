@@ -81,6 +81,18 @@ class Toby_View
         return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
     }
     
+    protected function includeFile($pathToFile, $prependThemePath = true)
+    {
+        // cancellation
+        if(empty($pathToFile)) return false;
+        
+        // prepend theme path
+        if($prependThemePath) $pathToFile = Toby_Utils::pathCombine (array(Toby_ThemeManager::$themePathRoot, $pathToFile));
+        
+        // return content
+        return file_get_contents($pathToFile);
+    }
+    
     /* helpers */
     protected function esc($string)
     {
