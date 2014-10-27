@@ -440,22 +440,38 @@ class Toby_MySQLi
     }
     
     /* result management */
+    public function fetchFirstElement()
+    {
+        $row = $this->result->fetch_row();
+        return $row[0];
+    }
+    
     public function fetchElementByIndex($index)
     {
         $row = $this->result->fetch_row();
         return $row[$index];
     }
     
-    public function fetchFirstElement()
+    public function fetchElementSetByIndex($index)
     {
-        $row = $this->result->fetch_row();
-        return $row[0];
+        $result = array();
+        while(($row = $this->result->fetch_row()) !== null) $result[] = $row[$index];
+        
+        return $result;
     }
 
     public function fetchElementByName($name)
     {
         $assoc = $this->result->fetch_assoc();
         return $assoc[$name];
+    }
+    
+    public function fetchElementSetByName($name)
+    {
+        $result = array();
+        while(($row = $this->result->fetch_assoc()) !== null) $result[] = $row[$name];
+        
+        return $result;
     }
 
     public function fetchRow()
