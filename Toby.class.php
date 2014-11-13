@@ -84,7 +84,7 @@ class Toby
         $this->hook('configs_loaded');
         
         // error handling
-        error_reporting(E_ALL);
+        error_reporting(E_ALL | E_STRICT);
         ini_set('display_errors', Toby_Config::_getValue('toby', 'displayErrors') ? '1' : '0');
         
         // set url vars
