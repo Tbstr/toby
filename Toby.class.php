@@ -29,20 +29,21 @@ class Toby
     
     /* variables */
     public $scope                       = false;
-    public $request                     = false;
-    public $startupTime                 = 0;
-    public $resolve                     = false;
-    public $encoding                    = false;
     
     public $appURL                      = false;
     public $appURLSecure                = false;
     public $appURLRelative              = false;
     
+    public $request                     = false;
+    public $resolve                     = false;
+    
+    public $startupTime                 = 0;
+    public $encoding                    = false;
+
     private $logRequestTime             = false;
     private $requestLogData             = array();
     
     private $initialized                = false;
-    private $finalized                  = false;
     
     /* constants */
     const SCOPE_WEB                     = 'web';
@@ -92,7 +93,7 @@ class Toby
         // set url vars
         $this->appURL           = Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '';
         $this->appURLSecure     = Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : $this->appURL;
-        $this->appURLRelative   = preg_replace('/https?:\/\/(www\.)?[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', $this->appURL);
+        $this->appURLRelative   = preg_replace('/https?:\/\/[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', $this->appURL);
         
         // init logging
         Toby_Logger::init(APP_ROOT.'/logs');
