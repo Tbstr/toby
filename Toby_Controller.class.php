@@ -96,7 +96,6 @@ abstract class Toby_Controller
         
         // read file & exit
         readfile($filePath);
-        Toby::finalize(0);
     }
     
     /* set theme */
