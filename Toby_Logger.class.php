@@ -10,7 +10,9 @@ class Toby_Logger
     private static $logErrors               = false;
     private static $fatalNotificationTo;
     private static $listeners               = array();
-    
+
+    private static $prefix                  = '';
+
     private static $buffer                  = array();
         
     const TYPE_ERROR                        = 'type_error';
@@ -34,7 +36,7 @@ class Toby_Logger
         
         // writer to buffer
         if(!isset(self::$buffer[$log])) self::$buffer[$log] = '';
-        self::$buffer[$log] .= '- ['.date('d.m.Y H:i:s').']   '.$content."\n";
+        self::$buffer[$log] .= '- ['.date('d.m.Y H:i:s').']   '.self::$prefix.$content."\n";
         
         // main log
         if($log !== 'sys' && !$omitSys) self::_log($content, 'sys');
@@ -98,6 +100,17 @@ class Toby_Logger
         $entry = $dbt[1];
         
         return " > {$entry['file']}:{$entry['line']}";
+    }
+
+    /* getter setter */
+    public static function getPrefix()
+    {
+        return self::$prefix;
+    }
+
+    public static function setPrefix($prefix)
+    {
+        self::$prefix = $prefix;
     }
     
     /* listeners */
