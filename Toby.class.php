@@ -284,13 +284,20 @@ class Toby
         $elements = explode('_', $className);
         
         if(count($elements) === 1) return;
-        array_pop($elements);
+        $basename = array_pop($elements);
         
         // resolve toby related
         if(strtolower($elements[0]) === 'toby')
         {
             $elements[0]    = TOBY_ROOT;
             $path = strtolower(implode('/', $elements))."/$className.class.php";
+
+            if(is_file($path)) require_once($path);
+            else
+            {
+                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
+                if(is_file($path)) require_once($path);
+            }
         }
         
         // resolve app related
@@ -298,10 +305,14 @@ class Toby
         {
             array_unshift($elements, APP_ROOT);
             $path = strtolower(implode('/', $elements))."/$className.class.php";
+
+            if(is_file($path)) require_once($path);
+            else
+            {
+                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
+                if(is_file($path)) require_once($path);
+            }
         }
-        
-        // require
-        if(file_exists($path)) require_once($path);
     }
     
     /* helper */
