@@ -295,7 +295,7 @@ class Toby_MySQLi
         return $this->query($query);
     }
 
-    public function insert($table, $data)
+    public function insert($table, $data, $onDuplicateKeyData = false)
     {
         // cancellation
         if(empty($table)) return false;
@@ -344,6 +344,9 @@ class Toby_MySQLi
             foreach($keys as $key => $value) $keys[$key] = '`'.$value.'`';
             $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES '.implode(',',$values);
         }
+
+        // on duplicate key
+        if(is_array($onDuplicateKeyData)) $query .= " ON DUPLICATE KEY UPDATE {$this->buildDataDefinition($onDuplicateKeyData)}";
         
         // query & return;
         return $this->query($query);
