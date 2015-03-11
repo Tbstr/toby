@@ -81,25 +81,25 @@ class Toby
         if($scope === self::SCOPE_LOCAL) Toby_Session::$enabled = false;
         
         // init config & hook
-        Toby_Config::getInstance()->readDir(APP_ROOT.'/config');
+        Toby_Config::readDir(APP_ROOT.'/config');
         $this->hook('configs_loaded');
         
         // error handling
-        if(Toby_Config::_getValue('toby', 'strictErrors'))  error_reporting(E_ALL | E_STRICT);
+        if(Toby_Config::get('toby')->getValue('strictErrors'))  error_reporting(E_ALL | E_STRICT);
         else                                                error_reporting(E_ALL & ~E_STRICT);
         
-        ini_set('display_errors', Toby_Config::_getValue('toby', 'displayErrors') ? '1' : '0');
+        ini_set('display_errors', Toby_Config::get('toby')->getValue('displayErrors') ? '1' : '0');
         
         // set url vars
-        $this->appURL           = Toby_Config::_hasKey('toby', 'appURL') ? Toby_Config::_getValue('toby', 'appURL') : '';
-        $this->appURLSecure     = Toby_Config::_hasKey('toby', 'secureAppURL') ? Toby_Config::_getValue('toby', 'secureAppURL') : $this->appURL;
+        $this->appURL           = Toby_Config::get('toby')->hasKey('appURL') ? Toby_Config::get('toby')->getValue('appURL') : '';
+        $this->appURLSecure     = Toby_Config::get('toby')->hasKey('secureAppURL') ? Toby_Config::get('toby')->getValue('secureAppURL') : $this->appURL;
         $this->appURLRelative   = preg_replace('/https?:\/\/[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}\/?/', '/', $this->appURL);
         
         // init logging
         Toby_Logger::init(APP_ROOT.'/logs');
         Toby_Logger::logErrors('error');
         
-        if(Toby_Config::_getValue('toby', 'logRequestTimes'))
+        if(Toby_Config::get('toby')->getValue('logRequestTimes'))
         {
             $this->logRequestTime = true;
             Toby_Logger::log('[APP START]', 'request-times', true);
@@ -118,7 +118,7 @@ class Toby
         $this->hook('post_init');
         
         // force resolve
-        if(Toby_Config::_hasKey('toby', 'forceResolve')) $request = Toby_Config::_getValue('toby', 'forceResolve');
+        if(Toby_Config::get('toby')->hasKey('forceResolve')) $request = Toby_Config::get('toby')->getValue('forceResolve');
         
         // resolve and boot
         if($request !== false)
@@ -148,10 +148,10 @@ class Toby
             // default resolve on fail
             if($stdResolveOnFail)
             {
-                if(Toby_Config::_hasKey('toby', 'defaultResolve'))
+                if(Toby_Config::get('toby')->hasKey('defaultResolve'))
                 {
                     // reboot
-                    list($controllerName, $actionName) = explode('/', Toby_Config::_getValue('toby', 'defaultResolve'));
+                    list($controllerName, $actionName) = explode('/', Toby_Config::get('toby')->getValue('defaultResolve'));
                     $this->boot($controllerName, $actionName);
                 }
             }

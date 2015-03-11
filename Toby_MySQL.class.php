@@ -40,10 +40,10 @@ class Toby_MySQL
     private function autoInit()
     {
         // cancellation
-        if(Toby_Config::_getValue('toby', 'mySQLAutoConnect') !== true) return;
+        if(Toby_Config::get('toby')->getValue('mySQLAutoConnect') !== true) return;
         
         // vars
-        $mad = Toby_Config::_getValue('toby', 'mySQLAccessData');
+        $mad = Toby_Config::get('toby')->getValue('mySQLAccessData');
 
         $this->init(
             $mad['host'],

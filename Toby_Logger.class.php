@@ -24,7 +24,7 @@ class Toby_Logger
     public static function init($logsDirPath)
     {
         self::$logsDirPath          = $logsDirPath;
-        self::$fatalNotificationTo  = Toby_Config::_getValue('toby', 'fatalNotificationTo', 'string');
+        self::$fatalNotificationTo  = Toby_Config::get('toby')->getValue('fatalNotificationTo', 'string');
         
         self::$initialized          = true;
     }

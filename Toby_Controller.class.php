@@ -43,7 +43,7 @@ abstract class Toby_Controller
         
         $this->toby                     = Toby::getInstance();
         
-        if(Toby_Config::_hasKey('toby', 'defaultTitle')) $this->layoutTitle = Toby_Config::_getValue ('toby', 'defaultTitle', 'string');
+        if(Toby_Config::get('toby')->hasKey('defaultTitle')) $this->layoutTitle = Toby_Config::get('toby')->getValue('defaultTitle', 'string');
         
         // holders
         $this->layout                   = new stdClass();

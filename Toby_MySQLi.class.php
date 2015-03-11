@@ -41,10 +41,10 @@ class Toby_MySQLi
     private function autoInit()
     {
         // cancellation
-        if(Toby_Config::_getValue('toby', 'mySQLAutoConnect') !== true) return;
+        if(Toby_Config::get('toby')->getValue('mySQLAutoConnect') !== true) return;
         
         // vars
-        $mad = Toby_Config::_getValue('toby', 'mySQLAccessData');
+        $mad = Toby_Config::get('toby')->getValue('mySQLAccessData');
 
         $this->init(
             $mad['host'],
@@ -63,7 +63,7 @@ class Toby_MySQLi
         if($db !== false) $this->db = $db;
         
         // setup
-        if(Toby_Config::_getValue('toby', 'logMySQLQueries')) $this->initQueryLogging();
+        if(Toby_Config::get('toby')->getValue('logMySQLQueries')) $this->initQueryLogging();
         
         // connect
         if($this->connected) $this->disconnect();

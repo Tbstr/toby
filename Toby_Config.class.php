@@ -2,100 +2,124 @@
 
 class Toby_Config
 {
-    public static $instance = null;
+    /* static variables */
+    public static $instances = array();
+
+    /* variables */
+    public $name        = false;
+    public $data        = false;
     
     /* constructor */
-    function __construct()
+    function __construct($name, $data)
     {
-        if(self::$instance === null) self::$instance  = $this;
-        else throw new Exception('Toby_Config is a singleton and therefore can only be accessed through Toby_Config::getInstance().');
+        // cancellation
+        if(empty($name))        return;
+        if(empty($data))        return;
+        if(!is_array($data))    return;
+
+        // set vars
+        $this->name = $name;
+        $this->data = $data;
     }
-    
-    /* static getter */
-    public static function getInstance()
+
+    public function addData($data)
     {
-        if(self::$instance === null) new self();
-        return self::$instance;
+        // cancellation
+        if(empty($data))        return false;
+        if(!is_array($data))    return false;
+
+        // add
+        array_merge($this->$data, $data);
     }
-    
-    /* static shortcuts */
-    public static function _hasKey($config, $key)
-    {
-        return self::getInstance()->hasKey($config, $key);
-    }
-    
-    public static function _getValue($config, $key, $datatype = '')
-    {
-        return self::getInstance()->getValue($config, $key, $datatype);
-    }
-    
-    public static function _getConfig($config)
-    {
-        if(!isset(self::getInstance()->$config)) return null;
-        return self::getInstance()->$config;
-    }
-    
+
     /* methods */
-    public function readDir($dir)
+    public function hasKey($key)
     {
-        $list = scandir($dir);
-        
-        foreach($list as $filename)
-        {
-            if($filename[0] == '.') continue;
-            if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
+        // cancellation
+        if(empty($key)) return false;
 
-            $filePath = "$dir/$filename";
-
-            if(is_readable($filePath))
-            {
-                $key = substr($filename, 0, strrpos($filename, '.cfg.php'));
-                
-                if(isset($this->$key))
-                {
-                    $this->$key = array_merge($this->$key, $this->getConfigVars($filePath));
-                }
-                else
-                {
-                    $this->$key = $this->getConfigVars($filePath);
-                }
-            }
-        }
-        
-        return $this;
+        // check
+        return isset($this->data[$key]);
     }
     
-    private function getConfigVars($configFilePath)
+    public function getValue($key, $datatype = '')
     {
-        include $configFilePath;
-        unset($configFilePath);
-        
-        return get_defined_vars();
-    }
-    
-    public function hasKey($config, $key)
-    {
-        if(!isset($this->$config)) Toby::finalize("config '$config' does not exist");
-        
-        $configLink = $this->$config;
-        return isset($configLink[$key]);
-    }
-    
-    public function getValue($config, $key, $datatype = '')
-    {
-        // cancellate
-        if(!isset($this->$config)) Toby::finalize("config '$config' does not exist");
-        
-        $configLink = &$this->$config;
+        // cancellation
+        if(empty($key)) return false;
         
         // return parsed
-        $value = isset($configLink[$key]) ? $configLink[$key] : null;
+        $value = isset($this->data[$key]) ? $this->data[$key] : null;
+        return Toby_Utils::parseValue($value, $datatype);
+    }
+
+    public function getValueFromArray($key, $arrayKey, $datatype = '')
+    {
+        // cancellation
+        if(empty($key)) return false;
+
+        // get array
+        $array = self::getValue($key);
+        if(!is_array($array)) return null;
+
+        // return parsed value
+        $value = isset($array[$arrayKey]) ? $array[$arrayKey] : null;
         return Toby_Utils::parseValue($value, $datatype);
     }
     
-    /* to string */
+    /* PHP */
     public function __toString()
     {
-        return 'Toby_Config';
+        return 'Toby_Config['.$this->name.']';
+    }
+
+    /* statics */
+    public static function readDir($dir)
+    {
+        $list = scandir($dir);
+
+        foreach($list as $filename)
+        {
+            if($filename[0] === '.') continue;
+            if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
+
+            $filePath = Toby_Utils::pathCombine(array($dir, $filename));
+
+            if(is_readable($filePath))
+            {
+                $name = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
+
+                $config = self::get($name);
+
+                if(empty($config))
+                {
+                    self::$instances[$name] = new Toby_Config($name, self::getConfigVars($filePath));
+                }
+                else
+                {
+                    $config->addData(self::getConfigVars($filePath));
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public static function get($name)
+    {
+        // cancellation
+        if(empty($name))                    return false;
+        if(!is_string($name))               return false;
+        if(!isset(self::$instances[$name])) return false;
+
+        // return
+        return self::$instances[$name];
+    }
+
+    private static function getConfigVars($configFilePath)
+    {
+        include $configFilePath;
+        unset($configFilePath);
+
+        return get_defined_vars();
     }
 }

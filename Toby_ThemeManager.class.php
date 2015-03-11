@@ -18,8 +18,8 @@ class Toby_ThemeManager
         // compute input
         if($themeName === false)
         {
-            $configThemeName    = Toby_Config::_getValue('toby', 'theme');
-            $configThemeConfig  = Toby_Config::_getValue('toby', 'themeConfig');
+            $configThemeName    = Toby_Config::get('toby')->getValue('theme');
+            $configThemeConfig  = Toby_Config::get('toby')->getValue('themeConfig');
             
             if(!empty($configThemeName))
             {
