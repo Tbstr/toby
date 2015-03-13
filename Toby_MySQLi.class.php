@@ -19,8 +19,10 @@ class Toby_MySQLi
     public $mysqlCharset        = 'utf8';
     public $dryRun              = false;
     public $logQueries          = false;
+    public $throwExceptions     = false;
+
     public $connected           = false;
-    
+
     private $queryRec           = false;
     private $queryRecBuffer;
 
@@ -81,6 +83,8 @@ class Toby_MySQLi
         
         if($this->mysqli->connect_errno !== 0)
         {
+            if($this->throwExceptions) throw new Exception('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
+
             Toby_Logger::error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
         }
@@ -120,9 +124,6 @@ class Toby_MySQLi
     /* low level query methods */
     private function initQuery()
     {
-        // free recent result
-        //if($this->result !== false) $this->result->free();
-        
         // reset
         $this->result       = false;
         
@@ -199,9 +200,12 @@ class Toby_MySQLi
                     
                     break;
             }
-            
+
+            // throw error
+            if($this->throwExceptions) throw new Exception("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
+
             // log & return
-            Toby_Logger::log("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
+            Toby_Logger::error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
             return false;
         }
 
@@ -224,7 +228,11 @@ class Toby_MySQLi
         {
             $this->errorMessage     = $this->mysqli->error;
             $this->errorCode        = $this->mysqli->errno;
-            
+
+            // throw exception
+            if($this->throwExceptions) throw new Exception("statement preparation failed ($this->errorCode: $this->errorMessage)");
+
+            // error & return
             Toby_Logger::error("statement preparation failed ($this->errorCode: $this->errorMessage)");
             return false;
         }
@@ -243,7 +251,11 @@ class Toby_MySQLi
             {
                 $this->errorMessage     = $this->mysqli->error;
                 $this->errorCode        = $this->mysqli->errno;
-                
+
+                // throw exception
+                if($this->throwExceptions) throw new Exception("param bind failed ($this->errorCode: $this->errorMessage)");
+
+                // error & return
                 Toby_Logger::error("param bind failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
@@ -253,7 +265,11 @@ class Toby_MySQLi
             {
                 $this->errorMessage     = $this->mysqli->error;
                 $this->errorCode        = $this->mysqli->errno;
-                
+
+                // throw exception
+                if($this->throwExceptions) throw new Exception("statement execution failed ($this->errorCode: $this->errorMessage)");
+
+                // error & return
                 Toby_Logger::error("statement execution failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
@@ -265,7 +281,7 @@ class Toby_MySQLi
         // return success
         return true;
     }
-    
+
     /* transactions */
     public function beginTransaction()
     {
@@ -274,9 +290,25 @@ class Toby_MySQLi
     
     public function endTransaction($commit = true)
     {
+        // vars
+        $success = false;
+
         // apply & return
-        if($commit === true)    return $this->query('COMMIT');
-        else                    return $this->query('ROLLBACK');
+        if($commit === true)    $success = $this->query('COMMIT');
+        else                    $success = $this->query('ROLLBACK');
+
+        // error handling
+        if($success === false)
+        {
+            // throw exception
+            if($this->throwExceptions) throw new Exception('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
+
+            // error & return
+            Toby_Logger::error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
+        }
+
+        // return success
+        return true;
     }
     
     /* high level query methods */
@@ -557,7 +589,7 @@ class Toby_MySQLi
     public function startQueryRecording()
     {
         // cancellation
-        if($this->queryRec === true) return false;
+        if($this->queryRec === true) return true;
         
         // start
         $this->queryRec = true;
