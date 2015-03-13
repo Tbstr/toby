@@ -269,23 +269,14 @@ class Toby_MySQLi
     /* transactions */
     public function beginTransaction()
     {
-        // disable auto commit
-        return $this->mysqli->autocommit(false);
+        return $this->query('START TRANSACTION');
     }
     
     public function endTransaction($commit = true)
     {
-        // rollback or commit
-        $success = false;
-        
-        if($commit === true)    $success = $this->mysqli->commit();
-        else                    $success = $this->mysqli->rollback();
-        
-        // reenable auto commit
-        $this->mysqli->autocommit(true);
-        
-        // return
-        return $success;
+        // apply & return
+        if($commit === true)    return $this->query('COMMIT');
+        else                    return $this->query('ROLLBACK');
     }
     
     /* high level query methods */
