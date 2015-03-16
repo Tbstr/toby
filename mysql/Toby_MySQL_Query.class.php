@@ -1,7 +1,7 @@
 <?php
 
 
-class Toby_MySQLQuery
+class Toby_MySQL_Query
 {
     /* variables */
     public $mysql;
@@ -305,6 +305,6 @@ class Toby_MySQLQuery
     /* to string */
     public function __toString()
     {
-        return 'Toby_MySQLQuery';
+        return 'Toby_MySQL_Query';
     }
 }

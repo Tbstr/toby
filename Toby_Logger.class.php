@@ -134,7 +134,7 @@ class Toby_Logger
         $errLogMsg = "$errstr > $errfile:$errline";
         
         // typize & log
-        switch ($errno)
+        switch($errno)
         {
             case E_RECOVERABLE_ERROR:
                 $errLogMsg = '[FATAL_ERROR] '.$errLogMsg;
@@ -171,9 +171,9 @@ class Toby_Logger
         return false;
     }
 
-    public static function handleException($exception)
+    public static function handleException(Exception $e)
     {
-        self::_log("[EXCEPTION] $exception", 'error');
+        self::_log('[EXCEPTION] '.$e->getMessage().' > '.$e->getFile().':'.$e->getLine(), 'error');
     }
     
     public static function handleShutdown()

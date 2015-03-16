@@ -47,12 +47,12 @@ class Toby_Utils
     
     public static function mySQLRecStart()
     {
-        return Toby_MySQLi::getInstance()->startQueryRecording();
+        return Toby_MySQL::getInstance()->startQueryRecording();
     }
     
     public static function mySQLRecStop($print = true, $finalize = true)
     {
-        $recLog = Toby_MySQLi::getInstance()->stopQueryRecording();
+        $recLog = Toby_MySQL::getInstance()->stopQueryRecording();
         
         if($print) Toby_Utils::printr($recLog);
         if($finalize) Toby::finalize(0);

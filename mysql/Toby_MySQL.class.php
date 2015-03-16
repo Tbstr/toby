@@ -1,6 +1,6 @@
 <?php
 
-class Toby_MySQLi
+class Toby_MySQL
 {
     private static $instances   = array();
 
@@ -83,7 +83,7 @@ class Toby_MySQLi
         
         if($this->mysqli->connect_errno !== 0)
         {
-            if($this->throwExceptions) throw new Exception('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
+            if($this->throwExceptions) throw new Toby_MySQL_Exception($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
 
             Toby_Logger::error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
@@ -202,7 +202,7 @@ class Toby_MySQLi
             }
 
             // throw error
-            if($this->throwExceptions) throw new Exception("[MYSQL ERROR] $this->errorCode: $this->errorMessage :: QUERY: $q");
+            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
 
             // log & return
             Toby_Logger::error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
@@ -230,7 +230,7 @@ class Toby_MySQLi
             $this->errorCode        = $this->mysqli->errno;
 
             // throw exception
-            if($this->throwExceptions) throw new Exception("statement preparation failed ($this->errorCode: $this->errorMessage)");
+            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
 
             // error & return
             Toby_Logger::error("statement preparation failed ($this->errorCode: $this->errorMessage)");
@@ -253,7 +253,7 @@ class Toby_MySQLi
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Exception("param bind failed ($this->errorCode: $this->errorMessage)");
+                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
 
                 // error & return
                 Toby_Logger::error("param bind failed ($this->errorCode: $this->errorMessage)");
@@ -267,7 +267,7 @@ class Toby_MySQLi
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Exception("statement execution failed ($this->errorCode: $this->errorMessage)");
+                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage");
 
                 // error & return
                 Toby_Logger::error("statement execution failed ($this->errorCode: $this->errorMessage)");
@@ -301,7 +301,7 @@ class Toby_MySQLi
         if($success === false)
         {
             // throw exception
-            if($this->throwExceptions) throw new Exception('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
+            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
 
             // error & return
             Toby_Logger::error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
@@ -615,6 +615,6 @@ class Toby_MySQLi
     /* to string */
     public function __toString()
     {
-        return "Toby_MySQLi[$this->user@$this->host]";
+        return "Toby_MySQL[$this->user@$this->host]";
     }
 }

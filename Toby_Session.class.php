@@ -49,7 +49,7 @@ class Toby_Session
         if(Toby_Config::get('toby')->getValue('sessionUseMySQL', 'bool'))
         {
             $this->mysqlMode = true;
-            $this->mysql = Toby_MySQLi::getInstance();
+            $this->mysql = Toby_MySQL::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),
