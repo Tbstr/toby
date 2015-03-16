@@ -202,7 +202,7 @@ class Toby_MySQLi
             }
 
             // throw error
-            if($this->throwExceptions) throw new Exception("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
+            if($this->throwExceptions) throw new Exception("[MYSQL ERROR] $this->errorCode: $this->errorMessage :: QUERY: $q");
 
             // log & return
             Toby_Logger::error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
