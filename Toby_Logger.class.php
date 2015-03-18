@@ -173,9 +173,14 @@ class Toby_Logger
 
     public static function handleException(Exception $e)
     {
+        // handle previous
+        $previous = $e->getPrevious();
+        if(!empty($previous)) self::handleException($previous);
+
+        // log
         self::_log('[EXCEPTION] '.$e->getMessage().' > '.$e->getFile().':'.$e->getLine(), 'error');
     }
-    
+
     public static function handleShutdown()
     {
         // check for fatal error before shutdown
