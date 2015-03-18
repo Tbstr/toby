@@ -22,6 +22,9 @@ define('NL', "\n");
 // add lib to include path
 set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
 
+// require autoloader
+require_once 'Toby_Autoloader.class.php';
+
 // core class
 class Toby
 {
@@ -75,7 +78,7 @@ class Toby
         $this->startupTime      = time();
         
         // register autoloader
-        spl_autoload_register(array($this, 'autoload'));
+        spl_autoload_register(array('Toby_Autoloader', 'load'), true, true);
         
         // sessions
         if($scope === self::SCOPE_LOCAL) Toby_Session::$enabled = false;
@@ -276,45 +279,7 @@ class Toby
         // set mb
         mb_internal_encoding($encoding);
     }
-    
-    /* autoloader */
-    public function autoload($className)
-    {
-        // prepare
-        $elements = explode('_', $className);
-        
-        if(count($elements) === 1) return;
-        $basename = array_pop($elements);
-        
-        // resolve toby related
-        if(strtolower($elements[0]) === 'toby')
-        {
-            $elements[0]    = TOBY_ROOT;
-            $path = strtolower(implode('/', $elements))."/$className.class.php";
 
-            if(is_file($path)) require_once($path);
-            else
-            {
-                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
-                if(is_file($path)) require_once($path);
-            }
-        }
-        
-        // resolve app related
-        else
-        {
-            array_unshift($elements, APP_ROOT);
-            $path = strtolower(implode('/', $elements))."/$className.class.php";
-
-            if(is_file($path)) require_once($path);
-            else
-            {
-                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
-                if(is_file($path)) require_once($path);
-            }
-        }
-    }
-    
     /* helper */
     private function hook($name)
     {
