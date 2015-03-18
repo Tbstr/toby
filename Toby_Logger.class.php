@@ -57,7 +57,17 @@ class Toby_Logger
         // reset buffer
         self::$buffer = array();
     }
-    
+
+    public static function exception(Exception $e)
+    {
+        // handle previous
+        $previous = $e->getPrevious();
+        if(!empty($previous)) self::exception($previous);
+
+        // log
+        self::_log('[EXCEPTION] '.$e->getMessage().' > '.$e->getFile().':'.$e->getLine(), 'error');
+    }
+
     public static function error($content)
     {
         self::_log("[ERROR] $content".self::traceStamp(), 'error');
@@ -87,7 +97,7 @@ class Toby_Logger
         if(!self::$logErrors)
         {
             set_error_handler('Toby_Logger::handleError', error_reporting());
-            set_exception_handler('Toby_Logger::handleException');
+            set_exception_handler('Toby_Logger::exception');
             register_shutdown_function('Toby_Logger::handleShutdown');
             
             self::$logErrors = true;
@@ -169,16 +179,6 @@ class Toby_Logger
         
         // return
         return false;
-    }
-
-    public static function handleException(Exception $e)
-    {
-        // handle previous
-        $previous = $e->getPrevious();
-        if(!empty($previous)) self::handleException($previous);
-
-        // log
-        self::_log('[EXCEPTION] '.$e->getMessage().' > '.$e->getFile().':'.$e->getLine(), 'error');
     }
 
     public static function handleShutdown()
