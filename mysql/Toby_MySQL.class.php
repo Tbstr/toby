@@ -26,6 +26,8 @@ class Toby_MySQL
     private $queryRec           = false;
     private $queryRecBuffer;
 
+    private $numTransactions    = 0;
+
     public static function getInstance($id = null, $autoInit = true)
     {
         if(empty($id)) $id = 'default';
@@ -285,11 +287,34 @@ class Toby_MySQL
     /* transactions */
     public function beginTransaction()
     {
-        return $this->query('START TRANSACTION');
+        if($this->numTransactions === 0)
+        {
+            if(!$this->query('START TRANSACTION'))
+            {
+                // throw exception
+                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: starting transaction failed", $this->errorCode);
+
+                // error & return
+                Toby_Logger::error("$this->errorCode: starting transaction failed");
+                return false;
+            }
+        }
+
+        $this->numTransactions++;
+
+        // return
+        return true;
     }
     
     public function endTransaction($commit = true)
     {
+        // cancellation
+        if($commit === true && $this->numTransactions > 1)
+        {
+            $this->numTransactions--;
+            return true;
+        }
+
         // vars
         $success = false;
 
@@ -305,7 +330,11 @@ class Toby_MySQL
 
             // error & return
             Toby_Logger::error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
+            return false;
         }
+
+        // reset num transactions
+        $this->numTransactions = 0;
 
         // return success
         return true;
