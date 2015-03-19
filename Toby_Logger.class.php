@@ -65,7 +65,7 @@ class Toby_Logger
         if(!empty($previous)) self::exception($previous);
 
         // log
-        self::_log('[EXCEPTION] '.$e->getMessage().' > '.$e->getFile().':'.$e->getLine(), 'error');
+        self::_log('[EXCEPTION] '.$e->getMessage()."\n".self::formatBackTrace($e->getTrace())."\n > ".$e->getFile().':'.$e->getLine(), 'error');
     }
 
     public static function error($content)
@@ -110,6 +110,50 @@ class Toby_Logger
         $entry = $dbt[1];
         
         return " > {$entry['file']}:{$entry['line']}";
+    }
+
+    public static function formatBackTrace($backtrace)
+    {
+        if(!is_array($backtrace)) throw new InvalidArgumentException('argument backtrace is not of type array');
+
+        $lines = array();
+        $count = count($backtrace);
+
+        foreach($backtrace as $t)
+        {
+            $line = $count.': ';
+            $count--;
+
+            // class & function
+            if(isset($t['class']))  $line .= $t['class'].'::'.$t['function'];
+            else                    $line .= $t['function'];
+
+            // arguments
+            if($t['args'])
+            {
+                $argsElm = array();
+                foreach($t['args'] as $arg)
+                {
+                    if(is_object($arg))
+                    {
+                        if(method_exists($arg, '__toString'))   $argsElm[] .= (string)$arg;
+                        else                                    $argsElm[] .= 'Object';
+                    }
+                    elseif(is_array($arg))      $argsElm[] = 'Array['.count($arg).']';
+                    else                        $argsElm[] = (string)$arg;
+                }
+
+                $line .= '('.implode(', ', $argsElm).')';
+            }
+            else $line .= '()';
+
+            // file & line
+            if(isset($t['file'])) $line .= ' > '.$t['file'].':'.$t['line'];
+
+            $lines[] = $line;
+        }
+
+        return implode("\n", $lines);
     }
 
     /* getter setter */
