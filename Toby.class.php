@@ -206,6 +206,10 @@ class Toby
                         // stop timing
                         $this->requestTimeLogStop(false);
 
+                        // rebuild attributes
+                        if($attributes === null)    $attributes = array($actionName);
+                        else                        array_unshift($attributes, $actionName);
+
                         // return
                         return $this->runAction($controllerName, 'default', $attributes);
                     }
