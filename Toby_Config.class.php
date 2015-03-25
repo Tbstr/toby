@@ -29,7 +29,7 @@ class Toby_Config
         if(!is_array($data))    return false;
 
         // add
-        array_merge($this->$data, $data);
+        $this->data = array_merge($this->data, $data);
     }
 
     /* methods */
@@ -102,6 +102,14 @@ class Toby_Config
         }
 
         return true;
+    }
+
+    public static function listConfigs()
+    {
+        $list = array();
+        foreach(self::$instances as $instance) $list[] = $instance->name;
+
+        return $list;
     }
 
     public static function get($name)
