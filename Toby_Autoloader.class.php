@@ -19,6 +19,18 @@ class Toby_Autoloader
         return true;
     }
 
+    public static function addEntries($entries)
+    {
+        // cancellation
+        if(!is_array($entries)) throw new InvalidArgumentException('argument entries is not of type array');
+
+        // add
+        foreach($entries as $className => $path) self::addEntry($className, $path);
+
+        // return
+        return true;
+    }
+
     private static function getEntryByClassName($className)
     {
         foreach(self::$entries as $entry)
@@ -46,22 +58,28 @@ class Toby_Autoloader
 
     private static function loadToby($className)
     {
-        // prepare
-        $elements = explode('_', $className);
+        // vars
+        $namespaceElements  = explode('\\', $className);
 
-        if(count($elements) === 1) return;
-        $basename = array_pop($elements);
+        $className          = array_pop($namespaceElements);
+        $classNameElements  = explode('_', $className);
+
+        if(count($classNameElements) === 1) return;
+        $classNameBase      = array_pop($classNameElements);
+
+        $namespacePath      = empty($namespaceElements) ? '' : implode('/', $namespaceElements).'/';
 
         // resolve toby related
-        if(strtolower($elements[0]) === 'toby')
+        if(strtolower($classNameElements[0]) === 'toby')
         {
-            $elements[0]    = TOBY_ROOT;
-            $path = strtolower(implode('/', $elements))."/$className.class.php";
+            $classNameElements[0] = TOBY_ROOT;
+
+            $path = strtolower(implode('/', $classNameElements))."/$className.class.php";
 
             if(is_file($path)) require_once($path);
             else
             {
-                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
+                $path = $namespacePath.strtolower(implode('/', $classNameElements)).'/'.strtolower($classNameBase)."/$className.class.php";
                 if(is_file($path)) require_once($path);
             }
         }
@@ -69,13 +87,15 @@ class Toby_Autoloader
         // resolve app related
         else
         {
-            array_unshift($elements, APP_ROOT);
-            $path = strtolower(implode('/', $elements))."/$className.class.php";
+            if($namespacePath !== '') array_unshift($classNameElements, $namespacePath);
+            array_unshift($classNameElements, APP_ROOT);
+
+            $path = strtolower(implode('/', $classNameElements))."/$className.class.php";
 
             if(is_file($path)) require_once($path);
             else
             {
-                $path = strtolower(implode('/', $elements)).'/'.strtolower($basename)."/$className.class.php";
+                $path = $namespacePath.strtolower(implode('/', $classNameElements)).'/'.strtolower($classNameBase)."/$className.class.php";
                 if(is_file($path)) require_once($path);
             }
         }
