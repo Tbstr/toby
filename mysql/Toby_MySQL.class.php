@@ -237,6 +237,7 @@ class Toby_MySQL
         elseif ($result === true)
         {
             // no select query
+            $this->result = true;
             return true;
         }
 
@@ -688,8 +689,9 @@ class Toby_MySQL
 
     private function hasResult($throwException = false)
     {
-        if ($this->result === false)
+        if ($this->result === false || $this->result === true)
         {
+            // result is true if last query was a data modification (UPDATE, INSERT or DELETE)
             if ($throwException)
             {
                 throw new Toby_MySQL_Exception("no current result");
