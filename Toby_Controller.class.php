@@ -9,7 +9,7 @@ abstract class Toby_Controller
     
     public $toby;
     
-     /* theme vars */
+    /* theme vars */
     public $themeOverride;
     public $themeConfigOverride;
     
@@ -33,6 +33,9 @@ abstract class Toby_Controller
     public $layout;
     public $view;
     public $javascript;
+
+    /* static vars */
+    private static $helpers         = array();
     
     function __construct($name, $action, $attributes = null)
     {
@@ -184,7 +187,30 @@ abstract class Toby_Controller
         if(empty($this->viewScriptOverride)) return "$this->name/$this->action";
         else return $this->viewScriptOverride;
     }
-    
+
+    /* helper management */
+    public static function registerHelper($functionName, $callable)
+    {
+        // cancellation
+        if(!is_string($functionName))   throw new InvalidArgumentException('argument functionName is not of type string');
+        if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
+
+        // check for existence
+        if(isset(self::$helpers[$functionName])) throw new Exception('Helper "'.$functionName.'" is already set');
+
+        // register
+        self::$helpers[$functionName] = $callable;
+    }
+
+    public function __call($name, $arguments)
+    {
+        // cancellation
+        if(!isset(self::$helpers[$name])) return;
+
+        // call
+        return call_user_func_array(self::$helpers[$name], $arguments);
+    }
+
     /* to string */
     public function __toString()
     {
