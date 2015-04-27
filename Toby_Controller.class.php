@@ -10,8 +10,8 @@ abstract class Toby_Controller
     public $toby;
     
     /* theme vars */
-    public $themeOverride;
-    public $themeConfigOverride;
+    public $themeOverride           = false;
+    public $themeFunctionOverride   = false;
     
     /* layout vars */
     public $layoutName              = 'default';
@@ -102,10 +102,10 @@ abstract class Toby_Controller
     }
     
     /* set theme */
-    protected function setTheme($themeName, $configName = false)
+    protected function setTheme($themeName, $functionName = false)
     {
         $this->themeOverride = $themeName;
-        if($configName) $this->themeConfigOverride = $configName;
+        if(!empty($functionName)) $this->themeFunctionOverride = $functionName;
     }
     
     /* set layout */
