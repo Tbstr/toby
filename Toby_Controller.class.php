@@ -94,7 +94,7 @@ abstract class Toby_Controller
         header("Content-Description: File Transfer");
 
         if($mimeType === 'auto') $mimeType = Toby_Utils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
-        //if(!empty($mimeType)) header("Content-Type:$mimeType");
+        if(!empty($mimeType)) header("Content-Type:$mimeType");
 
         header("Content-Disposition: attachment; filename=\"".(empty($nameOverride) ? basename($filePath) : $nameOverride)."\"");
         header("Content-Transfer-Encoding: binary");
