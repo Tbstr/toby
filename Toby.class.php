@@ -71,7 +71,11 @@ class Toby
     {
         // include pre init hook
         $this->hook('pre_init');
-        
+
+        // normalize input
+        if(is_string($request))     $request = trim($request, ' /');
+        else                        $request = false;
+
         // set vars
         $this->request          = $request;
         $this->scope            = $scope;
@@ -131,20 +135,20 @@ class Toby
 
             $controllerName = !empty($elements[0]) ? strtolower($elements[0]) : 'index';
             $actionName     = !empty($elements[1]) ? strtolower($elements[1]) : 'index';
-            $attributes     = (count($elements) > 2) ? array_slice($elements, 2) : null;
+            $arguments      = !empty($elements[2]) ? array_slice($elements, 2) : null;
             
             // boot
-            $this->boot($controllerName, $actionName, $attributes, true);
+            $this->boot($controllerName, $actionName, $arguments, true);
         }
     }
     
-    public function boot($controllerName, $actionName = 'index', $attributes = null, $stdResolveOnFail = false)
+    public function boot($controllerName, $actionName = 'index', $arguments = null, $stdResolveOnFail = false)
     {
         // set resolve
-        $this->resolve = "$controllerName/$actionName".($attributes === null ? '' : '/'.implode('/', $attributes));
+        $this->resolve = "$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments));
 
         // run action
-        $controller = $this->runAction($controllerName, $actionName, $attributes);
+        $controller = $this->runAction($controllerName, $actionName, $arguments);
         
         if($controller === false)
         {
@@ -169,10 +173,10 @@ class Toby
         }
     }
     
-    public function runAction($controllerName, $actionName = 'index', $attributes = null)
+    public function runAction($controllerName, $actionName = 'index', $arguments = null)
     {
         // start timing;
-        $this->requestTimeLogStart("$controllerName/$actionName".($attributes === null ? '' : '/'.implode('/', $attributes)));
+        $this->requestTimeLogStart("$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments)));
         
         // vars
         $controllerFullName = 'Controller_'.strtoupper($controllerName[0]).substr($controllerName, 1);
@@ -185,13 +189,13 @@ class Toby
             
             if(class_exists($controllerFullName))
             {
-                $controllerInstance = new $controllerFullName($controllerName, $actionName, $attributes);
+                $controllerInstance = new $controllerFullName($controllerName, $actionName, $arguments);
                 
                 if(method_exists($controllerInstance, $actionFullName))
                 {
                     // call
-                    if($attributes === null) call_user_func(array($controllerInstance, $actionFullName));
-                    else call_user_func_array (array($controllerInstance, $actionFullName), $attributes);
+                    if(empty($arguments))   call_user_func(array($controllerInstance, $actionFullName));
+                    else                    call_user_func_array (array($controllerInstance, $actionFullName), $arguments);
                     
                     // stop timing
                     $this->requestTimeLogStop(true);
@@ -206,12 +210,12 @@ class Toby
                         // stop timing
                         $this->requestTimeLogStop(false);
 
-                        // rebuild attributes
-                        if($attributes === null)    $attributes = array($actionName);
-                        else                        array_unshift($attributes, $actionName);
+                        // rebuild arguments
+                        if(empty($arguments))       $arguments = array($actionName);
+                        else                        array_unshift($arguments, $actionName);
 
                         // return
-                        return $this->runAction($controllerName, 'default', $attributes);
+                        return $this->runAction($controllerName, 'default', $arguments);
                     }
                 }
             }

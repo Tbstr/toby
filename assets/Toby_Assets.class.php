@@ -26,7 +26,7 @@ class Toby_Assets
         return $set;
     }
 
-    public static function setResolvePath($path)
+    public static function setResolvePath($path, $strictCompare = false)
     {
         // cancellation
         if(empty($path)) throw new BadFunctionCallException('argument missing: path');
@@ -40,14 +40,18 @@ class Toby_Assets
             }
         }
 
-        // create new & return
+        // create new & set
         $set = new Toby_Assets_Set();
 
-        $set->type          = Toby_Assets_Set::TYPE_RESOLVE_PATH;
-        $set->resolvePath   = $path;
+        $set->type                  = Toby_Assets_Set::TYPE_RESOLVE_PATH;
 
+        $set->resolvePath           = $path;
+        $set->resolvePathStrict     = $strictCompare;
+
+        // add to list
         self::$sets[] = $set;
 
+        // return
         return $set;
     }
 
@@ -59,12 +63,14 @@ class Toby_Assets
             if($set->type === Toby_Assets_Set::TYPE_RESOLVE_PATH_DEFAULT) return $set;
         }
 
-        // create new & return
+        // create new & set
         $set = new Toby_Assets_Set();
         $set->type = Toby_Assets_Set::TYPE_RESOLVE_PATH_DEFAULT;
 
+        // add to list
         self::$sets[] = $set;
 
+        // return
         return $set;
     }
 
@@ -100,17 +106,15 @@ class Toby_Assets
         {
             if($set->type === Toby_Assets_Set::TYPE_RESOLVE_PATH)
             {
-                if(strncmp($set->resolvePath, $resolvePath, strlen($set->resolvePath)) === 0) $setsOut[] = $set;
+                if($set->resolvePathStrict === true)   { if($set->resolvePath === $resolvePath) $setsOut[] = $set; }
+                else                                   { if(strncmp($set->resolvePath, $resolvePath, strlen($set->resolvePath)) === 0) $setsOut[] = $set; }
             }
         }
 
         // find matching
         if(empty($setsOut))
         {
-            foreach(self::$sets as $set)
-            {
-                if($set->type === Toby_Assets_Set::TYPE_RESOLVE_PATH_DEFAULT) $setsOut[] = $set;
-            }
+            foreach(self::$sets as $set) { if($set->type === Toby_Assets_Set::TYPE_RESOLVE_PATH_DEFAULT) $setsOut[] = $set; }
         }
 
         // return

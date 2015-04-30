@@ -4,7 +4,9 @@ class Toby_Assets_Set
 {
     /* public variables */
     public $type                        = 'standard';
+
     public $resolvePath                 = false;
+    public $resolvePathStrict           = false;
 
     /* private variables */
     private $javascripts                = array();
