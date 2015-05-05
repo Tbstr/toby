@@ -2,25 +2,28 @@
 
 class Toby_Logger
 {
+    /* public variables */
     public static $initialized              = false;
     public static $logsDirPath;
     
     public static $enabled                  = true;
-    
+
+    /* private variables */
     private static $logErrors               = false;
     private static $fatalNotificationTo;
     private static $listeners               = array();
 
     private static $prefix                  = '';
-
     private static $buffer                  = array();
-        
+
+    /* constants */
+    const TYPE_DEFAULT                      = 'type_default';
+    const TYPE_NOTICE                       = 'type_notice';
+    const TYPE_WARNING                      = 'type_warning';
     const TYPE_ERROR                        = 'type_error';
     const TYPE_EXCEPTION                    = 'type_exception';
-    const TYPE_WARNING                      = 'type_warning';
-    const TYPE_NOTICE                       = 'type_notice';
-    const TYPE_DEFAULT                      = 'type_default';
-    
+
+    /* initialization */
     public static function init($logsDirPath)
     {
         self::$logsDirPath          = $logsDirPath;
@@ -28,7 +31,8 @@ class Toby_Logger
         
         self::$initialized          = true;
     }
-    
+
+    /* root logging functions */
     private static function _log($content, $log = 'sys', $omitSys = false)
     {
         if(!self::$initialized) return;
@@ -58,6 +62,31 @@ class Toby_Logger
         self::$buffer = array();
     }
 
+    /* log wrapper */
+    public static function log($content, $log = 'sys', $omitSys = false)
+    {
+        self::_log($content.self::traceStamp(), $log, $omitSys);
+        self::callLogListener(self::TYPE_DEFAULT, $content);
+    }
+
+    public static function notice($content)
+    {
+        self::_log('[NOTICE] '.$content.self::traceStamp());
+        self::callLogListener(self::TYPE_NOTICE, $content);
+    }
+
+    public static function warn($content)
+    {
+        self::_log('[WARNING] '.$content.self::traceStamp(), 'error');
+        self::callLogListener(self::TYPE_WARNING, $content);
+    }
+
+    public static function error($content)
+    {
+        self::_log("[ERROR] $content".self::traceStamp(), 'error');
+        self::callLogListener(self::TYPE_ERROR, $content);
+    }
+
     public static function exception(Exception $e)
     {
         // handle previous
@@ -66,32 +95,10 @@ class Toby_Logger
 
         // log
         self::_log('[EXCEPTION] '.$e->getMessage()."\n".self::formatBackTrace($e->getTrace())."\n > ".$e->getFile().':'.$e->getLine(), 'error');
+        self::callLogListener(self::TYPE_EXCEPTION, $e->getMessage());
     }
 
-    public static function error($content)
-    {
-        self::_log("[ERROR] $content".self::traceStamp(), 'error');
-        self::callLogListener(self::TYPE_ERROR, $content);
-    }
-    
-    public static function warn($content)
-    {
-        self::_log('[WARNING] '.$content.self::traceStamp(), 'error');
-        self::callLogListener(self::TYPE_WARNING, $content);
-    }
-    
-    public static function notice($content)
-    {
-        self::_log('[NOTICE] '.$content.self::traceStamp());
-        self::callLogListener(self::TYPE_NOTICE, $content);
-    }
-    
-    public static function log($content, $log = 'sys', $omitSys = false)
-    {
-        self::_log($content.self::traceStamp(), $log, $omitSys);
-        self::callLogListener(self::TYPE_DEFAULT, $content);
-    }
-    
+    /* system error logging */
     public static function logErrors()
     {
         if(!self::$logErrors)
@@ -103,7 +110,8 @@ class Toby_Logger
             self::$logErrors = true;
         }
     }
-    
+
+    /* helpers */
     public static function traceStamp()
     {
         $dbt = debug_backtrace();
