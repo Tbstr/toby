@@ -453,4 +453,28 @@ class Toby_Utils
         // return diff
         return number_format((microtime(true) - $data['st']) * 1000, 3);
     }
+
+    public static function getCurrentURL($relative = false, $secure = false)
+    {
+        // vars
+        $toby = Toby::getInstance();
+
+        // assemble URL
+        $url = $toby->request;
+
+        if($relative)
+        {
+            $url = self::pathCombine(array($toby->appURLRelative, $url));
+        }
+        else
+        {
+            if($secure)     $url = self::pathCombine(array($toby->appURLSecure, $url));
+            else            $url = self::pathCombine(array($toby->appURL, $url));
+        }
+
+        if(!empty($_GET)) $url = $url.'?'.http_build_query($_GET);
+
+        // return
+        return $url;
+    }
 }
