@@ -9,8 +9,11 @@ class Toby_MySQL_Query
     private $type;
     
     private $tables         = array();
+    private $joins          = array();
+
     private $fields         = array();
     private $data           = array();
+
     private $conds          = array();
     
     private $orderBy        = null;
@@ -23,6 +26,9 @@ class Toby_MySQL_Query
     const TYPE_UPDATE       = 'update';
     const TYPE_REPLACE      = 'replace';
     const TYPE_DELETE       = 'delete';
+
+    const JOIN_INNER        = 'inner';
+    const JOIN_LEFT         = 'left';
     
     /* construct */
     function __construct($mysql, $type, $tables = null, $fields = null)
@@ -69,7 +75,16 @@ class Toby_MySQL_Query
         // return
         return $this;
     }
-    
+
+    public function join($table, $on, $joinType = 'inner')
+    {
+        // add
+        $this->joins[] = array($table, $on, $joinType);
+
+        // return
+        return $this;
+    }
+
     public function getNumTables()
     {
         return count($this->tables);
@@ -244,7 +259,31 @@ class Toby_MySQL_Query
     
     private function buildTables()
     {
-        return implode(',', $this->tables);
+        // set tables
+        $out = implode(',', $this->tables);
+
+        // add joins
+        foreach($this->joins as $join)
+        {
+            switch($join[2])
+            {
+                case self::JOIN_INNER:
+                    $out .= ' INNER JOIN ';
+                    break;
+
+                case self::JOIN_LEFT:
+                    $out .= ' LEFT JOIN ';
+                    break;
+
+                default:
+                    throw new Toby_MySQL_Exception('invalid join type given');
+            }
+
+            $out .= $join[0].' ON '.$join[1];
+        }
+
+        // return
+        return $out;
     }
     
     private function buildFields()
