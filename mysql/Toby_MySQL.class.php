@@ -487,10 +487,10 @@ class Toby_MySQL
     
     private function verifyValue($value)
     {
-        if($value === null)         return 'NULL';
-        elseif($value instanceof DateTime) return "'".$value->format('Y-m-d H:i:s')."'";
-        elseif(is_string($value))   return "'".$this->mysqli->real_escape_string($value)."'";
-        else                        return $value;
+        if($value === null)                     return 'NULL';
+        elseif(is_string($value))               return "'".$this->mysqli->real_escape_string($value)."'";
+        elseif($value instanceof DateTime)      return "'".$value->format('Y-m-d H:i:s')."'";
+        else                                    return $value;
     }
     
     private function buildDataDefinition($data)
