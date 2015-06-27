@@ -179,6 +179,7 @@ class Toby_Logger
     public static function setLogListener($type, $callback)
     {
         self::$listeners[] = array($type, $callback);
+        Toby_Logging::setLogListener($type, $callback);
     }
     
     private static function callLogListener($type, $content)

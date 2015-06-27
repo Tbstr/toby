@@ -35,6 +35,15 @@ class Toby_MySQL
     private $numTransactions    = 0;
 
     /**
+     * @var \Logger
+     */
+    private $logger;
+    /**
+     * @var \Logger
+     */
+    private $queryLogger;
+
+    /**
      * @param string $id
      * @param bool $autoInit
      * @return Toby_MySQL
@@ -50,6 +59,12 @@ class Toby_MySQL
         }
 
         return self::$instances[$id];
+    }
+
+    public function __construct()
+    {
+        $this->logger = \Logger::getLogger("toby.mysql");
+        $this->queryLogger = \Logger::getLogger("toby.mysql.queries");
     }
     
     /* init & connect */
@@ -98,7 +113,7 @@ class Toby_MySQL
         {
             if($this->throwExceptions) throw new Toby_MySQL_Exception($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
 
-            Toby_Logger::error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
+            $this->logger->error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
         }
 
@@ -163,7 +178,7 @@ class Toby_MySQL
         $this->initQuery();
 
         // log & rec
-        if($this->logQueries) Toby_Logger::log(str_replace(array("\n", "\r"), '', $q), 'mysql-queries', true);
+        if($this->logQueries) $this->queryLogger->info(str_replace(array("\n", "\r"), '', $q));
 
         if($this->queryRec === true)
         {
@@ -211,7 +226,7 @@ class Toby_MySQL
                     while(true)
                     {
                         // log
-                        Toby_Logger::log('MySQL reconnect, attempt '.$tries, 'mysql-queries');
+                        $this->queryLogger->info('MySQL reconnect, attempt '.$tries, 'mysql-queries');
 
                         // connect
                         if($this->connect() === true) break;
@@ -231,7 +246,7 @@ class Toby_MySQL
             if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
 
             // log & return
-            Toby_Logger::error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q", 'mysql-queries');
+            $this->logger->error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
             return false;
         }
         elseif ($result === true)
@@ -265,7 +280,7 @@ class Toby_MySQL
             if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
 
             // error & return
-            Toby_Logger::error("statement preparation failed ($this->errorCode: $this->errorMessage)");
+            $this->logger->error("statement preparation failed ($this->errorCode: $this->errorMessage)");
             return false;
         }
         
@@ -288,7 +303,7 @@ class Toby_MySQL
                 if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
 
                 // error & return
-                Toby_Logger::error("param bind failed ($this->errorCode: $this->errorMessage)");
+                $this->logger->error("param bind failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
             
@@ -302,7 +317,7 @@ class Toby_MySQL
                 if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage");
 
                 // error & return
-                Toby_Logger::error("statement execution failed ($this->errorCode: $this->errorMessage)");
+                $this->logger->error("statement execution failed ($this->errorCode: $this->errorMessage)");
                 return false;
             }
         }
@@ -325,7 +340,7 @@ class Toby_MySQL
                 if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: starting transaction failed", $this->errorCode);
 
                 // error & return
-                Toby_Logger::error("$this->errorCode: starting transaction failed");
+                $this->logger->error("$this->errorCode: starting transaction failed");
                 return false;
             }
         }
@@ -356,7 +371,7 @@ class Toby_MySQL
             if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
 
             // error & return
-            Toby_Logger::error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
+            $this->logger->error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
             return false;
         }
 
@@ -658,7 +673,7 @@ class Toby_MySQL
     public function initQueryLogging()
     {
         $this->logQueries = true;
-        Toby_Logger::log('[MySQL log start] '.Toby::getInstance()->request, 'mysql-queries', true);
+        $this->queryLogger->info('[MySQL log start] '.Toby::getInstance()->request);
     }
     
     /* query recording */

@@ -112,6 +112,10 @@ class Toby_Config
         return $list;
     }
 
+    /**
+     * @param $name
+     * @return Toby_Config
+     */
     public static function get($name)
     {
         // cancellation

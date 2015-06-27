@@ -47,6 +47,11 @@ class Toby
     private $requestLogData             = array();
     
     private $initialized                = false;
+
+    /**
+     * @var \Logger
+     */
+    private $requestTimesLogger;
     
     /* constants */
     const SCOPE_WEB                     = 'web';
@@ -71,6 +76,9 @@ class Toby
     {
         // include pre init hook
         $this->hook('pre_init');
+
+        // require composer autoloader
+        require_once COMPOSER_PATH . '/autoload.php';
 
         // normalize input
         if(is_string($request))     $request = trim($request, ' /');
@@ -103,13 +111,14 @@ class Toby
         $this->appURLRelative   = preg_replace('/https?:\/\/[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}(:[0-9]+)?\/?/', '/', $this->appURL);
 
         // init logging
+        Toby_Logging::init();
         Toby_Logger::init(APP_ROOT.'/logs');
-        Toby_Logger::logErrors('error');
-        
+
         if(Toby_Config::get('toby')->getValue('logRequestTimes'))
         {
             $this->logRequestTime = true;
-            Toby_Logger::log('[APP START]', 'request-times', true);
+            $this->requestTimesLogger = \Logger::getLogger("toby.request-times");
+            $this->requestTimesLogger->info("[APP START]");
         }
         
         // set encoding
@@ -237,7 +246,7 @@ class Toby
         $this->requestLogData[]  = array($title, microtime(true));
         
         // log
-        Toby_Logger::log("running action: $title", 'request-times', true);
+        $this->requestTimesLogger->info("running action: $title");
     }
     
     private function requestTimeLogStop($success)
@@ -250,7 +259,7 @@ class Toby
         
         // log
         $deltatime = number_format((microtime(true) - $startTime) * 1000, 2);
-        Toby_Logger::log("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'), 'request-times', true);
+        $this->requestTimesLogger->info("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'));
     }
     
     public function renderController(Toby_Controller $controller)
@@ -271,7 +280,7 @@ class Toby
         if($this->logRequestTime)
         {
             $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
-            Toby_Logger::log("rendering controller: {$controller->serialize()} [{$deltatime}ms]", 'request-times', true);
+            $this->requestTimesLogger->info("rendering controller: {$controller->serialize()} [{$deltatime}ms]");
         }
         
         // return
@@ -317,6 +326,6 @@ class Toby
             $count--;
         }
         
-        if($this->logRequestTime === true) Toby_Logger::log('[APP END]', 'request-times', true);
+        if($this->logRequestTime === true) $this->requestTimesLogger->info('[APP END]');
     }
 }
