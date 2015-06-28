@@ -166,8 +166,6 @@ class Toby_Logging
                 if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', date('d.m.Y H:i:s').$logMsg);
             }
         }
-
-        Toby_Logger::flushBuffer();
     }
 
     /**

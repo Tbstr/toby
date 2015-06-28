@@ -112,7 +112,6 @@ class Toby
 
         // init logging
         Toby_Logging::init();
-        Toby_Logger::init(APP_ROOT.'/logs');
 
         if(Toby_Config::get('toby')->getValue('logRequestTimes'))
         {
