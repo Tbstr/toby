@@ -34,6 +34,11 @@ abstract class Toby_Controller
     public $view;
     public $javascript;
 
+    /**
+     * @var \Logger
+     */
+    protected $logger;
+
     /* static vars */
     private static $helpers         = array();
     
@@ -64,6 +69,8 @@ abstract class Toby_Controller
         // default vars javascript
         $this->javascript->xsrfkeyname  = Toby_Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Toby_Security::XSRFGetKey();
+
+        $this->logger = \Logger::getLogger(str_replace('_', '.', strtolower(get_class($this))));
     }
     
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
