@@ -169,4 +169,14 @@ class Toby_Logging
 
         Toby_Logger::flushBuffer();
     }
+
+    /**
+     * @param mixed $classOrObject
+     * @return \Logger
+     */
+    public static function logger($classOrObject)
+    {
+        $className = is_object($classOrObject) ? get_class($classOrObject) : $classOrObject;
+        return \Logger::getLogger(str_replace('_', '.', strtolower($className)));
+    }
 }
