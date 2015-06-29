@@ -26,8 +26,8 @@ class Toby_Logging
         self::$fatalNotificationTo  = Toby_Config::get('toby')->getValue('fatalNotificationTo', 'string');
 
         $configFilenames = array(
-            APP_ROOT . '/config/override/logging.cfg.php',
-            APP_ROOT . '/config/logging.cfg.php',
+            APP_ROOT . '/config/override/logging.php',
+            APP_ROOT . '/config/logging.php',
         );
         $config = null;
         foreach ($configFilenames as $configFilename)
