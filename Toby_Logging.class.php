@@ -61,6 +61,12 @@ class Toby_Logging
         $variables = array(
             "{APP_ROOT}" => APP_ROOT,
         );
+
+        foreach (Toby_Config::get("logging")->getAllValues() as $key => $value)
+        {
+            $variables['{' . $key . '}'] = $value;
+        }
+
         foreach ($config as $key => &$value)
         {
             if (is_array($value))
