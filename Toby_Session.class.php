@@ -19,6 +19,11 @@ class Toby_Session
     
     /* constants */
     const KEY                   = 'tobysess';
+
+    /**
+     * @var \Logger
+     */
+    private $logger;
     
     /* static getter */
     public static function getInstance($openOnInit = true)
@@ -31,6 +36,8 @@ class Toby_Session
     {
         // singleton check
         if(self::$instance !== null) Toby::finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
+
+        $this->logger = \Logger::getLogger("toby.session");
         
         // initialize
         $this->init();
@@ -104,7 +111,7 @@ class Toby_Session
         }
         
         // return
-        Toby_Logger::error('opening session failed');
+        $this->logger->error('opening session failed');
         return false;
     }
     
@@ -311,12 +318,12 @@ class Toby_Session
         // log & return fail
         if($this->mysql->result === false)
         {
-            Toby_Logger::error('session garbage collection failed');
+            $this->logger->error('session garbage collection failed');
             return false;
         }
         
         // log & return success
-        Toby_Logger::log('session garbage collection: '.$this->mysql->getNumAffected().' entries removed');
+        $this->logger->info('session garbage collection: '.$this->mysql->getNumAffected().' entries removed');
         return true;
     }
     

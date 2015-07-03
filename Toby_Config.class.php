@@ -52,6 +52,11 @@ class Toby_Config
         return Toby_Utils::parseValue($value, $datatype);
     }
 
+    public function getAllValues()
+    {
+        return is_array($this->data) ? $this->data : array();
+    }
+
     public function getValueFromArray($key, $arrayKey, $datatype = '')
     {
         // cancellation
@@ -112,6 +117,10 @@ class Toby_Config
         return $list;
     }
 
+    /**
+     * @param $name
+     * @return Toby_Config
+     */
     public static function get($name)
     {
         // cancellation
