@@ -74,11 +74,11 @@ class Toby
     /* object methods */
     public function init($request = false, $scope = false)
     {
-        // include pre init hook
-        $this->hook('pre_init');
-
         // require composer autoloader
         require_once COMPOSER_PATH . '/autoload.php';
+
+        // include pre init hook
+        $this->hook('pre_init');
 
         // normalize input
         if(is_string($request))     $request = trim($request, ' /');
