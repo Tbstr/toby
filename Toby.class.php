@@ -75,7 +75,7 @@ class Toby
     public function init($request = false, $scope = false)
     {
         // require composer autoloader
-        require_once COMPOSER_PATH . '/autoload.php';
+        require_once COMPOSER_ROOT . '/autoload.php';
 
         // include pre init hook
         $this->hook('pre_init');
