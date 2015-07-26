@@ -75,7 +75,8 @@ class Toby
     public function init($request = false, $scope = false)
     {
         // require composer autoloader
-        require_once COMPOSER_ROOT . '/autoload.php';
+        $composerAutoloaderPath = COMPOSER_ROOT.'/autoload.php';
+        if(is_file($composerAutoloaderPath)) require_once $composerAutoloaderPath;
 
         // include pre init hook
         $this->hook('pre_init');
@@ -191,7 +192,7 @@ class Toby
         $actionFullName     = $actionName . 'Action';
         
         // exec
-        if(file_exists(APP_ROOT."/controller/$controllerFullName.class.php"))
+        if(is_file(APP_ROOT."/controller/$controllerFullName.class.php"))
         {
             require_once APP_ROOT."/controller/$controllerFullName.class.php";
             
@@ -300,7 +301,7 @@ class Toby
     private function hook($name)
     {
         $hookPath = APP_ROOT.'/hooks/'.$name.'.hook.php';
-        if(file_exists($hookPath)) include $hookPath;
+        if(is_file($hookPath)) include $hookPath;
     }
     
     /* finalization */
