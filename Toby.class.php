@@ -108,7 +108,7 @@ class Toby
         
         // set url vars
         $this->appURL           = Toby_Config::get('toby')->hasKey('appURL') ? Toby_Config::get('toby')->getValue('appURL') : '';
-        $this->appURLSecure     = Toby_Config::get('toby')->hasKey('secureAppURL') ? Toby_Config::get('toby')->getValue('secureAppURL') : $this->appURL;
+        $this->appURLSecure     = Toby_Config::get('toby')->hasKey('appURLSecure') ? Toby_Config::get('toby')->getValue('appURLSecure') : $this->appURL;
         $this->appURLRelative   = preg_replace('/https?:\/\/[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}(:[0-9]+)?\/?/', '/', $this->appURL);
 
         // init logging
