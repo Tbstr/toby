@@ -25,20 +25,8 @@ class Toby_Logging
     {
         self::$fatalNotificationTo  = Toby_Config::get('toby')->getValue('fatalNotificationTo', 'string');
 
-        $configFilenames = array(
-            APP_ROOT.'/config/override/logging.php',
-            APP_ROOT.'/config/logging.php',
-        );
-        $config = null;
-        foreach ($configFilenames as $configFilename)
-        {
-            if (file_exists($configFilename))
-            {
-                $config = include($configFilename);
-                break;
-            }
-        }
-        if ($config === null || !is_array($config))
+        $config = Toby_Config::get('logging')->getValue('config');
+        if(empty($config))
         {
             trigger_error("unable to configure logging", E_USER_ERROR);
             // this will throw an ERROR and ends execution
@@ -56,24 +44,23 @@ class Toby_Logging
         register_shutdown_function('Toby_Logging::handleShutdown');
     }
 
-    private static function interpolateVariablesInConfig(array &$config)
+    private static function interpolateVariablesInConfig(array &$config, array &$variables = null)
     {
-        $variables = array(
-            "{APP_ROOT}" => APP_ROOT,
-        );
-
-        foreach (Toby_Config::get("logging")->getAllValues() as $key => $value)
+        // init variables
+        if(empty($variables))
         {
-            $variables['{' . $key . '}'] = $value;
+            $variables = array( "{APP_ROOT}" => APP_ROOT );
+            foreach(Toby_Config::get('logging')->getValue('configVars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
         }
 
-        foreach ($config as $key => &$value)
+        // crawl config
+        foreach($config as $key => &$value)
         {
-            if (is_array($value))
+            if(is_array($value))
             {
-                self::interpolateVariablesInConfig($value);
+                self::interpolateVariablesInConfig($value, $variables);
             }
-            elseif (is_string($value))
+            elseif(is_string($value))
             {
                 $value = str_replace(array_keys($variables), array_values($variables), $value);
             }

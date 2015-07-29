@@ -101,8 +101,8 @@ class Toby
         $this->hook('configs_loaded');
         
         // error handling
-        if(Toby_Config::get('toby')->getValue('strictErrors'))  error_reporting(E_ALL | E_STRICT);
-        else                                                error_reporting(E_ALL & ~E_STRICT);
+        if(Toby_Config::get('toby')->getValue('strictErrors')) error_reporting(E_ALL | E_STRICT);
+        else error_reporting(E_ALL & ~E_STRICT);
         
         ini_set('display_errors', Toby_Config::get('toby')->getValue('displayErrors') ? '1' : '0');
         
