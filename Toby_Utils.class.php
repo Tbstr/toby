@@ -365,22 +365,22 @@ class Toby_Utils
         }
     }
     
-    public static function benchmark($method, $iterations = 1, $arguments = null)
+    public static function benchmark(callable $callable, $iterations = 1, $arguments = null)
     {
         // init
-        $methodName = is_array($method) ? implode('::', $method) : (string)$method;
-        
+        $callableStr = is_array($callable) ? implode('::', $callable) : (string)$callable;
+
         // iterate
         $startTime = microtime(true);
         $c = $iterations; while($c--)
         {
-            if(empty($arguments)) call_user_func($method);
-            else call_user_func_array($method, $arguments);
+            if(empty($arguments)) call_user_func($callable);
+            else call_user_func_array($callable, $arguments);
         }
         $endTime = microtime(true);
-        
+
         // report
-        Toby_Utils::printr("$methodName with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
+        Toby_Utils::printr("$callableStr with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
     }
     
     public static function validateMail($mail)
