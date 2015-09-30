@@ -38,7 +38,7 @@ class Toby_Security
             else
             {
                 // log
-                \Logger::getLogger("toby.security")->error('XSRF validation failed due to missing key. REQUEST: '
+                \Logger::getLogger("toby.security")->info('XSRF validation failed due to missing key. REQUEST: '
                     .Toby::getInstance()->request
                     .(empty($_GET) ? '' : ' GET:'.http_build_query($_GET))
                     .(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))
@@ -54,7 +54,7 @@ class Toby_Security
         if($key === self::XSRFGetKey()) return true;
         
         // log fail
-        \Logger::getLogger("toby.security")->error('XSRF violation. REQUEST: '
+        \Logger::getLogger("toby.security")->info('XSRF violation. REQUEST: '
             .Toby::getInstance()->request
             .(empty($_GET) ? '' : ' GET:'.http_build_query($_GET))
             .(empty($_POST) ? '' : ' POST:'.http_build_query($_POST))
