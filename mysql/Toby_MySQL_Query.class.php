@@ -4,6 +4,8 @@
 class Toby_MySQL_Query
 {
     /* variables */
+
+    /** @var Toby_MySQL */
     public $mysql;
     
     private $type;
