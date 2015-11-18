@@ -168,6 +168,7 @@ class Toby_Logging
     public static function logger($classOrObject)
     {
         $className = is_object($classOrObject) ? get_class($classOrObject) : $classOrObject;
-        return \Logger::getLogger(str_replace('_', '.', strtolower($className)));
+        $loggerName = trim(str_replace(array('_', '\\'), '.', strtolower($className)), '.');
+        return \Logger::getLogger($loggerName);
     }
 }
