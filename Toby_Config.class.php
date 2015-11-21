@@ -70,6 +70,15 @@ class Toby_Config
         $value = isset($array[$arrayKey]) ? $array[$arrayKey] : null;
         return Toby_Utils::parseValue($value, $datatype);
     }
+
+    public function setValue($key, $value)
+    {
+        // cancellation
+        if(!is_string($key)) throw new InvalidArgumentException('argument $key is not of type string');
+
+        // set
+        $this->data[$key] = $value;
+    }
     
     /* PHP */
     public function __toString()
