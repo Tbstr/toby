@@ -1,6 +1,12 @@
 <?php
 
-class Toby_Utils
+namespace Toby\Utils;
+
+use \InvalidArgumentException;
+use Toby\MySQL\MySQL;
+use Toby\Toby;
+
+class Utils
 {
     public static $mailDryRun       = false;
     
@@ -24,8 +30,7 @@ class Toby_Utils
     {
         $backtraceInfo = debug_backtrace();
         $backtrace = array();
-        
-        $str = '';
+
         foreach($backtraceInfo as $t)
         {
             // reset str
@@ -43,18 +48,20 @@ class Toby_Utils
         // print or return
         if($return) return implode("\n", $backtrace);
         self::printr(implode("\n", $backtrace));
+
+        return null;
     }
     
     public static function mySQLRecStart()
     {
-        return Toby_MySQL::getInstance()->startQueryRecording();
+        return MySQL::getInstance()->startQueryRecording();
     }
     
     public static function mySQLRecStop($print = true, $finalize = true)
     {
-        $recLog = Toby_MySQL::getInstance()->stopQueryRecording();
+        $recLog = MySQL::getInstance()->stopQueryRecording();
         
-        if($print) Toby_Utils::printr($recLog);
+        if($print) self::printr($recLog);
         if($finalize) Toby::finalize(0);
         return $recLog;
     }
@@ -75,13 +82,13 @@ class Toby_Utils
     {
         if(!is_array($array)) return $array;
 
-        $object = new stdClass();
+        $object = new \stdClass();
         
         if(is_array($array))
         {
             foreach($array as $key => $value)
             {
-                if(!empty($key)) $object->$key = Toby_Utils::array2object($value);
+                if(!empty($key)) $object->$key = self::array2object($value);
             }
         }
         
@@ -91,7 +98,6 @@ class Toby_Utils
 
     public static function object2array($object)
     {
-        if(!is_object($object) && !is_array($object)) return $object;
         if(is_object($object)) $object = get_object_vars($object);
 
         return array_map('object2array', $object);
@@ -266,7 +272,7 @@ class Toby_Utils
     public static function pathCombine($elements, $separator = '/')
     {
         // cancellation
-        if(!is_array($elements)) return false;
+        if(!is_array($elements)) throw new InvalidArgumentException('argument $elements is not of type array');
         
         // prepare
         for($i = 0, $c = count($elements); $i < $c; $i++)
@@ -353,7 +359,7 @@ class Toby_Utils
                 
             case 'object':
                 
-                if($value === null) return new stdClass();
+                if($value === null) return new \stdClass();
                 else return (object) $value;
                 break;
                 
@@ -380,7 +386,7 @@ class Toby_Utils
         $endTime = microtime(true);
 
         // report
-        Toby_Utils::printr("$callableStr with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
+        self::printr("$callableStr with $iterations iterations: ".number_format(($endTime - $startTime) * 1000, 2).'ms');
     }
     
     public static function validateMail($mail)

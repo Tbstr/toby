@@ -1,6 +1,10 @@
 <?php
 
-class Toby_Assets_Set
+namespace Toby\Assets;
+
+use Toby\ThemeManager;
+
+class Assets_Set
 {
     /* public variables */
     public $type                        = 'standard';
@@ -41,7 +45,7 @@ class Toby_Assets_Set
     {
         // vars
         $elements       = array();
-        $versionQuery   = Toby_Assets::$cacheBuster === false ? '' : '?v='.Toby_Assets::$cacheBuster;
+        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
 
         // build
         foreach($this->stylesheets as $css)
@@ -52,7 +56,7 @@ class Toby_Assets_Set
             }
             else
             {
-                $elements[] = '<link rel="stylesheet" type="text/css" media="'.$css[1].'" href="'.Toby_ThemeManager::$themeURL.'/'.$css[0].$versionQuery.'" />'.NL;
+                $elements[] = '<link rel="stylesheet" type="text/css" media="'.$css[1].'" href="'.ThemeManager::$themeURL.'/'.$css[0].$versionQuery.'" />'.NL;
             }
         }
 
@@ -64,7 +68,7 @@ class Toby_Assets_Set
     {
         // vars
         $elements       = array();
-        $versionQuery   = Toby_Assets::$cacheBuster === false ? '' : '?v='.Toby_Assets::$cacheBuster;
+        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
 
         // build
         foreach($this->javascripts as $js)
@@ -75,7 +79,7 @@ class Toby_Assets_Set
             }
             else
             {
-                $elements[] = '<script type="text/javascript" src="'.Toby_ThemeManager::$themeURL.'/'.$js[0].$versionQuery.'" '.($js[1] ? 'async' : '').'></script>'.NL;
+                $elements[] = '<script type="text/javascript" src="'.ThemeManager::$themeURL.'/'.$js[0].$versionQuery.'" '.($js[1] ? 'async' : '').'></script>'.NL;
             }
         }
 

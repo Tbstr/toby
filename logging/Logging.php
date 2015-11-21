@@ -1,6 +1,10 @@
 <?php
 
-class Toby_Logging
+namespace Toby\Logging;
+
+use Toby\Config;
+
+class Logging
 {
     private static $fatalNotificationTo;
     private static $listeners               = array();
@@ -23,10 +27,10 @@ class Toby_Logging
 
     public static function init()
     {
-        self::$fatalNotificationTo  = Toby_Config::get('toby')->getValue('fatalNotificationTo', 'string');
+        self::$fatalNotificationTo  = Config::get('toby')->getValue('fatalNotificationTo', 'string');
 
-        $config = Toby_Config::get('logging')->getValue('config');
-        if(empty($config))
+        $config = Config::get('logging')->getValue('config');
+        if(!is_array($config) || empty($config))
         {
             trigger_error("unable to configure logging", E_USER_ERROR);
             // this will throw an ERROR and ends execution
@@ -39,9 +43,9 @@ class Toby_Logging
             self::$errorLogger = \Logger::getLogger("error");
         }
 
-        set_error_handler('Toby_Logging::handleError', error_reporting());
-        set_exception_handler('Toby_Logging::handleException');
-        register_shutdown_function('Toby_Logging::handleShutdown');
+        set_error_handler('\Toby\Logging\Logging::handleError', error_reporting());
+        set_exception_handler('\Toby\Logging\Logging::handleException');
+        register_shutdown_function('\Toby\Logging\Logging::handleShutdown');
     }
 
     private static function interpolateVariablesInConfig(array &$config, array &$variables = null)
@@ -50,7 +54,7 @@ class Toby_Logging
         if(empty($variables))
         {
             $variables = array( "{APP_ROOT}" => APP_ROOT );
-            foreach(Toby_Config::get('logging')->getValue('configVars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
+            foreach(Config::get('logging')->getValue('configVars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
         }
 
         // crawl config
@@ -81,7 +85,7 @@ class Toby_Logging
         }
     }
 
-    public static function handleException(Exception $e)
+    public static function handleException(\Exception $e)
     {
         \LoggerMDC::put("file", $e->getFile());
         \LoggerMDC::put("line", $e->getLine());
@@ -90,7 +94,7 @@ class Toby_Logging
     }
 
     /* event handler */
-    public static function handleError($errno, $errstr, $errfile = '', $errline = 0, $errcontex = array())
+    public static function handleError($errno, $errstr, $errfile = '', $errline = 0/*, $errcontex = array()*/)
     {
         \LoggerMDC::put("file", $errfile);
         \LoggerMDC::put("line", $errline);

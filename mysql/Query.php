@@ -1,11 +1,12 @@
 <?php
 
+namespace Toby\MySQL;
 
-class Toby_MySQL_Query
+class Query
 {
     /* variables */
 
-    /** @var Toby_MySQL */
+    /** @var MySQL */
     public $mysql;
     
     private $type;
@@ -278,7 +279,7 @@ class Toby_MySQL_Query
                     break;
 
                 default:
-                    throw new Toby_MySQL_Exception('invalid join type given');
+                    throw new Exception('invalid join type given');
             }
 
             $out .= $join[0].' ON '.$join[1];

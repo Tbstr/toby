@@ -1,6 +1,8 @@
 <?php
 
-class Toby_MySQL_Exception extends Exception
+namespace Toby\MySQL;
+
+class Exception extends \Exception
 {
     function __construct($message = '', $code = 0, Exception $previous = null)
     {

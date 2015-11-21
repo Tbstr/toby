@@ -1,6 +1,11 @@
 <?php
 
-class Toby_Model
+namespace Toby;
+
+use \Exception;
+use \InvalidArgumentException;
+
+class Model
 {
     /* static variables */
     private static $helpers = array();
@@ -22,7 +27,7 @@ class Toby_Model
     public function __call($name, $arguments)
     {
         // cancellation
-        if(!isset(self::$helpers[$name])) return;
+        if(!isset(self::$helpers[$name])) throw new \Exception("call to undefined function $name");
 
         // call
         return call_user_func_array(self::$helpers[$name], $arguments);

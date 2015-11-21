@@ -1,6 +1,8 @@
 <?php
 
-class Toby_Layout extends Toby_View
+namespace Toby;
+
+class Layout extends View
 {
     public $title               = '';
     public $jsVars              = null;
@@ -27,7 +29,10 @@ class Toby_Layout extends Toby_View
     
     private function placeJSVars()
     {
+        // cancellation
         if(empty($this->jsVars)) return;
+
+        // place
         echo '<script type="text/javascript">window.TobyVars = '.json_encode($this->jsVars).';</script>';
     }
     

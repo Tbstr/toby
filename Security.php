@@ -1,6 +1,10 @@
 <?php
 
-class Toby_Security
+namespace Toby;
+
+use Toby\Utils\Utils;
+
+class Security
 {
     const XSRFKeyName   = 'xsrfkey';
     
@@ -8,19 +12,19 @@ class Toby_Security
     public static function init()
     {
         // add XSRF Key if missing
-        $session = Toby_Session::getInstance();
-        if(!$session->has(self::XSRFKeyName)) $session->set(self::XSRFKeyName, Toby_Utils::randomChars(32));
+        $session = Session::getInstance();
+        if(!$session->has(self::XSRFKeyName)) $session->set(self::XSRFKeyName, Utils::randomChars(32));
     }
     
     /* XSRF */
     public static function XSRFUpdateKey()
     {
-        Toby_Session::getInstance()->set(self::XSRFKeyName, Toby_Utils::randomChars(32));
+        Session::getInstance()->set(self::XSRFKeyName, Utils::randomChars(32));
     }
     
     public static function XSRFGetKey()
     {
-        return Toby_Session::getInstance()->get(self::XSRFKeyName);
+        return Session::getInstance()->get(self::XSRFKeyName);
     }
     
     public static function XSRFFormElement()

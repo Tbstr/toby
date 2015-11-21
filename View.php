@@ -1,6 +1,12 @@
 <?php
 
-class Toby_View
+namespace Toby;
+
+use \Exception;
+use \InvalidArgumentException;
+use Toby\Utils\Utils;
+
+class View
 {
     /* variables */
     private $scriptPath;
@@ -32,12 +38,12 @@ class Toby_View
         // script override
         if(is_string($scriptOverride))
         {
-            $overrideScriptPath = Toby_Renderer::findViewScript($scriptOverride);
+            $overrideScriptPath = Renderer::findViewScript($scriptOverride);
             if($overrideScriptPath !== false) $scriptPath = $overrideScriptPath;
         }
         
         // set
-        $this->themeURL = Toby_ThemeManager::$themeURL;
+        $this->themeURL = ThemeManager::$themeURL;
         
         // render
         ob_start();
@@ -53,7 +59,7 @@ class Toby_View
     protected function partial($scriptName, $vars = null, $includeParentVars = false)
     {
         // find script
-        $scriptPath = Toby_Renderer::findViewScript($scriptName);
+        $scriptPath = Renderer::findViewScript($scriptName);
         if($scriptPath === false) return 'Script "'.$scriptName.'" could not be found.';
         
         // manage vars
@@ -62,7 +68,7 @@ class Toby_View
         else $viewVars = &$vars;
         
         // create view and render
-        $partialView = new Toby_View($scriptPath, $viewVars);
+        $partialView = new View($scriptPath, $viewVars);
         return $partialView->render();
     }
     
@@ -81,18 +87,24 @@ class Toby_View
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
         $controller = Toby::getInstance()->runAction($controllerName, $actionName, $vars);
-        if($controller === false) Toby::finalize("includeAction: $controllerName/$actionName does not exist");
-        
-        return Toby_Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        if($controller !== null)
+        {
+            return Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        }
+        else
+        {
+            Toby::finalize("includeAction: $controllerName/$actionName does not exist");
+            return null;
+        }
     }
     
     protected function includeFile($pathToFile, $prependThemePath = true)
     {
         // cancellation
-        if(empty($pathToFile)) return false;
+        if(!is_string($pathToFile) || empty($pathToFile)) throw new InvalidArgumentException('argument $pathToFile is not of type string or empty');
         
         // prepend theme path
-        if($prependThemePath) $pathToFile = Toby_Utils::pathCombine (array(Toby_ThemeManager::$themePathRoot, $pathToFile));
+        if($prependThemePath) $pathToFile = Utils::pathCombine (array(ThemeManager::$themePathRoot, $pathToFile));
         
         // return content
         return file_get_contents($pathToFile);
@@ -115,7 +127,7 @@ class Toby_View
     public function __call($name, $arguments)
     {
         // cancellation
-        if(!isset(self::$helpers[$name])) return;
+        if(!isset(self::$helpers[$name])) throw new \Exception("call to undefined function $name");
 
         // call
         return call_user_func_array(self::$helpers[$name], $arguments);
