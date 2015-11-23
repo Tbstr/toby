@@ -31,7 +31,7 @@ class Renderer
         $layout->bodyClass      = $controller->layoutBodyClasses;
         
         $layout->content        = $content;
-        
+
         // render & return
         return $layout->render();
     }
@@ -53,7 +53,7 @@ class Renderer
     public static function findLayout($layoutName)
     {
         // theme
-        $layoutPath = Toby_ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.php';
+        $layoutPath = ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.php';
         if(file_exists($layoutPath)) return $layoutPath;
             
         // app
@@ -66,7 +66,7 @@ class Renderer
     public static function findViewScript($scriptName)
     {
         // theme
-        $viewScriptPath = Toby_ThemeManager::$themePathRoot.'/view/'.$scriptName.'.php';
+        $viewScriptPath = ThemeManager::$themePathRoot.'/view/'.$scriptName.'.php';
         if(file_exists($viewScriptPath)) return $viewScriptPath;
             
         // app
@@ -79,7 +79,7 @@ class Renderer
     private static function themeManagerAutoInit()
     {
         // cancellation
-        if(Toby_ThemeManager::$initialized) return;
-        if(!Toby_ThemeManager::init()) Toby::finalize('unable to init theme manager');
+        if(ThemeManager::$initialized) return;
+        if(!ThemeManager::init()) Toby::finalize('unable to init theme manager');
     }
 }

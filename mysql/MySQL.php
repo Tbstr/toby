@@ -8,11 +8,10 @@ use Toby\Utils\Utils;
 
 class MySQL
 {
+    /** @var MySQL[] */
     private static $instances   = array();
 
-    /**
-     * @var \mysqli
-     */
+    /** @var \mysqli */
     private $mysqli             = null;
     
     private $host;
@@ -40,18 +39,16 @@ class MySQL
 
     private $numTransactions    = 0;
 
-    /**
-     * @var \Logger
-     */
+    /** @var \Logger */
     private $logger;
-    /**
-     * @var \Logger
-     */
+
+    /** @var \Logger */
     private $queryLogger;
 
     /**
      * @param string $id
      * @param bool $autoInit
+     *
      * @return MySQL
      */
     public static function getInstance($id = null, $autoInit = true)
@@ -227,23 +224,26 @@ class MySQL
                 // gone away
                 case 2006:
 
-                    // reconnect 5 times
-                    $tries = 1;
-                    while(true)
+                    if($this->numTransactions === 0)
                     {
-                        // log
-                        $this->queryLogger->info('MySQL reconnect, attempt '.$tries, 'mysql-queries');
+                        // reconnect 5 times
+                        $tries = 1;
+                        while (true)
+                        {
+                            // log
+                            $this->queryLogger->info('MySQL reconnect, attempt '.$tries, 'mysql-queries');
 
-                        // connect
-                        if($this->connect() === true) break;
-                        if($tries++ >= 5) break;
+                            // connect
+                            if($this->connect() === true) break;
+                            if($tries++ >= 5) break;
 
-                        // delay
-                        sleep(1);
+                            // delay
+                            sleep(1);
+                        }
+
+                        // repeat query if connected
+                        if($this->connected) return $this->queryWithResult($q);
                     }
-
-                    // repeat query if connected
-                    if($this->connected) return $this->queryWithResult($q);
 
                     break;
             }
@@ -442,7 +442,7 @@ class MySQL
             }
             
             foreach($keys as $key => $value) $keys[$key] = '`'.$value.'`';
-            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES '.implode(',',$values);
+            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES ('.implode(',',$values).')';
         }
 
         // on duplicate key

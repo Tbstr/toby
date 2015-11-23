@@ -21,7 +21,7 @@ class Layout extends View
         $this->placeJSVars();
         
         // theme related
-        Toby_ThemeManager::placeHeaderInformation();
+        ThemeManager::placeHeaderInformation();
         
         // additional header content
         if(!empty($this->headContent)) echo $this->headContent;
@@ -33,7 +33,7 @@ class Layout extends View
         if(empty($this->jsVars)) return;
 
         // place
-        echo '<script type="text/javascript">window.TobyVars = '.json_encode($this->jsVars).';</script>';
+        echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
     }
     
     protected function placeBodyAttributes()

@@ -64,7 +64,7 @@ class Toby
 
     private $logRequestTime             = false;
     private $requestLogData             = array();
-    
+
     private $initialized                = false;
 
     /**
@@ -93,14 +93,18 @@ class Toby
     }
             
     /* object methods */
-    public function init($request = false, $scope = false)
+
+    /**
+     * @param string|null $request
+     * @param string $scope
+     */
+    public function init($request = null, $scope)
     {
         // include pre init hook
         $this->hook('pre_init');
 
         // normalize input
-        if(is_string($request))     $request = trim($request, ' /');
-        else                        $request = false;
+        $request = is_string($request) ? trim($request, ' /') : null;
 
         // set vars
         $this->request          = $request;
@@ -140,10 +144,10 @@ class Toby
         
         // init security
         Security::init();
-        
+
         // set initialized
         $this->initialized = true;
-        
+
         // include post init hook
         $this->hook('post_init');
 
@@ -151,7 +155,7 @@ class Toby
         if(Config::get('toby')->hasKey('forceResolve')) $request = Config::get('toby')->getValue('forceResolve');
         
         // resolve and boot
-        if($request !== false)
+        if($request !== null)
         {
             // resolve
             $elements = explode('/', $request);
@@ -188,16 +192,13 @@ class Toby
         }
         else
         {
-            // include resolved hook
-            $this->hook('resolved');
-            
             // render
             echo $this->renderController($controller);
         }
     }
 
     /**
-     * @param        $controllerName
+     * @param string $controllerName
      * @param string $actionName
      * @param null   $arguments
      *
@@ -209,14 +210,10 @@ class Toby
         $this->requestTimeLogStart("$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments)));
 
         // load controller class
-        $controllerClassName = '\Controller\Controller_'.strtoupper($controllerName[0]).substr($controllerName, 1);
-        Autoloader::load($controllerClassName);
+        $controllerInstance = Autoloader::getControllerInstance($controllerName, $actionName, $arguments);
 
-        if(class_exists($controllerClassName))
+        if($controllerInstance !== null)
         {
-            // instantiate controller
-            $controllerInstance = new $controllerClassName($controllerName, $actionName, $arguments);
-
             // call action method
             $actionMethodName = $actionName.'Action';
             if(method_exists($controllerInstance, $actionMethodName))
@@ -286,11 +283,12 @@ class Toby
         if(!$controller->renderView) return '';
         
         // start timing
+        $starttime = null;
         if($this->logRequestTime) $starttime = microtime(true);
         
         // prepare theme manager
         if(!ThemeManager::initByController($controller)) $this->finalize('unable to set theme '.ThemeManager::$themeName);
-        
+
         // render content
         $content = Renderer::renderPage($controller);
 

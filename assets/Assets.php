@@ -79,6 +79,10 @@ class Assets
     }
 
     /* placement functionality */
+
+    /**
+     * @return \Toby\Assets\Assets_Set[]
+     */
     public static function getStandardSets()
     {
         // vars
@@ -94,10 +98,15 @@ class Assets
         return $setsOut;
     }
 
+    /**
+     * @param string $resolvePath
+     *
+     * @return \Toby\Assets\Assets_Set[]
+     */
     public static function getSetsByResolvePath($resolvePath)
     {
         // cancellation
-        if(is_string($resolvePath) || empty($resolvePath)) throw new InvalidArgumentException('argument $resolvePath is not of type string or empty');
+        if(!is_string($resolvePath) || empty($resolvePath)) throw new InvalidArgumentException('argument $resolvePath is not of type string or empty');
 
         // normalize input
         $resolvePath = strtolower($resolvePath);

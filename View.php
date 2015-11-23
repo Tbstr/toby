@@ -11,7 +11,9 @@ class View
     /* variables */
     private $scriptPath;
     private $vars;
-    
+
+    private $themeURL;
+
     private $toby;
 
     /* static variables */
@@ -44,13 +46,13 @@ class View
         
         // set
         $this->themeURL = ThemeManager::$themeURL;
-        
+
         // render
         ob_start();
         include($scriptPath);
         $content = ob_get_contents();
         ob_end_clean();
-        
+
         // return
         return $content;
     }

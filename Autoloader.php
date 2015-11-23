@@ -7,8 +7,10 @@ use \InvalidArgumentException;
 class Autoloader
 {
     /* variables */
-    private static $classes     = array();
-    private static $namespaces  = array();
+    private static $classes    = array();
+    private static $namespaces = array();
+
+    private static $controllerNamespace = 'Controller';
 
     /* class management */
     public static function addClass($className, $pathToFile)
@@ -73,14 +75,39 @@ class Autoloader
         return $classPath;
     }
 
+    /* controller loading */
+    public static function getControllerInstance($controllerName, $actionName, $arguments)
+    {
+        // build class name
+        $controllerClassName = self::$controllerNamespace.'\\'.strtoupper($controllerName[0]).substr($controllerName, 1).'Controller';
+
+        // load
+        if(!self::load($controllerClassName)) return null;
+
+        // instantiate & return
+        return new $controllerClassName($controllerName, $actionName, $arguments);
+    }
+
+    public static function setControllerNamespace($newControllerNamespace)
+    {
+        // cancellation
+        if(!is_string($newControllerNamespace) || empty($newControllerNamespace))  throw new InvalidArgumentException('argument $newControllerNamespace is not of type string or empty');
+
+        // set
+        self::$controllerNamespace = trim($newControllerNamespace, ' \\');
+    }
+
     /* load */
     public static function load($className)
     {
+        // check if already loaded
+        if(class_exists($className, false)) return true;
+
         // LEVEL 1: registered classes
         if(isset(self::$classes[$className]))
         {
             require_once self::$classes[$className];
-            return;
+            return class_exists($className, false);
         }
 
         // LEVEL 2: PSR-4
@@ -88,7 +115,9 @@ class Autoloader
         if(is_file($classPath.'.php'))
         {
             require_once $classPath.'.php';
-            return;
+            return class_exists($className, false);
         }
+
+        return false;
     }
 }

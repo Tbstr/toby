@@ -2,6 +2,7 @@
 
 namespace Toby;
 
+use Toby\Assets\Assets;
 use Toby\Utils\Utils;
 
 class ThemeManager
@@ -84,7 +85,9 @@ class ThemeManager
     
     public static function placeHeaderInformation()
     {
+
         // sets
+        /** @var \Toby\Assets\Assets_Set[] $sets */
         $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
 
         // css
