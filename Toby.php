@@ -176,7 +176,7 @@ class Toby
 
         // run action
         $controller = $this->runAction($controllerName, $actionName, $arguments);
-        
+
         if($controller === null)
         {
             // default resolve on fail
