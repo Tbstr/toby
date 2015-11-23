@@ -2,7 +2,7 @@
 
 namespace Toby\HTML;
 
-class Tag
+class HTMLTag
 {
     private $name           = null;
     

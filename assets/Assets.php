@@ -18,12 +18,12 @@ class Assets
         // find existing & return
         foreach(self::$sets as $set)
         {
-            if($set->type === Assets_Set::TYPE_STANDARD) return $set;
+            if($set->type === AssetsSet::TYPE_STANDARD) return $set;
         }
 
         // create new & return
-        $set = new Assets_Set();
-        $set->type = Assets_Set::TYPE_STANDARD;
+        $set = new AssetsSet();
+        $set->type = AssetsSet::TYPE_STANDARD;
 
         self::$sets[] = $set;
 
@@ -38,16 +38,16 @@ class Assets
         // find existing & return
         foreach(self::$sets as $set)
         {
-            if($set->type === Assets_Set::TYPE_RESOLVE_PATH)
+            if($set->type === AssetsSet::TYPE_RESOLVE_PATH)
             {
                 if($set->resolvePath === $path) return $set;
             }
         }
 
         // create new & set
-        $set = new Assets_Set();
+        $set = new AssetsSet();
 
-        $set->type                  = Assets_Set::TYPE_RESOLVE_PATH;
+        $set->type                  = AssetsSet::TYPE_RESOLVE_PATH;
 
         $set->resolvePath           = $path;
         $set->resolvePathStrict     = $strictCompare;
@@ -64,12 +64,12 @@ class Assets
         // find existing & return
         foreach(self::$sets as $set)
         {
-            if($set->type === Assets_Set::TYPE_RESOLVE_PATH_DEFAULT) return $set;
+            if($set->type === AssetsSet::TYPE_RESOLVE_PATH_DEFAULT) return $set;
         }
 
         // create new & set
-        $set = new Assets_Set();
-        $set->type = Assets_Set::TYPE_RESOLVE_PATH_DEFAULT;
+        $set = new AssetsSet();
+        $set->type = AssetsSet::TYPE_RESOLVE_PATH_DEFAULT;
 
         // add to list
         self::$sets[] = $set;
@@ -81,7 +81,7 @@ class Assets
     /* placement functionality */
 
     /**
-     * @return \Toby\Assets\Assets_Set[]
+     * @return \Toby\Assets\AssetsSet[]
      */
     public static function getStandardSets()
     {
@@ -91,7 +91,7 @@ class Assets
         // find
         foreach(self::$sets as $set)
         {
-            if($set->type === Assets_Set::TYPE_STANDARD) $setsOut[] = $set;
+            if($set->type === AssetsSet::TYPE_STANDARD) $setsOut[] = $set;
         }
 
         // return
@@ -101,7 +101,7 @@ class Assets
     /**
      * @param string $resolvePath
      *
-     * @return \Toby\Assets\Assets_Set[]
+     * @return \Toby\Assets\AssetsSet[]
      */
     public static function getSetsByResolvePath($resolvePath)
     {
@@ -117,7 +117,7 @@ class Assets
         // find matching
         foreach(self::$sets as $set)
         {
-            if($set->type === Assets_Set::TYPE_RESOLVE_PATH)
+            if($set->type === AssetsSet::TYPE_RESOLVE_PATH)
             {
                 if($set->resolvePathStrict === true)   { if($set->resolvePath === $resolvePath) $setsOut[] = $set; }
                 else                                   { if(strncmp($set->resolvePath, $resolvePath, strlen($set->resolvePath)) === 0) $setsOut[] = $set; }
@@ -127,7 +127,7 @@ class Assets
         // find matching
         if(empty($setsOut))
         {
-            foreach(self::$sets as $set) { if($set->type === Assets_Set::TYPE_RESOLVE_PATH_DEFAULT) $setsOut[] = $set; }
+            foreach(self::$sets as $set) { if($set->type === AssetsSet::TYPE_RESOLVE_PATH_DEFAULT) $setsOut[] = $set; }
         }
 
         // return

@@ -87,7 +87,7 @@ class ThemeManager
     {
 
         // sets
-        /** @var \Toby\Assets\Assets_Set[] $sets */
+        /** @var \Toby\Assets\AssetsSet[] $sets */
         $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
 
         // css

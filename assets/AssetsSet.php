@@ -4,7 +4,7 @@ namespace Toby\Assets;
 
 use Toby\ThemeManager;
 
-class Assets_Set
+class AssetsSet
 {
     /* public variables */
     public $type                        = 'standard';

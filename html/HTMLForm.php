@@ -4,7 +4,7 @@ namespace Toby\HTML;
 
 use Toby\Security;
 
-class Form
+class HTMLForm
 {
     /* variables */
     private $name;
@@ -124,7 +124,7 @@ class Form
             {
                 case self::ELEMENT_INPUT_TEXT:
                     
-                    $tag = new Tag('input');
+                    $tag = new HTMLTag('input');
                     
                     $tag->addAttribute('type', 'text')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
@@ -138,7 +138,7 @@ class Form
                 
                 case self::ELEMENT_INPUT_PASSWORD:
                     
-                    $tag = new Tag('input');
+                    $tag = new HTMLTag('input');
                     
                     $tag->addAttribute('type', 'password')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
@@ -152,7 +152,7 @@ class Form
                 
                 case self::ELEMENT_INPUT_HIDDEN:
                     
-                    $tag = new Tag('input');
+                    $tag = new HTMLTag('input');
                     
                     $tag->addAttribute('type', 'hidden')
                         ->addAttribute('name', "$this->name[{$elm['name']}]")
@@ -166,7 +166,7 @@ class Form
                 
                 case self::ELEMENT_TEXTAREA:
                     
-                    $tag = new Tag('textarea');
+                    $tag = new HTMLTag('textarea');
                     
                     $tag->addAttribute('name', "$this->name[{$elm['name']}]")
                         ->setContent(isset($_POST[$this->name][$elm['name']]) ? $_POST[$this->name][$elm['name']] : $elm['value']);
@@ -179,7 +179,7 @@ class Form
                 
                 case self::ELEMENT_CHECKBOX:
                     
-                    $tag = new Tag('input');
+                    $tag = new HTMLTag('input');
                     
                     $tag->addAttribute('type', 'checkbox')
                         ->addAttribute('name', "$this->name[{$elm['name']}]");
@@ -193,7 +193,7 @@ class Form
                     
                 case self::ELEMENT_CUSTOM:
                     
-                    $tag = new Tag($elm['tagName']);
+                    $tag = new HTMLTag($elm['tagName']);
                     
                     if(isset($elm['attr'])) $tag->addAttributes($elm['attr']);
                     if(isset($elm['content'])) $tag->setContent($elm['content']);
@@ -211,7 +211,7 @@ class Form
         $formTag = null;
         if(!$this->omitFormTag)
         {
-            $formTag = new Tag('form');
+            $formTag = new HTMLTag('form');
             $formTag->addAttributes($this->attr)
                     ->addAttribute('name', $this->name)
                     ->addAttribute('action', $this->action)

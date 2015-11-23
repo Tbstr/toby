@@ -2,7 +2,7 @@
 
 namespace Toby\Logging\Appender;
 
-class RotatableFile extends \LoggerAppenderFile
+class LoggingAppenderRotatableFile extends \LoggerAppenderFile
 {
     /**
      * check interval in seconds

@@ -2,7 +2,7 @@
 
 namespace Toby\MySQL;
 
-class Result
+class MySQLResult
 {
     /**
      * @var \mysqli_result
@@ -128,7 +128,7 @@ class Result
     {
         if ($this->result === null)
         {
-            throw new Exception("using freed result");
+            throw new MySQLException("using freed result");
         }
     }
 
@@ -142,7 +142,7 @@ class Result
         }
         else
         {
-            throw new Exception("double free mysql result");
+            throw new MySQLException("double free mysql result");
         }
     }
 

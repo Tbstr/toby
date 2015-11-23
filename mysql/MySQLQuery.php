@@ -2,7 +2,7 @@
 
 namespace Toby\MySQL;
 
-class Query
+class MySQLQuery
 {
     /* variables */
 
@@ -279,7 +279,7 @@ class Query
                     break;
 
                 default:
-                    throw new Exception('invalid join type given');
+                    throw new MySQLException('invalid join type given');
             }
 
             $out .= $join[0].' ON '.$join[1];

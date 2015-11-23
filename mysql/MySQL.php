@@ -20,7 +20,7 @@ class MySQL
     private $db;
 
     /**
-     * @var Result
+     * @var MySQLResult
      */
     public $result              = false;
     
@@ -114,7 +114,7 @@ class MySQL
         
         if($this->mysqli->connect_errno !== 0)
         {
-            if($this->throwExceptions) throw new Exception($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
+            if($this->throwExceptions) throw new MySQLException($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
 
             $this->logger->error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
@@ -249,7 +249,7 @@ class MySQL
             }
 
             // throw error
-            if($this->throwExceptions) throw new Exception("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
 
             // log & return
             $this->logger->error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
@@ -263,7 +263,7 @@ class MySQL
         }
 
         // fetch result & return
-        $this->result = new \Toby\MySQL\Result($result, $this);
+        $this->result = new \Toby\MySQL\MySQLResult($result, $this);
         return $this->result;
     }
     
@@ -283,7 +283,7 @@ class MySQL
             $this->errorCode        = $this->mysqli->errno;
 
             // throw exception
-            if($this->throwExceptions) throw new Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage", $this->errorCode);
 
             // error & return
             $this->logger->error("statement preparation failed ($this->errorCode: $this->errorMessage)");
@@ -306,7 +306,7 @@ class MySQL
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage", $this->errorCode);
 
                 // error & return
                 $this->logger->error("param bind failed ($this->errorCode: $this->errorMessage)");
@@ -320,7 +320,7 @@ class MySQL
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Exception("$this->errorCode: $this->errorMessage");
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage");
 
                 // error & return
                 $this->logger->error("statement execution failed ($this->errorCode: $this->errorMessage)");
@@ -343,7 +343,7 @@ class MySQL
             if(!$this->query('START TRANSACTION'))
             {
                 // throw exception
-                if($this->throwExceptions) throw new Exception("$this->errorCode: starting transaction failed", $this->errorCode);
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: starting transaction failed", $this->errorCode);
 
                 // error & return
                 $this->logger->error("$this->errorCode: starting transaction failed");
@@ -374,7 +374,7 @@ class MySQL
         if($success === false)
         {
             // throw exception
-            if($this->throwExceptions) throw new Exception("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
 
             // error & return
             $this->logger->error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
@@ -667,7 +667,7 @@ class MySQL
         }
     }
 
-    public function releaseResult(Result $result)
+    public function releaseResult(MySQLResult $result)
     {
         if ($result === $this->result)
         {
@@ -716,7 +716,7 @@ class MySQL
             // result is true if last query was a data modification (UPDATE, INSERT or DELETE)
             if ($throwException)
             {
-                throw new Exception("no current result");
+                throw new MySQLException("no current result");
             }
             else
             {
