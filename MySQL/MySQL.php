@@ -442,7 +442,7 @@ class MySQL
             }
             
             foreach($keys as $key => $value) $keys[$key] = '`'.$value.'`';
-            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES ('.implode(',',$values).')';
+            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES '.implode(',',$values);
         }
 
         // on duplicate key
