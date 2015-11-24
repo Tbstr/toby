@@ -82,7 +82,11 @@ class Autoloader
         $controllerClassName = self::$controllerNamespace.'\\'.strtoupper($controllerName[0]).substr($controllerName, 1).'Controller';
 
         // load
-        if(!self::load($controllerClassName)) return null;
+        if(!class_exists($controllerClassName, false))
+        {
+            self::load($controllerClassName);
+            if(!class_exists($controllerClassName, false)) return null;
+        }
 
         // instantiate & return
         return new $controllerClassName($controllerName, $actionName, $arguments);
@@ -107,7 +111,6 @@ class Autoloader
         if(isset(self::$classes[$className]))
         {
             require_once self::$classes[$className];
-            return class_exists($className, false);
         }
 
         // LEVEL 2: PSR-4
@@ -115,9 +118,6 @@ class Autoloader
         if(is_file($classPath.'.php'))
         {
             require_once $classPath.'.php';
-            return class_exists($className, false);
         }
-
-        return false;
     }
 }
