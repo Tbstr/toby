@@ -1,6 +1,10 @@
 <?php
 
-class Toby_Logging_Appender_RotatableFile extends LoggerAppenderFile
+namespace Toby\Logging\Appender;
+
+use LoggerAppenderFile;
+
+class LoggingAppenderRotatableFile extends LoggerAppenderFile
 {
     /**
      * check interval in seconds

@@ -1,6 +1,11 @@
 <?php
 
-class Toby_Session
+namespace Toby;
+
+use Toby\MySQL\MySQL;
+use Toby\Utils\Utils;
+
+class Session
 {
     /* statics */
     private static $instance    = null;
@@ -13,6 +18,8 @@ class Toby_Session
     private $resumed            = false;
     
     private $mysqlMode          = false;
+
+    /** @var  \Toby\MySQL\MySQL */
     private $mysql;
 
     private $SESSION            = array();
@@ -20,9 +27,7 @@ class Toby_Session
     /* constants */
     const KEY                   = 'tobysess';
 
-    /**
-     * @var \Logger
-     */
+    /** @var \Logger */
     private $logger;
     
     /* static getter */
@@ -55,10 +60,10 @@ class Toby_Session
         ini_set('session.cookie_domain', $domain);
         
         // set handlers
-        if(Toby_Config::get('toby')->getValue('sessionUseMySQL', 'bool'))
+        if(Config::get('toby')->getValue('sessionUseMySQL', 'bool'))
         {
             $this->mysqlMode = true;
-            $this->mysql = Toby_MySQL::getInstance();
+            $this->mysql = MySQL::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),
@@ -238,7 +243,7 @@ class Toby_Session
     
     public function printr()
     {
-        Toby_Utils::printr($this->SESSION);
+        Utils::printr($this->SESSION);
     }
     
     /* event handler */

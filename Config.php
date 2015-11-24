@@ -1,6 +1,11 @@
 <?php
 
-class Toby_Config
+namespace Toby;
+
+use Toby\Utils\Utils;
+use \InvalidArgumentException;
+
+class Config
 {
     /* static variables */
     public static $instances = array();
@@ -25,8 +30,7 @@ class Toby_Config
     public function addData($data)
     {
         // cancellation
-        if(empty($data))        return false;
-        if(!is_array($data))    return false;
+        if(!is_array($data)) throw new InvalidArgumentException('argument $data is not of type array');
 
         // add
         $this->data = array_merge($this->data, $data);
@@ -41,7 +45,13 @@ class Toby_Config
         // check
         return isset($this->data[$key]);
     }
-    
+
+    /**
+     * @param string $key
+     * @param string $datatype
+     *
+     * @return mixed
+     */
     public function getValue($key, $datatype = '')
     {
         // cancellation
@@ -49,7 +59,7 @@ class Toby_Config
         
         // return parsed
         $value = isset($this->data[$key]) ? $this->data[$key] : null;
-        return Toby_Utils::parseValue($value, $datatype);
+        return Utils::parseValue($value, $datatype);
     }
 
     public function getAllValues()
@@ -68,7 +78,7 @@ class Toby_Config
 
         // return parsed value
         $value = isset($array[$arrayKey]) ? $array[$arrayKey] : null;
-        return Toby_Utils::parseValue($value, $datatype);
+        return Utils::parseValue($value, $datatype);
     }
 
     public function setValue($key, $value)
@@ -96,7 +106,7 @@ class Toby_Config
             if($filename[0] === '.') continue;
             if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
 
-            $filePath = Toby_Utils::pathCombine(array($dir, $filename));
+            $filePath = Utils::pathCombine(array($dir, $filename));
 
             if(is_readable($filePath))
             {
@@ -106,7 +116,7 @@ class Toby_Config
 
                 if(empty($config))
                 {
-                    self::$instances[$name] = new Toby_Config($name, self::getConfigVars($filePath));
+                    self::$instances[$name] = new Config($name, self::getConfigVars($filePath));
                 }
                 else
                 {
@@ -128,14 +138,14 @@ class Toby_Config
 
     /**
      * @param $name
-     * @return Toby_Config
+     * @return Config
      */
     public static function get($name)
     {
         // cancellation
-        if(empty($name))                    return false;
-        if(!is_string($name))               return false;
-        if(!isset(self::$instances[$name])) return false;
+        if(empty($name))                    return null;
+        if(!is_string($name))               return null;
+        if(!isset(self::$instances[$name])) return null;
 
         // return
         return self::$instances[$name];

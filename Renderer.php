@@ -1,13 +1,15 @@
 <?php
 
-class Toby_Renderer
+namespace Toby;
+
+class Renderer
 {
     /* static variables */
     private static $defaultLayoutsPath = '/layout';
     private static $defaultViewsPath = '/view';
 
     /* static methods */
-    public static function renderPage(Toby_Controller $controller)
+    public static function renderPage(Controller $controller)
     {
         // auto init theme manager
         self::themeManagerAutoInit();
@@ -19,7 +21,7 @@ class Toby_Renderer
         $layoutPath             = self::findLayout($controller->layoutName);
         if($layoutPath === false) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
-        $layout                 = new Toby_Layout($layoutPath, get_object_vars($controller->layout));
+        $layout                 = new Layout($layoutPath, get_object_vars($controller->layout));
         
         $layout->title          = $controller->layoutTitle;
         $layout->jsVars         = get_object_vars($controller->javascript);
@@ -29,7 +31,7 @@ class Toby_Renderer
         $layout->bodyClass      = $controller->layoutBodyClasses;
         
         $layout->content        = $content;
-        
+
         // render & return
         return $layout->render();
     }
@@ -44,18 +46,18 @@ class Toby_Renderer
         if($scriptPath === false) Toby::finalize('Script "'.$scriptName.'" could not be found.');
         
         // render & return
-        $scriptView = new Toby_View($scriptPath, $vars);
+        $scriptView = new View($scriptPath, $vars);
         return $scriptView->render();
     }
     
     public static function findLayout($layoutName)
     {
         // theme
-        $layoutPath = Toby_ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.tpl.php';
+        $layoutPath = ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.php';
         if(file_exists($layoutPath)) return $layoutPath;
             
         // app
-        $layoutPath = APP_ROOT.self::$defaultLayoutsPath.DS.$layoutName.'.tpl.php';
+        $layoutPath = APP_ROOT.self::$defaultLayoutsPath.DS.$layoutName.'.php';
         if(file_exists($layoutPath)) return $layoutPath;
         
         return false;
@@ -64,11 +66,11 @@ class Toby_Renderer
     public static function findViewScript($scriptName)
     {
         // theme
-        $viewScriptPath = Toby_ThemeManager::$themePathRoot.'/view/'.$scriptName.'.tpl.php';
+        $viewScriptPath = ThemeManager::$themePathRoot.'/view/'.$scriptName.'.php';
         if(file_exists($viewScriptPath)) return $viewScriptPath;
             
         // app
-        $viewScriptPath = APP_ROOT.self::$defaultViewsPath.DS.$scriptName.'.tpl.php';
+        $viewScriptPath = APP_ROOT.self::$defaultViewsPath.DS.$scriptName.'.php';
         if(file_exists($viewScriptPath)) return $viewScriptPath;
         
         return false;
@@ -77,7 +79,7 @@ class Toby_Renderer
     private static function themeManagerAutoInit()
     {
         // cancellation
-        if(Toby_ThemeManager::$initialized) return;
-        if(!Toby_ThemeManager::init()) Toby::finalize('unable to init theme manager');
+        if(ThemeManager::$initialized) return;
+        if(!ThemeManager::init()) Toby::finalize('unable to init theme manager');
     }
 }

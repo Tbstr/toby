@@ -1,6 +1,11 @@
 <?php
 
-class Toby_ThemeManager
+namespace Toby;
+
+use Toby\Assets\Assets;
+use Toby\Utils\Utils;
+
+class ThemeManager
 {
     /* variables */
     public static $themeName;
@@ -17,8 +22,8 @@ class Toby_ThemeManager
         // compute input
         if($themeName === false)
         {
-            $configThemeName        = Toby_Config::get('toby')->getValue('theme');
-            $configThemeFunction    = Toby_Config::get('toby')->getValue('themeFunction');
+            $configThemeName        = Config::get('toby')->getValue('theme');
+            $configThemeFunction    = Config::get('toby')->getValue('themeFunction');
             
             if(empty($configThemeName))
             {
@@ -34,14 +39,14 @@ class Toby_ThemeManager
 
         // init if dir exists
         $themePath      = "themes/$themeName";
-        $themePathRoot  = Toby_Utils::pathCombine(array(PUBLIC_ROOT, $themePath));
+        $themePathRoot  = Utils::pathCombine(array(PUBLIC_ROOT, $themePath));
 
         if(is_dir($themePathRoot))
         {
             // set theme vars
             self::$themeName        = $themeName;
             self::$themePathRoot    = $themePathRoot;
-            self::$themeURL         = Toby_Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
+            self::$themeURL         = Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
             
             // include function
             $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.cfg.php';
@@ -57,7 +62,7 @@ class Toby_ThemeManager
         return false;
     }
     
-    public static function initByController(Toby_Controller $controller)
+    public static function initByController(Controller $controller)
     {
         // vars
         $theme          = false;
@@ -80,8 +85,10 @@ class Toby_ThemeManager
     
     public static function placeHeaderInformation()
     {
+
         // sets
-        $sets = array_merge(Toby_Assets::getStandardSets(), Toby_Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
+        /** @var \Toby\Assets\AssetsSet[] $sets */
+        $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
 
         // css
         foreach($sets as $set)

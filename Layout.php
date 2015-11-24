@@ -1,6 +1,8 @@
 <?php
 
-class Toby_Layout extends Toby_View
+namespace Toby;
+
+class Layout extends View
 {
     public $title               = '';
     public $jsVars              = null;
@@ -19,7 +21,7 @@ class Toby_Layout extends Toby_View
         $this->placeJSVars();
         
         // theme related
-        Toby_ThemeManager::placeHeaderInformation();
+        ThemeManager::placeHeaderInformation();
         
         // additional header content
         if(!empty($this->headContent)) echo $this->headContent;
@@ -27,8 +29,11 @@ class Toby_Layout extends Toby_View
     
     private function placeJSVars()
     {
+        // cancellation
         if(empty($this->jsVars)) return;
-        echo '<script type="text/javascript">window.TobyVars = '.json_encode($this->jsVars).';</script>';
+
+        // place
+        echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
     }
     
     protected function placeBodyAttributes()

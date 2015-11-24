@@ -1,12 +1,17 @@
 <?php
 
-class Toby_MySQL
+namespace Toby\MySQL;
+
+use Toby\Config;
+use Toby\Toby;
+use Toby\Utils\Utils;
+
+class MySQL
 {
+    /** @var MySQL[] */
     private static $instances   = array();
 
-    /**
-     * @var mysqli
-     */
+    /** @var \mysqli */
     private $mysqli             = null;
     
     private $host;
@@ -15,7 +20,7 @@ class Toby_MySQL
     private $db;
 
     /**
-     * @var Toby_MySQL_Result
+     * @var MySQLResult
      */
     public $result              = false;
     
@@ -34,19 +39,17 @@ class Toby_MySQL
 
     private $numTransactions    = 0;
 
-    /**
-     * @var \Logger
-     */
+    /** @var \Logger */
     private $logger;
-    /**
-     * @var \Logger
-     */
+
+    /** @var \Logger */
     private $queryLogger;
 
     /**
      * @param string $id
      * @param bool $autoInit
-     * @return Toby_MySQL
+     *
+     * @return MySQL
      */
     public static function getInstance($id = null, $autoInit = true)
     {
@@ -68,13 +71,13 @@ class Toby_MySQL
     }
     
     /* init & connect */
-    private function autoInit()
+    protected function autoInit()
     {
         // cancellation
-        if(Toby_Config::get('toby')->getValue('mySQLAutoConnect') !== true) return;
+        if(Config::get('toby')->getValue('mySQLAutoConnect') !== true) return;
         
         // vars
-        $mad = Toby_Config::get('toby')->getValue('mySQLAccessData');
+        $mad = Config::get('toby')->getValue('mySQLAccessData');
 
         $this->init(
             $mad['host'],
@@ -93,7 +96,7 @@ class Toby_MySQL
         if($db !== false) $this->db = $db;
         
         // setup
-        if(Toby_Config::get('toby')->getValue('logMySQLQueries')) $this->initQueryLogging();
+        if(Config::get('toby')->getValue('logMySQLQueries')) $this->initQueryLogging();
         
         // connect
         if($this->connected) $this->disconnect();
@@ -106,12 +109,12 @@ class Toby_MySQL
         $this->connected = false;
         
         // connect
-        if($this->db === false) $this->mysqli = new mysqli($this->host, $this->user, $this->pass);
-        else                    $this->mysqli = new mysqli($this->host, $this->user, $this->pass, $this->db);
+        if($this->db === false) $this->mysqli = new \mysqli($this->host, $this->user, $this->pass);
+        else                    $this->mysqli = new \mysqli($this->host, $this->user, $this->pass, $this->db);
         
         if($this->mysqli->connect_errno !== 0)
         {
-            if($this->throwExceptions) throw new Toby_MySQL_Exception($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
+            if($this->throwExceptions) throw new MySQLException($this->mysqli->connect_errno.': connection failed: '.$this->mysqli->connect_error, $this->mysqli->connect_errno);
 
             $this->logger->error('mysql connection failed ('.$this->mysqli->connect_errno.': '.$this->mysqli->connect_error.')');
             return false;
@@ -201,7 +204,7 @@ class Toby_MySQL
         // dry run
         if($this->dryRun)
         {
-            Toby_Utils::printr($q);
+            Utils::printr($q);
             return true;
         }
 
@@ -221,29 +224,32 @@ class Toby_MySQL
                 // gone away
                 case 2006:
 
-                    // reconnect 5 times
-                    $tries = 1;
-                    while(true)
+                    if($this->numTransactions === 0)
                     {
-                        // log
-                        $this->queryLogger->info('MySQL reconnect, attempt '.$tries, 'mysql-queries');
+                        // reconnect 5 times
+                        $tries = 1;
+                        while (true)
+                        {
+                            // log
+                            $this->queryLogger->info('MySQL reconnect, attempt '.$tries, 'mysql-queries');
 
-                        // connect
-                        if($this->connect() === true) break;
-                        if($tries++ >= 5) break;
+                            // connect
+                            if($this->connect() === true) break;
+                            if($tries++ >= 5) break;
 
-                        // delay
-                        sleep(1);
+                            // delay
+                            sleep(1);
+                        }
+
+                        // repeat query if connected
+                        if($this->connected) return $this->queryWithResult($q);
                     }
-
-                    // repeat query if connected
-                    if($this->connected) return $this->queryWithResult($q);
 
                     break;
             }
 
             // throw error
-            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage :: QUERY: $q", $this->errorCode);
 
             // log & return
             $this->logger->error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
@@ -257,7 +263,7 @@ class Toby_MySQL
         }
 
         // fetch result & return
-        $this->result = new Toby_MySQL_Result($result, $this);
+        $this->result = new \Toby\MySQL\MySQLResult($result, $this);
         return $this->result;
     }
     
@@ -277,7 +283,7 @@ class Toby_MySQL
             $this->errorCode        = $this->mysqli->errno;
 
             // throw exception
-            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage", $this->errorCode);
 
             // error & return
             $this->logger->error("statement preparation failed ($this->errorCode: $this->errorMessage)");
@@ -300,7 +306,7 @@ class Toby_MySQL
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage", $this->errorCode);
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage", $this->errorCode);
 
                 // error & return
                 $this->logger->error("param bind failed ($this->errorCode: $this->errorMessage)");
@@ -314,7 +320,7 @@ class Toby_MySQL
                 $this->errorCode        = $this->mysqli->errno;
 
                 // throw exception
-                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: $this->errorMessage");
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage");
 
                 // error & return
                 $this->logger->error("statement execution failed ($this->errorCode: $this->errorMessage)");
@@ -337,7 +343,7 @@ class Toby_MySQL
             if(!$this->query('START TRANSACTION'))
             {
                 // throw exception
-                if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: starting transaction failed", $this->errorCode);
+                if($this->throwExceptions) throw new MySQLException("$this->errorCode: starting transaction failed", $this->errorCode);
 
                 // error & return
                 $this->logger->error("$this->errorCode: starting transaction failed");
@@ -368,7 +374,7 @@ class Toby_MySQL
         if($success === false)
         {
             // throw exception
-            if($this->throwExceptions) throw new Toby_MySQL_Exception("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
+            if($this->throwExceptions) throw new MySQLException("$this->errorCode: ".($commit ? 'commit' : 'rollback').' failed', $this->errorCode);
 
             // error & return
             $this->logger->error('[MYSQL ERROR] '.($commit ? 'commit' : 'rollback').' failed');
@@ -436,7 +442,7 @@ class Toby_MySQL
             }
             
             foreach($keys as $key => $value) $keys[$key] = '`'.$value.'`';
-            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES '.implode(',',$values);
+            $query = 'INSERT INTO '.$table.' ('.implode(',',$keys).') VALUES ('.implode(',',$values).')';
         }
 
         // on duplicate key
@@ -504,7 +510,7 @@ class Toby_MySQL
     {
         if($value === null)                     return 'NULL';
         elseif(is_string($value))               return "'".$this->mysqli->real_escape_string($value)."'";
-        elseif($value instanceof DateTime)      return "'".$value->format('Y-m-d H:i:s')."'";
+        elseif($value instanceof \DateTime)      return "'".$value->format('Y-m-d H:i:s')."'";
         else                                    return $value;
     }
     
@@ -661,7 +667,7 @@ class Toby_MySQL
         }
     }
 
-    public function releaseResult(Toby_MySQL_Result $result)
+    public function releaseResult(MySQLResult $result)
     {
         if ($result === $this->result)
         {
@@ -710,7 +716,7 @@ class Toby_MySQL
             // result is true if last query was a data modification (UPDATE, INSERT or DELETE)
             if ($throwException)
             {
-                throw new Toby_MySQL_Exception("no current result");
+                throw new MySQLException("no current result");
             }
             else
             {

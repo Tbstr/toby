@@ -1,6 +1,11 @@
 <?php
 
-abstract class Toby_Controller
+namespace Toby;
+
+use \InvalidArgumentException;
+use Toby\Utils\Utils;
+
+abstract class Controller
 {
     /* controller vars */
     public $name;
@@ -51,24 +56,24 @@ abstract class Toby_Controller
         
         $this->toby                     = Toby::getInstance();
         
-        if(Toby_Config::get('toby')->hasKey('defaultTitle')) $this->layoutTitle = Toby_Config::get('toby')->getValue('defaultTitle', 'string');
+        if(Config::get('toby')->hasKey('defaultTitle')) $this->layoutTitle = Config::get('toby')->getValue('defaultTitle', 'string');
         
         // holders
-        $this->layout                   = new stdClass();
-        $this->view                     = new stdClass();
-        $this->javascript               = new stdClass();
+        $this->layout                   = new \stdClass();
+        $this->view                     = new \stdClass();
+        $this->javascript               = new \stdClass();
         
         // default vars layout
         $this->layout->appURL           = $this->toby->appURL;
-        $this->layout->url              = Toby_Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->layout->url              = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
         // default vars view
         $this->view->appURL             = $this->toby->appURL;
-        $this->view->url                = Toby_Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->view->url                = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
         // default vars javascript
-        $this->javascript->xsrfkeyname  = Toby_Security::XSRFKeyName;
-        $this->javascript->xsrfkey      = Toby_Security::XSRFGetKey();
+        $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
+        $this->javascript->xsrfkey      = Security::XSRFGetKey();
 
         $this->logger = \Logger::getLogger(str_replace('_', '.', strtolower(get_class($this))));
     }
@@ -100,7 +105,7 @@ abstract class Toby_Controller
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
         header("Content-Description: File Transfer");
 
-        if($mimeType === 'auto') $mimeType = Toby_Utils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
+        if($mimeType === 'auto') $mimeType = Utils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
         if(!empty($mimeType)) header("Content-Type:$mimeType");
 
         header("Content-Disposition: attachment; filename=\"".(empty($nameOverride) ? basename($filePath) : $nameOverride)."\"");
@@ -206,7 +211,7 @@ abstract class Toby_Controller
         if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
 
         // check for existence
-        if(isset(self::$helpers[$functionName])) throw new Exception('Helper "'.$functionName.'" is already set');
+        if(isset(self::$helpers[$functionName])) throw new \Exception('Helper "'.$functionName.'" is already set');
 
         // register
         self::$helpers[$functionName] = $callable;
@@ -215,7 +220,7 @@ abstract class Toby_Controller
     public function __call($name, $arguments)
     {
         // cancellation
-        if(!isset(self::$helpers[$name])) return;
+        if(!isset(self::$helpers[$name])) throw new \Exception("call to undefined function $name");
 
         // call
         return call_user_func_array(self::$helpers[$name], $arguments);

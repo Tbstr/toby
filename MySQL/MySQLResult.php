@@ -1,22 +1,24 @@
 <?php
 
-class Toby_MySQL_Result
+namespace Toby\MySQL;
+
+class MySQLResult
 {
     /**
-     * @var mysqli_result
+     * @var \mysqli_result
      */
     private $result;
 
     /**
-     * @var Toby_MySQL
+     * @var MySQL
      */
     private $parent;
 
     /**
-     * @param mysqli_result $mysqliResult
-     * @param Toby_MySQL $parent
+     * @param \mysqli_result $mysqliResult
+     * @param MySQL $parent
      */
-    public function __construct($mysqliResult, Toby_MySQL $parent)
+    public function __construct($mysqliResult, MySQL $parent)
     {
         $this->result = $mysqliResult;
         $this->parent = $parent;
@@ -126,7 +128,7 @@ class Toby_MySQL_Result
     {
         if ($this->result === null)
         {
-            throw new Toby_MySQL_Exception("using freed result");
+            throw new MySQLException("using freed result");
         }
     }
 
@@ -140,7 +142,7 @@ class Toby_MySQL_Result
         }
         else
         {
-            throw new Toby_MySQL_Exception("double free mysql result");
+            throw new MySQLException("double free mysql result");
         }
     }
 

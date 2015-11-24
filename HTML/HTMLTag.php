@@ -1,6 +1,8 @@
 <?php
 
-class Toby_HTML_Tag
+namespace Toby\HTML;
+
+class HTMLTag
 {
     private $name           = null;
     
@@ -72,7 +74,7 @@ class Toby_HTML_Tag
     public static function render($name, $attributes = false, $content = false)
     {
         // tag
-        $tag = new Toby_HTML_Tag($name);
+        $tag = new self($name);
         
         // attributes
         if(is_array($attributes)) $tag->addAttributes($attributes);
