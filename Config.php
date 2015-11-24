@@ -143,9 +143,9 @@ class Config
     public static function get($name)
     {
         // cancellation
-        if(empty($name))                    return false;
-        if(!is_string($name))               return false;
-        if(!isset(self::$instances[$name])) return false;
+        if(empty($name))                    return null;
+        if(!is_string($name))               return null;
+        if(!isset(self::$instances[$name])) return null;
 
         // return
         return self::$instances[$name];
