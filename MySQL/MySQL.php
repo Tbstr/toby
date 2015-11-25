@@ -267,16 +267,16 @@ class MySQL
         return $this->result;
     }
     
-    public function queryPrepared($q, $paramTypes, $paramSet)
+    /**
+     * prepares a query
+     *
+     * @param $query
+     * @return bool|MySQLStatement
+     * @throws MySQLException
+     */
+    public function prepare($query)
     {
-        // cancellation
-        if(empty($paramSet)) return false;
-        
-        // init
-        $this->initQuery();
-        
-        // prepare statement
-        $stmt = $this->mysqli->prepare($q);
+        $stmt = $this->mysqli->prepare($query);
         if($stmt === false)
         {
             $this->errorMessage     = $this->mysqli->error;
@@ -289,50 +289,8 @@ class MySQL
             $this->logger->error("statement preparation failed ($this->errorCode: $this->errorMessage)");
             return false;
         }
-        
-        // bind param sets & execute
-        $keyCount = count($paramSet[0]);
-        $bindArr = array($paramTypes);
-        
-        foreach($paramSet as $params)
-        {
-            // prepare params
-            for($i = 0; $i < $keyCount; $i++) $bindArr[$i+1] = &$params[$i];
-            
-            // bind
-            if(call_user_func_array(array($stmt, 'bind_param'), $bindArr) === false)
-            {
-                $this->errorMessage     = $this->mysqli->error;
-                $this->errorCode        = $this->mysqli->errno;
 
-                // throw exception
-                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage", $this->errorCode);
-
-                // error & return
-                $this->logger->error("param bind failed ($this->errorCode: $this->errorMessage)");
-                return false;
-            }
-            
-            // execute
-            if($stmt->execute() === false)
-            {
-                $this->errorMessage     = $this->mysqli->error;
-                $this->errorCode        = $this->mysqli->errno;
-
-                // throw exception
-                if($this->throwExceptions) throw new MySQLException("$this->errorCode: $this->errorMessage");
-
-                // error & return
-                $this->logger->error("statement execution failed ($this->errorCode: $this->errorMessage)");
-                return false;
-            }
-        }
-        
-        // close statement
-        $stmt->close();
-        
-        // return success
-        return true;
+        return new MySQLStatement($stmt);
     }
 
     /* transactions */
