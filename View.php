@@ -2,8 +2,8 @@
 
 namespace Toby;
 
-use \Exception;
 use \InvalidArgumentException;
+use Toby\Exceptions\TobyException;
 use Toby\Utils\Utils;
 
 class View
@@ -34,14 +34,15 @@ class View
     /* rendering */
     public function render($scriptOverride = null)
     {
-        // var
-        $scriptPath = $this->scriptPath;
-
-        // script override
+        // get script path
         if(is_string($scriptOverride))
         {
-            $overrideScriptPath = Renderer::findViewScript($scriptOverride);
-            if($overrideScriptPath !== false) $scriptPath = $overrideScriptPath;
+            $scriptPath = Renderer::findViewScript($scriptOverride);
+            if($scriptPath === null) throw new TobyException("override script $scriptOverride does not exist");
+        }
+        else
+        {
+            $scriptPath = $this->scriptPath;
         }
         
         // set
@@ -62,7 +63,7 @@ class View
     {
         // find script
         $scriptPath = Renderer::findViewScript($scriptName);
-        if($scriptPath === false) return 'Script "'.$scriptName.'" could not be found.';
+        if($scriptPath === null) throw new TobyException("script $scriptName does not exist");
         
         // manage vars
         $viewVars = null;
@@ -120,7 +121,7 @@ class View
         if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
 
         // check for existence
-        if(isset(self::$helpers[$functionName])) throw new Exception('Helper "'.$functionName.'" is already set');
+        if(isset(self::$helpers[$functionName])) throw new TobyException('Helper "'.$functionName.'" is already set');
 
         // register
         self::$helpers[$functionName] = $callable;

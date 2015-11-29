@@ -19,7 +19,7 @@ class Renderer
         
         // layout
         $layoutPath             = self::findLayout($controller->layoutName);
-        if($layoutPath === false) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
+        if($layoutPath === null) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
         $layout                 = new Layout($layoutPath, get_object_vars($controller->layout));
         
@@ -43,7 +43,7 @@ class Renderer
         
         // get view script
         $scriptPath = self::findViewScript($scriptName);
-        if($scriptPath === false) Toby::finalize('Script "'.$scriptName.'" could not be found.');
+        if($scriptPath === null) Toby::finalize('Script "'.$scriptName.'" could not be found.');
         
         // render & return
         $scriptView = new View($scriptPath, $vars);
@@ -54,26 +54,26 @@ class Renderer
     {
         // theme
         $layoutPath = ThemeManager::$themePathRoot.'/layout/'.$layoutName.'.php';
-        if(file_exists($layoutPath)) return $layoutPath;
+        if(is_file($layoutPath)) return $layoutPath;
             
         // app
         $layoutPath = APP_ROOT.self::$defaultLayoutsPath.DS.$layoutName.'.php';
-        if(file_exists($layoutPath)) return $layoutPath;
+        if(is_file($layoutPath)) return $layoutPath;
         
-        return false;
+        return null;
     }
     
     public static function findViewScript($scriptName)
     {
         // theme
         $viewScriptPath = ThemeManager::$themePathRoot.'/view/'.$scriptName.'.php';
-        if(file_exists($viewScriptPath)) return $viewScriptPath;
+        if(is_file($viewScriptPath)) return $viewScriptPath;
             
         // app
         $viewScriptPath = APP_ROOT.self::$defaultViewsPath.DS.$scriptName.'.php';
-        if(file_exists($viewScriptPath)) return $viewScriptPath;
+        if(is_file($viewScriptPath)) return $viewScriptPath;
         
-        return false;
+        return null;
     }
     
     private static function themeManagerAutoInit()
