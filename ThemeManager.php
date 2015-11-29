@@ -49,7 +49,7 @@ class ThemeManager
             self::$themeURL         = Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
             
             // include function
-            $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.cfg.php';
+            $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.php';
             if(is_file($functionPathRoot)) require_once($functionPathRoot);
 
             // return success
