@@ -2,7 +2,7 @@
 
 namespace Toby;
 
-use \Exception;
+use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
 use Toby\Utils\Utils;
 
@@ -80,7 +80,7 @@ class Toby
     function __construct()
     {
         if(self::$instance === null) self::$instance  = $this;
-        else throw new Exception('Toby is a singleton and therefore can only be accessed through Toby::getInstance().');
+        else throw new TobyException('Toby is a singleton and therefore can only be accessed through Toby::getInstance().');
     }
     
     /* static getter*/

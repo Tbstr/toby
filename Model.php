@@ -2,8 +2,8 @@
 
 namespace Toby;
 
-use \Exception;
 use \InvalidArgumentException;
+use Toby\Exceptions\TobyException;
 
 class Model
 {
@@ -18,7 +18,7 @@ class Model
         if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
 
         // check for existence
-        if(isset(self::$helpers[$functionName])) throw new Exception('Helper "'.$functionName.'" is already set');
+        if(isset(self::$helpers[$functionName])) throw new TobyException('Helper "'.$functionName.'" is already set');
 
         // register
         self::$helpers[$functionName] = $callable;
