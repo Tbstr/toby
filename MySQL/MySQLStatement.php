@@ -31,17 +31,20 @@ class MySQLStatement
         if (func_num_args() > 2)
         {
             $parameters = func_get_args();
+            array_shift($parameters);
         }
-        elseif (is_array($parameters))
+        elseif (!is_array($parameters))
         {
-            array_unshift($parameters, $typeDefinition);
-        }
-        else
-        {
-            $parameters = array($typeDefinition, $parameters);
+            $parameters = array($parameters);
         }
 
-        if (call_user_func_array(array($this->stmt, 'bind_param'), $parameters) === false)
+        $arguments = array($typeDefinition);
+        foreach ($parameters as &$param)
+        {
+            $arguments[] = &$param;
+        }
+
+        if (call_user_func_array(array($this->stmt, 'bind_param'), $arguments) === false)
         {
             $error = $this->stmt->error;
             $errno = $this->stmt->errno;
