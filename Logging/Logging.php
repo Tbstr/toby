@@ -85,6 +85,7 @@ class Logging
         }
     }
 
+    /* event handler */
     public static function handleException(\Exception $e)
     {
         \LoggerMDC::put("file", $e->getFile());
@@ -93,7 +94,6 @@ class Logging
         self::callLogListener(self::TYPE_EXCEPTION, $e->getMessage());
     }
 
-    /* event handler */
     public static function handleError($errno, $errstr, $errfile = '', $errline = 0/*, $errcontex = array()*/)
     {
         \LoggerMDC::put("file", $errfile);
