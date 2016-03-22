@@ -6,22 +6,27 @@ use Toby\ThemeManager;
 
 class AssetsSet
 {
-    /* public variables */
+    /* PUBLIC VARIABLES */
     public $type                        = 'standard';
 
     public $resolvePath                 = false;
     public $resolvePathStrict           = false;
 
-    /* private variables */
+    /* PRIVATE VARIABLES */
     private $javascripts                = array();
     private $stylesheets                = array();
 
-    /* constants */
+    /* CONSTANTS */
     const TYPE_STANDARD                 = 'standard';
     const TYPE_RESOLVE_PATH             = 'resolve_path';
     const TYPE_RESOLVE_PATH_DEFAULT     = 'resolve_path_default';
 
-    /* getter setter */
+    /**
+     * @param      $path
+     * @param bool $async
+     *
+     * @return AssetsSet
+     */
     public function addJavaScript($path, $async = false)
     {
         // add
@@ -31,6 +36,12 @@ class AssetsSet
         return $this;
     }
 
+    /**
+     * @param        $path
+     * @param string $media
+     *
+     * @return AssetsSet
+     */
     public function addCSS($path, $media = 'all')
     {
         // add
@@ -40,7 +51,11 @@ class AssetsSet
         return $this;
     }
 
-    /* placement */
+    /* PLACEMENT */
+
+    /**
+     * @return array
+     */
     public function buildDOMElementsCSS()
     {
         // vars
@@ -64,6 +79,9 @@ class AssetsSet
         return $elements;
     }
 
+    /**
+     * @return array
+     */
     public function buildDOMElementsJavaScript()
     {
         // vars
