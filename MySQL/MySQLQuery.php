@@ -57,8 +57,14 @@ class MySQLQuery
         }
     }
     
-    /* table management */
-    public function setTables($tables)
+    /* TABLE MANAGEMENT */
+
+    /**
+     * @param array $tables
+     *
+     * @return MySQLQuery
+     */
+    public function setTables(array $tables)
     {
         // cancellation
         if(!is_array($tables)) return $this;
@@ -69,7 +75,12 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param string $tableName
+     *
+     * @return MySQLQuery
+     */
     public function addTable($tableName)
     {
         // add
@@ -79,6 +90,13 @@ class MySQLQuery
         return $this;
     }
 
+    /**
+     * @param string $table
+     * @param string $on
+     * @param string $joinType
+     *
+     * @return MySQLQuery
+     */
     public function join($table, $on, $joinType = 'inner')
     {
         // add
@@ -88,13 +106,22 @@ class MySQLQuery
         return $this;
     }
 
+    /**
+     * @return int
+     */
     public function getNumTables()
     {
         return count($this->tables);
     }
     
-    /* field management */
-    public function setFields($fields)
+    /* FIELD MANAGEMENT */
+
+    /**
+     * @param array $fields
+     *
+     * @return MySQLQuery
+     */
+    public function setFields(array $fields)
     {
         // cancellation
         if(!is_array($fields)) return $this;
@@ -105,7 +132,12 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param string $fieldName
+     *
+     * @return MySQLQuery
+     */
     public function addField($fieldName)
     {
         // add
@@ -120,8 +152,14 @@ class MySQLQuery
         return count($this->fields);
     }
     
-    /* data management */
-    public function setData($data)
+    /* DATA MANAGEMENT */
+
+    /**
+     * @param array $data
+     *
+     * @return MySQLQuery
+     */
+    public function setData(array $data)
     {
         // cancellation
         if(!is_array($data)) return $this;
@@ -132,7 +170,13 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param string $key
+     * @param string $value
+     *
+     * @return MySQLQuery
+     */
     public function addData($key, $value)
     {
         // add
@@ -141,13 +185,22 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @return int
+     */
     public function getNumData()
     {
         return count($this->data);
     }
     
-    /* condition mamagement */
+    /* CONDITION MANAGEMENT */
+
+    /**
+     * @param string $cond
+     *
+     * @return MySQLQuery
+     */
     public function condAND($cond)
     {
         $this->addCond($cond, 'AND');
@@ -155,7 +208,12 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param string $cond
+     *
+     * @return MySQLQuery
+     */
     public function condOR($cond)
     {
         $this->addCond($cond, 'OR');
@@ -168,12 +226,21 @@ class MySQLQuery
     {
         $this->conds[] = (empty($this->conds) ? '' : $tie.' ') . $cond;
     }
-    
+
+    /**
+     * @return int
+     */
     public function getNumConditions()
     {
         return count($this->conds);
     }
-    
+
+    /**
+     * @param string $fieldName
+     * @param bool   $asc
+     *
+     * @return MySQLQuery
+     */
     public function orderBy($fieldName, $asc = false)
     {
         // cancellate
@@ -189,7 +256,12 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param string $fieldName
+     *
+     * @return MySQLQuery
+     */
     public function groupBy($fieldName)
     {
         // cancellate
@@ -201,7 +273,13 @@ class MySQLQuery
         // return
         return $this;
     }
-    
+
+    /**
+     * @param int $amount
+     * @param int $startIndex
+     *
+     * @return MySQLQuery
+     */
     public function limit($amount, $startIndex = 0)
     {
         // cancellate
@@ -226,7 +304,12 @@ class MySQLQuery
         else return $value;
     }
     
-    /* build */
+    /* BUILD */
+
+    /**
+     * @return string
+     * @throws MySQLException
+     */
     public function build()
     {
         // init
@@ -338,7 +421,11 @@ class MySQLQuery
         return $cond;
     }
     
-    /* execute */
+    /* EXECUTION */
+
+    /**
+     * @return bool
+     */
     public function execute()
     {
         return $this->mysql->query($this->build());
