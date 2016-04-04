@@ -2,6 +2,7 @@
 
 namespace Toby;
 
+use InvalidArgumentException;
 use Toby\MySQL\MySQL;
 use Toby\Utils\Utils;
 
@@ -97,13 +98,26 @@ class Session
             // session resume
             if(isset($_SESSION[self::KEY]))
             {
+                // set vars
                 $this->SESSION = $_SESSION;
                 $this->resumed = true;
+                
+                // update session cookie for fresh ttl
+                setcookie(
+                    self::KEY,
+                    $this->id,
+                    time() + ini_get("session.cookie_lifetime"),
+                    ini_get("session.cookie_path"),
+                    ini_get("session.cookie_domain"),
+                    ini_get("session.cookie_secure"),
+                    ini_get("session.cookie_httponly")
+                );
             }
             
             // session start
             else
             {
+                // set initial vars
                 $this->SESSION[self::KEY] = array('last_seen' => 0);
             }
             
@@ -262,11 +276,8 @@ class Session
         // cancellation
         if(empty($id)) return '';
         
-        // sanitize input
-        $id = $this->mysql->esc($id);
-        
         // fetch data
-        $this->mysql->select('pd_sessions', '*', "WHERE `id`='$id' LIMIT 1 FOR UPDATE");
+        $this->mysql->select('pd_sessions', '*', sprintf("WHERE `id`='%s' LIMIT 1 FOR UPDATE", $this->mysql->esc($id)));
         if($this->mysql->result === false)      return '';
         if($this->mysql->getNumRows() === 0)    return '';
         
@@ -278,25 +289,19 @@ class Session
     {
         // cancellation
         if(empty($id)) return false;
+
+        // vars
+        $time = time();
         
-        // update
-        if($this->mysql->hasRow('pd_sessions', "WHERE `id`='$id'"))
-        {
-            $this->mysql->update('pd_sessions', array(
-                'access_time'   => time(),
-                'data'          => $data
-            ), "WHERE `id`='$id' LIMIT 1");
-        }
-        
-        // insert
-        else
-        {
-            $this->mysql->insert('pd_sessions', array(
-                'id'            => $id,
-                'access_time'   => time(),
-                'data'          => $data
-            ));
-        }
+        // insert or update
+        $this->mysql->insert('pd_sessions', array(
+            'id'            => $id,
+            'access_time'   => $time,
+            'data'          => $data
+        ), array(
+            'access_time'   => $time,
+            'data'          => $data
+        ));
         
         // return result
         return $this->mysql->result;
@@ -307,18 +312,15 @@ class Session
         // cancellation
         if(empty($id)) return false;
         
-        // sanitize input
-        $id = $this->mysql->esc($id);
-        
         // query & return
-        $this->mysql->delete('pd_sessions', "WHERE id='$id' LIMIT 1");
+        $this->mysql->delete('pd_sessions', sprintf("WHERE `id`='%s' LIMIT 1", $this->mysql->esc($id)));
         return $this->mysql->result;
     }
     
     public function handleMySQLSessionClean($maxLifeTime)
     {
         // clean db
-        $this->mysql->delete('pd_sessions', 'WHERE access_time<'.(time() - (int)$maxLifeTime));
+        $this->mysql->delete('pd_sessions', 'WHERE `access_time`<'.(time() - (int)$maxLifeTime));
         
         // log & return fail
         if($this->mysql->result === false)
@@ -341,5 +343,16 @@ class Session
     public function __toString()
     {
         return "Toby_Session[$this->id]";
+    }
+    
+    /* static functionality */
+    public static function setLifetime($lifetime)
+    {
+        // cancellation
+        if(!is_int($lifetime)) throw new InvalidArgumentException('argument $lifetime is not of type integer');
+        
+        // set
+        ini_set('session.gc_maxlifetime', $lifetime);
+        ini_set('session.cookie_lifetime', $lifetime);
     }
 }
