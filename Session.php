@@ -8,28 +8,31 @@ use Toby\Utils\Utils;
 
 class Session
 {
-    /* statics */
-    private static $instance    = null;
-    public  static $enabled     = true;
+    /* public variables */
+    private $id                                 = null;
     
-    /* variables */
-    private $id                 = -1;
+    private $opened                             = false;
+    private $resumed                            = false;
     
-    private $opened             = false;
-    private $resumed            = false;
-    
-    private $mysqlMode          = false;
+    private $mysqlMode                          = false;
 
-    /** @var  \Toby\MySQL\MySQL */
+    /* public variables */
+    private $SESSION                            = array();
+    
+    /** @var \Toby\MySQL\MySQL */
     private $mysql;
-
-    private $SESSION            = array();
-    
-    /* constants */
-    const KEY                   = 'tobysess';
 
     /** @var \Logger */
     private $logger;
+    
+    /* static variables */
+    private static $instance                    = null;
+    private static $updateCookieOnResume        = false;
+    
+    public  static $enabled                     = true;
+    
+    /* constants */
+    const KEY                                   = 'tobysess';
     
     /* static getter */
     public static function getInstance($openOnInit = true)
@@ -103,15 +106,18 @@ class Session
                 $this->resumed = true;
                 
                 // update session cookie for fresh ttl
-                setcookie(
-                    self::KEY,
-                    $this->id,
-                    time() + ini_get("session.cookie_lifetime"),
-                    ini_get("session.cookie_path"),
-                    ini_get("session.cookie_domain"),
-                    ini_get("session.cookie_secure"),
-                    ini_get("session.cookie_httponly")
-                );
+                if(self::$updateCookieOnResume === true)
+                {
+                    setcookie(
+                        self::KEY,
+                        $this->id,
+                        time() + ini_get("session.cookie_lifetime"),
+                        ini_get("session.cookie_path"),
+                        ini_get("session.cookie_domain"),
+                        ini_get("session.cookie_secure"),
+                        ini_get("session.cookie_httponly")
+                    );
+                }
             }
             
             // session start
@@ -346,13 +352,17 @@ class Session
     }
     
     /* static functionality */
-    public static function setLifetime($lifetime)
+    public static function setLifetime($lifetime, $updateCookieOnSessionResume = false)
     {
         // cancellation
         if(!is_int($lifetime)) throw new InvalidArgumentException('argument $lifetime is not of type integer');
+        if(!is_bool($updateCookieOnSessionResume)) throw new InvalidArgumentException('argument $updateCookieOnSessionResume is not of type boolean');
         
         // set
         ini_set('session.gc_maxlifetime', $lifetime);
         ini_set('session.cookie_lifetime', $lifetime);
+        
+        // update on resume
+        if($updateCookieOnSessionResume === true) self::$updateCookieOnResume = true;
     }
 }
