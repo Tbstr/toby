@@ -469,6 +469,7 @@ class MySQL
         if($value === null)                     return 'NULL';
         elseif(is_string($value))               return "'".$this->mysqli->real_escape_string($value)."'";
         elseif($value instanceof \DateTime)      return "'".$value->format('Y-m-d H:i:s')."'";
+        elseif($value instanceof Decimal)       return number_format($value->getValue(), 5, '.', '');
         else                                    return $value;
     }
     
