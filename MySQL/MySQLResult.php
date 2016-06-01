@@ -140,10 +140,6 @@ class MySQLResult
             $this->result = null;
             $this->parent->releaseResult($this);
         }
-        else
-        {
-            throw new MySQLException("double free mysql result");
-        }
     }
 
     public function __destruct()
