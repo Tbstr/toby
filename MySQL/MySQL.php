@@ -19,9 +19,7 @@ class MySQL
     private $pass;
     private $db;
 
-    /**
-     * @var MySQLResult
-     */
+    /** @var MySQLResult */
     public $result              = false;
     
     public $errorMessage        = '';
@@ -161,21 +159,8 @@ class MySQL
         $this->errorCode    = 0;
         $this->errorMessage = '';
     }
-    
-    public function query($q)
-    {
-        $result = $this->queryWithResult($q);
-        if ($result !== false)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
 
-    public function queryWithResult($q)
+    public function query($q)
     {
         // init
         $this->initQuery();
@@ -242,7 +227,7 @@ class MySQL
                         }
 
                         // repeat query if connected
-                        if($this->connected) return $this->queryWithResult($q);
+                        if($this->connected) return $this->query($q);
                     }
 
                     break;
@@ -255,7 +240,7 @@ class MySQL
             $this->logger->error("[MYSQL ERROR] $this->errorCode: $this->errorMessage\nquery: $q");
             return false;
         }
-        elseif ($result === true)
+        elseif($result === true)
         {
             // no select query
             $this->result = true;
@@ -263,7 +248,7 @@ class MySQL
         }
 
         // fetch result & return
-        $this->result = new \Toby\MySQL\MySQLResult($result, $this);
+        $this->result = new MySQLResult($result, $this);
         return $this->result;
     }
     
@@ -350,7 +335,7 @@ class MySQL
     public function select($table, $fields = '*', $appendix = '')
     {
         $query = 'SELECT '.(is_array($fields) ? implode(',', $fields) : (string)$fields).' FROM '.$table.' '.$appendix;
-        return $this->queryWithResult($query);
+        return $this->query($query);
     }
 
     public function insert($table, $data, $onDuplicateKeyData = false)
@@ -430,32 +415,32 @@ class MySQL
     
     public function hasTable($tableName)
     {
-        $this->query("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
-        if($this->result === false) return false;
-        return $this->getNumRows() > 0;
+        $r = $this->query("SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName'");
+        if($r === false) return false;
+        return $r->getNumRows() > 0;
     }
     
     public function hasColumn($tableName, $columnName)
     {
-        $this->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName' AND COLUMN_NAME='$columnName'");
-        if($this->result === false) return false;
-        return $this->getNumRows() > 0;
+        $r = $this->query("SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='$this->db' AND TABLE_NAME='$tableName' AND COLUMN_NAME='$columnName'");
+        if($r === false) return false;
+        return $r->getNumRows() > 0;
     }
     
     public function hasRow($tableName, $appendix = '')
     {
-        $this->query("SELECT EXISTS (SELECT 1 FROM $tableName $appendix)");
-        if($this->result === false) return false;
+        $r = $this->query("SELECT EXISTS (SELECT 1 FROM $tableName $appendix)");
+        if($r === false) return false;
         
-        return (boolean)$this->fetchFirstElement();
+        return (boolean)$r->fetchFirstElement();
     }
     
     public function countRows($tableName, $appendix = '')
     {
-        $this->query("SELECT COUNT(*) FROM $tableName $appendix");
-        if($this->result === false) return -1;
+        $r = $this->query("SELECT COUNT(*) FROM $tableName $appendix");
+        if($r === false) return -1;
         
-        return (int)$this->fetchFirstElement();
+        return (int)$r->fetchFirstElement();
     }
     
     /* query supporting methods */
@@ -501,112 +486,6 @@ class MySQL
         // return
         return '('.implode(',', $valueEnries).')';
     }
-    
-    /* result management */
-    public function fetchFirstElement()
-    {
-        $this->hasResultOrThrowException();
-        return $this->result->fetchFirstElement();
-    }
-    
-    public function fetchElementByIndex($index)
-    {
-        $this->hasResultOrThrowException();
-        return $this->result->fetchElementByIndex($index);
-    }
-    
-    public function fetchElementSetByIndex($index)
-    {
-        $this->hasResultOrThrowException();
-        return $this->result->fetchElementSetByIndex($index);
-    }
-
-    public function fetchElementByName($name)
-    {
-        $this->hasResultOrThrowException();
-        return $this->result->fetchElementByName($name);
-    }
-    
-    public function fetchElementSetByName($name)
-    {
-        $this->hasResultOrThrowException();
-        return $this->fetchElementSetByName($name);
-    }
-
-    public function fetchRow()
-    {
-        if (!$this->hasResult())
-        {
-            return null;
-        }
-        return $this->result->fetchRow();
-    }
-
-    public function fetchRowSet()
-    {
-        if (!$this->hasResult())
-        {
-            return array();
-        }
-        return $this->result->fetchRowSet();
-    }
-
-    public function fetchAssoc()
-    {
-        if (!$this->hasResult())
-        {
-            return null;
-        }
-        return $this->result->fetchAssoc();
-    }
-
-    public function fetchAssocSet()
-    {
-        if (!$this->hasResult())
-        {
-            return array();
-        }
-        return $this->result->fetchAssocSet();
-    }
-
-    public function fetchObject()
-    {
-        if ($this->hasResult())
-        {
-            return null;
-        }
-        return $this->result->fetchObject();
-    }
-
-    public function fetchObjectSet()
-    {
-        if (!$this->hasResult())
-        {
-            return array();
-        }
-        return $this->result->fetchObjectSet();
-    }
-    
-    public function getNumFields()
-    {
-        if ($this->hasResult())
-        {
-            return $this->result->getNumFields();
-        }
-        else
-        {
-            return $this->mysqli->field_count;
-        }
-    }
-    
-    public function getNumRows()
-    {
-        if (!$this->hasResult())
-        {
-            return 0;
-        }
-        return $this->result->getNumRows();
-    }
 
     public function getNumAffected()
     {
@@ -617,7 +496,7 @@ class MySQL
     {
         return $this->mysqli->insert_id;
     }
-    
+
     public function freeResult()
     {
         if ($this->hasResult())
@@ -625,10 +504,10 @@ class MySQL
             $this->result->freeResult();
         }
     }
-
+    
     public function releaseResult(MySQLResult $result)
     {
-        if ($result === $this->result)
+        if($result === $this->result)
         {
             $this->result = false;
         }
@@ -670,27 +549,16 @@ class MySQL
 
     private function hasResult($throwException = false)
     {
-        if ($this->result === false || $this->result === true)
+        if($this->result === false || $this->result === true)
         {
             // result is true if last query was a data modification (UPDATE, INSERT or DELETE)
-            if ($throwException)
-            {
-                throw new MySQLException("no current result");
-            }
-            else
-            {
-                return false;
-            }
+            if($throwException)     throw new MySQLException("no current result");
+            else                    return false;
         }
         else
         {
             return true;
         }
-    }
-
-    private function hasResultOrThrowException()
-    {
-        $this->hasResult(true);
     }
     
     /* to string */

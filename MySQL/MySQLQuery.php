@@ -34,6 +34,15 @@ class MySQLQuery
     const JOIN_LEFT         = 'left';
     
     /* construct */
+
+    /**
+     * MySQLQuery constructor.
+     *
+     * @param MySQL             $mysql
+     * @param string            $type
+     * @param string|array|null $tables
+     * @param string|array|null $fields
+     */
     function __construct($mysql, $type, $tables = null, $fields = null)
     {
         // mysql
@@ -424,7 +433,7 @@ class MySQLQuery
     /* EXECUTION */
 
     /**
-     * @return bool
+     * @return bool|MySQLResult
      */
     public function execute()
     {

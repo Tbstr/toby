@@ -283,12 +283,12 @@ class Session
         if(empty($id)) return '';
         
         // fetch data
-        $this->mysql->select('pd_sessions', '*', sprintf("WHERE `id`='%s' LIMIT 1 FOR UPDATE", $this->mysql->esc($id)));
-        if($this->mysql->result === false)      return '';
-        if($this->mysql->getNumRows() === 0)    return '';
+        $result = $this->mysql->select('pd_sessions', '*', sprintf("WHERE `id`='%s' LIMIT 1 FOR UPDATE", $this->mysql->esc($id)));
+        if($result === false)               return '';
+        if($result->getNumRows() === 0)     return '';
         
         // return
-        return $this->mysql->fetchElementByName('data');
+        return $result->fetchElementByName('data');
     }
     
     public function handleMySQLSessionWrite($id, $data)

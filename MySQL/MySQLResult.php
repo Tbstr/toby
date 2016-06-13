@@ -4,14 +4,10 @@ namespace Toby\MySQL;
 
 class MySQLResult
 {
-    /**
-     * @var \mysqli_result
-     */
+    /** @var \mysqli_result */
     private $result;
 
-    /**
-     * @var MySQL
-     */
+    /** @var MySQL */
     private $parent;
 
     /**
@@ -126,15 +122,12 @@ class MySQLResult
 
     private function checkResult()
     {
-        if ($this->result === null)
-        {
-            throw new MySQLException("using freed result");
-        }
+        if($this->result === null) throw new MySQLException("using freed result");
     }
 
     public function freeResult()
     {
-        if ($this->result !== null)
+        if($this->result !== null)
         {
             $this->result->free();
             $this->result = null;
@@ -144,9 +137,6 @@ class MySQLResult
 
     public function __destruct()
     {
-        if ($this->result !== null)
-        {
-            $this->freeResult();
-        }
+        if($this->result !== null) $this->freeResult();
     }
 }
