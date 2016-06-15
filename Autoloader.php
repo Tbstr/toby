@@ -105,7 +105,7 @@ class Autoloader
     public static function load($className)
     {
         // check if already loaded
-        if(class_exists($className, false)) return true;
+        if(class_exists($className, false)) return;
 
         // LEVEL 1: registered classes
         if(isset(self::$classes[$className]))
@@ -114,7 +114,7 @@ class Autoloader
         }
 
         // LEVEL 2: PSR-4
-        $classPath = self::resolveNameSpace($className);
+        $classPath = self::resolveNamespace($className);
         if(is_file($classPath.'.php'))
         {
             require_once $classPath.'.php';
