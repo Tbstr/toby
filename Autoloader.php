@@ -66,9 +66,14 @@ class Autoloader
         // resolve
         foreach(self::$namespaces as $namespace => $path)
         {
-            if(strncmp($classPath, $namespace, strlen($namespace)) === 0)
+            $nsLen = strlen($namespace);
+            
+            if(strncmp($classPath, $namespace, $nsLen) === 0)
             {
-                return $path.'/'.str_replace('\\', '/', substr($classPath, strlen($namespace) + 1));
+                if($classPath[$nsLen] === '\\')
+                {
+                    return $path.'/'.str_replace('\\', '/', substr($classPath, $nsLen + 1));
+                }
             }
         }
 
