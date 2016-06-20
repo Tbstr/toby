@@ -3,6 +3,7 @@
 namespace Toby;
 
 use \InvalidArgumentException;
+use Toby\Logging\Logging;
 use Toby\Utils\Utils;
 
 abstract class Controller
@@ -75,7 +76,7 @@ abstract class Controller
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Security::XSRFGetKey();
 
-        $this->logger = \Logger::getLogger(str_replace('_', '.', strtolower(get_class($this))));
+        $this->logger = Logging::logger($this);
     }
     
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
