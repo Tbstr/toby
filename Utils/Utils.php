@@ -78,6 +78,11 @@ class Utils
         return $path;
     }
     
+    public static function asArray($obj)
+    {
+        return is_array($obj) ? $obj : [$obj];
+    }
+    
     public static function array2object($array)
     {
         if(!is_array($array)) return $array;
