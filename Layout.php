@@ -15,25 +15,24 @@ class Layout extends View
     public $content             = '';
     
     /* placements */
-    protected function placeHeaderInformation()
+    protected function placeScripts()
     {
-        // js vars
-        $this->placeJSVars();
-        
-        // theme related
-        ThemeManager::placeHeaderInformation();
-        
-        // additional header content
-        if(!empty($this->headContent)) echo $this->headContent;
+        ThemeManager::placeScripts();
     }
     
-    private function placeJSVars()
+    protected function placeStyles()
     {
-        // cancellation
-        if(empty($this->jsVars)) return;
+        ThemeManager::placeStyles();
+    }
 
-        // place
-        echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
+    protected function placeJSVars()
+    {
+        if(!empty($this->jsVars)) echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
+    }
+
+    protected function placeCustomHeadContent()
+    {
+        if(!empty($this->headContent)) echo $this->headContent;
     }
     
     protected function placeBodyAttributes()

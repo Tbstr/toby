@@ -17,6 +17,9 @@ class ThemeManager
     
     public static $initialized      = false;
     
+    private static $cache           = [];
+    
+    /* initialization */
     public static function init($themeName = false, $functionName = false)
     {
         // compute input
@@ -51,7 +54,7 @@ class ThemeManager
             // include function
             $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.php';
             if(is_file($functionPathRoot)) require_once($functionPathRoot);
-
+            
             // return success
             self::$initialized = true;
             return true;
@@ -83,25 +86,40 @@ class ThemeManager
         return true;
     }
     
-    public static function placeHeaderInformation()
+    /* placements */
+    private static function getSets()
     {
-
-        // sets
+        // get from cache
+        if(isset(self::$cache['sets'])) return self::$cache['sets'];
+        
+        // get
         /** @var \Toby\Assets\AssetsSet[] $sets */
         $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
-
-        // css
+        
+        // put to cache
+        self::$cache['sets'] = $sets;
+        
+        // return
+        return $sets;
+    }
+    
+    public static function placeScripts()
+    {
+        $sets = self::getSets();
+        
         foreach($sets as $set)
         {
-            echo implode("\n", $set->buildDOMElementsCSS());
-            echo "\n";
+            echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
         }
+    }
 
-        // js
+    public static function placeStyles()
+    {
+        $sets = self::getSets();
+        
         foreach($sets as $set)
         {
-            echo implode("\n", $set->buildDOMElementsJavaScript());
-            echo "\n";
+            echo implode("\n", $set->buildDOMElementsCSS())."\n";
         }
     }
 }
