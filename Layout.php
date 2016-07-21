@@ -6,13 +6,45 @@ class Layout extends View
 {
     public $title               = '';
     public $jsVars              = null;
+
+    protected $bodyId           = null;
+    protected $bodyClasses      = [];
+
+    protected $content          = '';
     
-    public $headContent         = '';
+    /* getter & setter */
+    public function setContent($content)
+    {
+        $this->content = (string)$content;
+    }
     
-    public $bodyId              = ''; 
-    public $bodyClass           = '';
-    
-    public $content             = '';
+    public function setBodyId($id)
+    {
+        $this->bodyId = empty($id) ? null : (string)$id;
+    }
+
+    public function addBodyClass($classes)
+    {
+        if(!is_array($classes)) $classes = [(string)$classes];
+        
+        foreach($classes as $class)
+        {
+            $this->bodyClasses[] = (string)$class;
+        }
+    }
+
+    public function removeBodyClass($classes)
+    {
+        if(!is_array($classes)) $classes = [(string)$classes];
+        
+        foreach($classes as $class)
+        {
+            if(($key = array_search($class, $this->bodyClasses)) !== false)
+            {
+                array_splice($this->bodyClasses, $key, 1);
+            }
+        }
+    }
     
     /* placements */
     protected function placeScripts()
@@ -29,34 +61,26 @@ class Layout extends View
     {
         if(!empty($this->jsVars)) echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
     }
-
-    protected function placeCustomHeadContent()
-    {
-        if(!empty($this->headContent)) echo $this->headContent;
-    }
     
     protected function placeBodyAttributes()
     {
         // vars
-        $idSet = false;
+        $out = [];
 
         // id
         if(!empty($this->bodyId))
         {
-            echo "id=\"$this->bodyId\"";
-            $idSet = true;
+            $out[] =  "id=\"$this->bodyId\"";
         }
         
         // class
-        if(!empty($this->bodyClass))
+        if(!empty($this->bodyClasses))
         {
-            // conversion
-            if(is_string($this->bodyClass)) $this->bodyClass = explode(' ', $this->bodyClass);
-
             // add
-            if($idSet) echo ' ';
-            echo "class=\"".implode(' ', $this->bodyClass)."\"";
+            $out[] =  "class=\"".implode(' ', $this->bodyClasses)."\"";
         }
+        
+        echo implode(' ', $out);
     }
     
     /* to string */

@@ -25,12 +25,11 @@ class Renderer
         
         $layout->title          = $controller->layoutTitle;
         $layout->jsVars         = get_object_vars($controller->javascript);
-        $layout->headContent    = $controller->layoutHeadContent;
         
-        $layout->bodyId         = $controller->layoutBodyId;
-        $layout->bodyClass      = $controller->layoutBodyClasses;
+        $layout->setBodyId($controller->layoutBodyId);
+        $layout->addBodyClass($controller->layoutBodyClasses);
         
-        $layout->content        = $content;
+        $layout->setContent($content);
 
         // render & return
         return $layout->render();

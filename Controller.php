@@ -23,7 +23,6 @@ abstract class Controller
     public $layoutName              = 'default';
     
     public $layoutTitle             = '';
-    public $layoutHeadContent       = '';
     
     public $layoutScripts           = array();
     public $layoutStyles            = array();
@@ -130,6 +129,7 @@ abstract class Controller
         $this->layoutName = $layoutName;
     }
     
+    /* page title */
     protected function setTitle($value)
     {
         $this->layoutTitle = $value;
@@ -144,14 +144,24 @@ abstract class Controller
     {
         $this->layoutTitle = $value.$this->layoutTitle;
     }
-    
-    /* set head information */
-    protected function setHeadContent($content, $append = false)
+
+    /* scripts & styles */
+    protected function addScript($scriptPath)
     {
-        if($append === true) $this->layoutHeadContent .= $content;
-        else $this->layoutHeadContent = $content;
+        // add
+        $this->layoutScripts[] = $scriptPath;
+    }
+
+    protected function addStyle($stylePath, $media = 'all')
+    {
+        // init media entry
+        if(!isset($this->layoutStyles[$media])) $this->layoutStyles[$media] = array();
+
+        // add
+        $this->layoutStyles[$media][] = $stylePath;
     }
     
+    /* body properties */
     protected function setBodyId($id)
     {
         $this->layoutBodyId = $id;
@@ -175,21 +185,6 @@ abstract class Controller
             $key = array_search(func_get_arg($i), $this->layoutBodyClasses);
             if($key !== false) array_splice($this->layoutBodyClasses, $key, 1);
         }
-    }
-    
-    protected function addScript($scriptPath)
-    {
-        // add
-        $this->layoutScripts[] = $scriptPath;
-    }
-    
-    protected function addStyle($stylePath, $media = 'all')
-    {
-        // init media entry
-        if(!isset($this->layoutStyles[$media])) $this->layoutStyles[$media] = array();
-        
-        // add
-        $this->layoutStyles[$media][] = $stylePath;
     }
     
     /* get set view script */
