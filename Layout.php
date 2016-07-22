@@ -4,8 +4,8 @@ namespace Toby;
 
 class Layout extends View
 {
-    public $title               = '';
-    public $jsVars              = null;
+    protected $title            = '';
+    protected $jsVars           = null;
 
     protected $bodyId           = null;
     protected $bodyClasses      = [];
@@ -13,6 +13,16 @@ class Layout extends View
     protected $content          = '';
     
     /* getter & setter */
+    public function setTitle($title)
+    {
+        $this->title = (string)$title;
+    }
+
+    public function setJavaScriptVars($vars)
+    {
+        $this->jsVars = empty($vars) ? null : $vars;
+    }
+    
     public function setContent($content)
     {
         $this->content = (string)$content;

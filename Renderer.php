@@ -15,16 +15,16 @@ class Renderer
         self::themeManagerAutoInit();
 
         // script
-        $content                = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
         
         // layout
-        $layoutPath             = self::findLayout($controller->layoutName);
+        $layoutPath = self::findLayout($controller->layoutName);
         if($layoutPath === null) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
         
-        $layout                 = new Layout($layoutPath, get_object_vars($controller->layout));
+        $layout = new Layout($layoutPath, get_object_vars($controller->layout));
         
-        $layout->title          = $controller->layoutTitle;
-        $layout->jsVars         = get_object_vars($controller->javascript);
+        $layout->setTitle($controller->layoutTitle);
+        $layout->setJavaScriptVars(get_object_vars($controller->javascript));
         
         $layout->setBodyId($controller->layoutBodyId);
         $layout->addBodyClass($controller->layoutBodyClasses);
