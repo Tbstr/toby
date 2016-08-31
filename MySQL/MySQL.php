@@ -43,6 +43,8 @@ class MySQL
     /** @var \Logger */
     private $queryLogger;
 
+    private $performanceData;
+
     /**
      * @param string $id
      * @param bool $autoInit
@@ -193,8 +195,16 @@ class MySQL
             return true;
         }
 
+        $queryStart = microtime(true);
+
         // query
         $result = $this->mysqli->query($q);
+
+        if ($this->isPerformanceTrackingEnabled())
+        {
+            $stop = microtime(true);
+            $this->addPerformanceData($q, $stop - $queryStart);
+        }
 
         // handle error
         if($result === false)
@@ -275,7 +285,7 @@ class MySQL
             return false;
         }
 
-        return new MySQLStatement($stmt);
+        return new MySQLStatement($stmt, $this, $query);
     }
 
     /* transactions */
@@ -565,5 +575,32 @@ class MySQL
     public function __toString()
     {
         return "Toby_MySQL[$this->user@$this->host]";
+    }
+
+    public function startPerformanceTracking()
+    {
+        $this->performanceData = array();
+    }
+
+    public function getPerformanceData()
+    {
+        return $this->performanceData;
+    }
+
+    public function stopPerformanceTracking()
+    {
+        $data = $this->performanceData;
+        $this->performanceData = null;
+        return $data;
+    }
+
+    public function isPerformanceTrackingEnabled()
+    {
+        return $this->performanceData !== null;
+    }
+
+    public function addPerformanceData($query, $duration)
+    {
+        $this->performanceData[] = [$query, $duration * 1000];
     }
 }

@@ -9,12 +9,24 @@ class MySQLStatement
      */
     private $stmt;
 
+    /**
+     * @var MySQL
+     */
+    private $parent;
+
+    /**
+     * @var string
+     */
+    private $query;
+
     /** @var \Logger */
     private $logger;
 
-    public function __construct(\mysqli_stmt $stmt)
+    public function __construct(\mysqli_stmt $stmt, MySQL $parent, $query)
     {
         $this->stmt = $stmt;
+        $this->parent = $parent;
+        $this->query = $query;
         $this->logger = \Logger::getLogger("toby.mysql.statement");
     }
 
@@ -56,6 +68,8 @@ class MySQLStatement
 
     public function execute()
     {
+        $start = microtime(true);
+
         if ($this->stmt->execute() === false)
         {
             $error = $this->stmt->error;
@@ -63,6 +77,12 @@ class MySQLStatement
 
             $this->logger->error("executing statement failed ($errno: $error)");
             throw new MySQLException("$errno: $error", $errno);
+        }
+
+        if ($this->parent->isPerformanceTrackingEnabled())
+        {
+            $stop = microtime(true);
+            $this->parent->addPerformanceData($this->query, $stop - $start);
         }
     }
 
