@@ -136,6 +136,9 @@ class Logging
                 break;
         }
 
+        \LoggerMDC::remove("file");
+        \LoggerMDC::remove("line");
+
         // return
         return false;
     }
