@@ -2,6 +2,7 @@
 
 namespace Toby;
 
+use Symfony\Component\Yaml\Yaml;
 use Toby\Utils\Utils;
 
 class Config
@@ -63,7 +64,7 @@ class Config
             }
             else
             {
-                $this->data[$keyBase] = $value;
+                $this->data[$keyBase.'.'.$key] = $value;
             }
         }
     }
@@ -154,31 +155,39 @@ class Config
 
             $filePath = Utils::pathCombine([$dir, $filename]);
             if(!is_readable($filePath)) continue;
-            
+                
             // php
-            if(preg_match('/\.cfg\.php$/', $filename) === 1)
+            if(preg_match('/\.php$/', $filename) === 1)
             {
-                $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
+                // get basename
+                $basename = basename($filename, '.php');
+                
+                // skip YAML version found, TODO: remove
+                if(in_array($basename.'.yml', $list)) continue;
+                
+                // load & parse definitions
                 $definitions = require $filePath;
-
                 if(!is_array($definitions)) continue;
 
+                // set entries
                 foreach($definitions as $key => $value)
                 {
-                    $this->setEntry($baseName.'.'.$key, $value);
+                    $this->setEntry($basename.'.'.$key, $value);
                 }
             }
 
             // yaml
-            /*
-            elseif(preg_match('/\.cfg\.yml$/', $filename) === 1)
+            elseif(preg_match('/\.yml$/', $filename) === 1)
             {
-                $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.yml')));
+                // get basename
+                $basename = basename($filename, '.yml');
 
-                $definitions = yaml_parse_file($filePath);
-                $this->setEntriesFromArray($baseName, $definitions);
+                // load & parse definitions
+                $definitions = Yaml::parse(file_get_contents($filePath));
+
+                // set entries
+                $this->setEntriesFromArray($basename, $definitions);
             }
-            */
         }
     }
     
