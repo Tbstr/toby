@@ -2,102 +2,59 @@
 
 namespace Toby;
 
+use Toby\Exceptions\TobyException;
 use Toby\Utils\Utils;
-use \InvalidArgumentException;
 
 class Config
 {
-    /* static variables */
-    public static $instances = array();
-
     /* variables */
-    public $name        = false;
-    public $data        = false;
+    private $data = [];
+    
+    /* statics */
+    public static $instance = null;
     
     /* constructor */
-    function __construct($name, $data)
+    function __construct()
     {
-        // cancellation
-        if(empty($name))        return;
-        if(empty($data))        return;
-        if(!is_array($data))    return;
-
-        // set vars
-        $this->name = $name;
-        $this->data = $data;
+        if(self::$instance !== null) throw new TobyException('Config is a singleton and therefor can only be accessed through Config::getInstance()');
+        self::$instance = $this;
     }
 
-    public function addData($data)
-    {
-        // cancellation
-        if(!is_array($data)) throw new InvalidArgumentException('argument $data is not of type array');
+    /* entry management */
 
-        // add
-        $this->data = array_merge($this->data, $data);
-    }
-
-    /* methods */
+    /**
+     * @param $key
+     *
+     * @return bool
+     */
     public function hasKey($key)
     {
-        // cancellation
-        if(empty($key)) return false;
-
-        // check
         return isset($this->data[$key]);
     }
 
     /**
-     * @param string $key
-     * @param string $datatype
-     *
-     * @return mixed
+     * @param $key
+     * @param $value
      */
-    public function getValue($key, $datatype = '')
-    {
-        // cancellation
-        if(empty($key)) return false;
-        
-        // return parsed
-        $value = isset($this->data[$key]) ? $this->data[$key] : null;
-        return Utils::parseValue($value, $datatype);
-    }
-
-    public function getAllValues()
-    {
-        return is_array($this->data) ? $this->data : array();
-    }
-
-    public function getValueFromArray($key, $arrayKey, $datatype = '')
-    {
-        // cancellation
-        if(empty($key)) return false;
-
-        // get array
-        $array = self::getValue($key);
-        if(!is_array($array)) return null;
-
-        // return parsed value
-        $value = isset($array[$arrayKey]) ? $array[$arrayKey] : null;
-        return Utils::parseValue($value, $datatype);
-    }
-
     public function setValue($key, $value)
     {
-        // cancellation
-        if(!is_string($key)) throw new InvalidArgumentException('argument $key is not of type string');
-
         // set
         $this->data[$key] = $value;
     }
-    
-    /* PHP */
-    public function __toString()
+
+    /**
+     * @param $key
+     *
+     * @return mixed
+     * @throws TobyException
+     */
+    public function getValue($key)
     {
-        return 'Toby_Config['.$this->name.']';
+        return isset($this->data[$key]) ? $this->data[$key] : null;
     }
 
-    /* statics */
-    public static function readDir($dir)
+    /* import */
+    public function readDir($dir)
     {
         $list = scandir($dir);
 
@@ -105,57 +62,42 @@ class Config
         {
             if($filename[0] === '.') continue;
             if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
+            
+            $filePath = Utils::pathCombine([$dir, $filename]);
+            if(!is_readable($filePath)) continue;
 
-            $filePath = Utils::pathCombine(array($dir, $filename));
+            $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
+            $definitions = require $filePath;
 
-            if(is_readable($filePath))
+            if(!is_array($definitions)) continue;
+            
+            foreach($definitions as $key => $value)
             {
-                $name = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
-
-                $config = self::get($name);
-
-                if(empty($config))
-                {
-                    self::$instances[$name] = new Config($name, self::getConfigVars($filePath));
-                }
-                else
-                {
-                    $config->addData(self::getConfigVars($filePath));
-                }
+                $this->setValue($baseName.'.'.$key, $value);
             }
         }
-
-        return true;
     }
 
-    public static function listConfigs()
+    /* PHP */
+    public function __toString()
     {
-        $list = array();
-        foreach(self::$instances as $instance) $list[] = $instance->name;
-
-        return $list;
+        return 'Config';
+    }
+    
+    /* static methods */
+    public static function getInstance()
+    {
+        if(self::$instance === null) self::$instance = new self();
+        return self::$instance;
     }
 
-    /**
-     * @param $name
-     * @return Config
-     */
-    public static function get($name)
+    public static function has($key)
     {
-        // cancellation
-        if(empty($name))                    return null;
-        if(!is_string($name))               return null;
-        if(!isset(self::$instances[$name])) return null;
-
-        // return
-        return self::$instances[$name];
+        return self::getInstance()->hasKey($key);
     }
-
-    private static function getConfigVars($configFilePath)
+    
+    public static function get($key)
     {
-        include $configFilePath;
-        unset($configFilePath);
-
-        return get_defined_vars();
+        return self::getInstance()->getValue($key);
     }
 }
