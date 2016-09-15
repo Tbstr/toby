@@ -76,6 +76,49 @@ class Config
         return isset($this->data[$key]) ? $this->data[$key] : null;
     }
 
+    public function getSubValues($keyBase)
+    {
+        // append delimiter
+        $keyBase .= '.';
+        
+        // vars
+        $keyBaseLength = strlen($keyBase);
+        $data = [];
+        
+        // search & pack
+        foreach($this->data as $key => $value)
+        {
+            if(strncmp($key, $keyBase, $keyBaseLength) === 0)
+            {
+                $this->packSubValue($data, substr($key, $keyBaseLength), $value);
+            }
+        }
+
+        // return
+        return $data;
+    }
+    
+    private function packSubValue(array &$data, $key, $value)
+    {
+        $keyElements = explode('.', $key);
+        $dataCursor = &$data;
+        
+        for($i = 0, $le = count($keyElements) - 1; $i <= $le; $i++)
+        {
+            $ke = $keyElements[$i];
+            
+            if($i === $le)
+            {
+                $dataCursor[$ke] = $value;
+            }
+            else
+            {
+                if(!isset($dataCursor[$ke])) $dataCursor[$ke] = [];
+                $dataCursor = &$dataCursor[$ke];
+            }
+        }
+    }
+
     /* import */
     public function readDir($dir)
     {
@@ -84,19 +127,30 @@ class Config
         foreach($list as $filename)
         {
             if($filename[0] === '.') continue;
-            if(preg_match('/\.cfg\.php$/', $filename) === 0) continue;
-            
+
             $filePath = Utils::pathCombine([$dir, $filename]);
             if(!is_readable($filePath)) continue;
-
-            $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
-            $definitions = require $filePath;
-
-            if(!is_array($definitions)) continue;
             
-            foreach($definitions as $key => $value)
+            // php
+            if(preg_match('/\.cfg\.php$/', $filename) === 1)
             {
-                $this->setEntry($baseName.'.'.$key, $value);
+                $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.php')));
+                $definitions = require $filePath;
+
+                if(!is_array($definitions)) continue;
+
+                foreach($definitions as $key => $value)
+                {
+                    $this->setEntry($baseName.'.'.$key, $value);
+                }
+            }
+            
+            // yaml
+            elseif(preg_match('/\.cfg\.yml$/', $filename) === 1)
+            {
+                $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.yml')));
+                
+                // parse ...
             }
         }
     }
