@@ -76,6 +76,11 @@ class Config
         return isset($this->data[$key]) ? $this->data[$key] : null;
     }
 
+    /**
+     * @param $keyBase
+     *
+     * @return array
+     */
     public function getSubValues($keyBase)
     {
         // append delimiter
@@ -97,7 +102,12 @@ class Config
         // return
         return $data;
     }
-    
+
+    /**
+     * @param array  $data
+     * @param string $key
+     * @param mixed  $value
+     */
     private function packSubValue(array &$data, $key, $value)
     {
         $keyElements = explode('.', $key);
@@ -144,13 +154,35 @@ class Config
                     $this->setEntry($baseName.'.'.$key, $value);
                 }
             }
-            
+
             // yaml
+            /*
             elseif(preg_match('/\.cfg\.yml$/', $filename) === 1)
             {
                 $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.yml')));
-                
-                // parse ...
+
+                $definitions = yaml_parse_file($filePath);
+                $this->setFromArray($baseName, $definitions);
+            }
+            */
+        }
+    }
+
+    /**
+     * @param string $keyBase
+     * @param array $arr
+     */
+    private function setFromArray($keyBase, array $arr)
+    {
+        foreach($arr as $key => $value)
+        {
+            if(is_array($value))
+            {
+                $this->setFromArray($keyBase.'.'.$key, $value);
+            }
+            else
+            {
+                $this->data[$keyBase] = $value;
             }
         }
     }
