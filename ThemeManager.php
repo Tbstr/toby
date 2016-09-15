@@ -25,8 +25,8 @@ class ThemeManager
         // compute input
         if($themeName === false)
         {
-            $configThemeName        = Config::get('toby')->getValue('theme');
-            $configThemeFunction    = Config::get('toby')->getValue('themeFunction');
+            $configThemeName        = Config::get('toby.theme.name');
+            $configThemeFunction    = Config::get('toby.theme.function');
             
             if(empty($configThemeName))
             {

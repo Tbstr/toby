@@ -27,9 +27,9 @@ class Logging
 
     public static function init()
     {
-        self::$fatalNotificationTo  = Config::get('toby')->getValue('fatalNotificationTo', 'string');
+        self::$fatalNotificationTo = Config::get('toby.error.fatal_notificationT_to');
 
-        $config = Config::get('logging')->getValue('config');
+        $config = Config::get('logging.config');
         if(!is_array($config) || empty($config))
         {
             trigger_error("unable to configure logging", E_USER_ERROR);
@@ -54,7 +54,7 @@ class Logging
         if(empty($variables))
         {
             $variables = array( "{APP_ROOT}" => APP_ROOT );
-            foreach(Config::get('logging')->getValue('configVars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
+            foreach(Config::get('logging.config_vars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
         }
 
         // crawl config
@@ -163,7 +163,10 @@ class Logging
                 self::callLogListener(self::TYPE_ERROR, $logMsg);
 
                 // create backtrace & send mail
-                if(!empty(self::$fatalNotificationTo)) mail(self::$fatalNotificationTo, 'Fatal Error', date('d.m.Y H:i:s').$logMsg);
+                if(!empty(self::$fatalNotificationTo))
+                {
+                    mail(implode(', ', self::$fatalNotificationTo), 'Fatal Error', date('d.m.Y H:i:s').$logMsg);
+                }
             }
         }
     }

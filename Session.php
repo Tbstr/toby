@@ -64,7 +64,7 @@ class Session
         ini_set('session.cookie_domain', $domain);
         
         // set handlers
-        if(Config::get('toby')->getValue('sessionUseMySQL', 'bool'))
+        if(Config::get('toby.session.mysql.enable'))
         {
             $this->mysqlMode = true;
             $this->mysql = MySQL::getInstance();

@@ -56,7 +56,10 @@ abstract class Controller
         
         $this->toby                     = Toby::getInstance();
         
-        if(Config::get('toby')->hasKey('defaultTitle')) $this->layoutTitle = Config::get('toby')->getValue('defaultTitle', 'string');
+        if(Config::has('toby.default.title'))
+        {
+            $this->layoutTitle = Config::get('toby.default.title');
+        }
         
         // holders
         $this->layout                   = new \stdClass();

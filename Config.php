@@ -27,9 +27,23 @@ class Config
      *
      * @return bool
      */
-    public function hasKey($key)
+    public function hasKey($key, $strict = true)
     {
-        return isset($this->data[$key]);
+        if($strict === true)
+        {
+            return isset($this->data[$key]);
+        }
+        else
+        {
+            $keyLen = strlen($key);
+            
+            foreach($this->data as $dataKey => $dataValue)
+            {
+                if(strncmp($dataKey, $key, $keyLen) === 0) return true;
+            }
+            
+            return false;
+        }
     }
 
     /**
@@ -91,13 +105,18 @@ class Config
         return self::$instance;
     }
 
-    public static function has($key)
+    public static function has($key, $strict = true)
     {
-        return self::getInstance()->hasKey($key);
+        return self::getInstance()->hasKey($key, $strict);
     }
     
     public static function get($key)
     {
         return self::getInstance()->getValue($key);
+    }
+
+    public static function set($key, $value)
+    {
+        self::getInstance()->setValue($key, $value);
     }
 }

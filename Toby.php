@@ -115,24 +115,24 @@ class Toby
         if($scope === self::SCOPE_LOCAL) Session::$enabled = false;
 
         // init config & hook
-        Config::readDir(APP_ROOT.'/config');
+        Config::getInstance()->readDir(APP_ROOT.'/config');
         $this->hook('configs_loaded');
         
         // error handling
-        if(Config::get('toby')->getValue('strictErrors')) error_reporting(E_ALL | E_STRICT);
+        if(Config::get('toby.error.strict')) error_reporting(E_ALL | E_STRICT);
         else error_reporting(E_ALL & ~E_STRICT);
         
-        ini_set('display_errors', Config::get('toby')->getValue('displayErrors') ? '1' : '0');
+        ini_set('display_errors', Config::get('toby.error.display') ? '1' : '0');
         
         // set url vars
-        $this->appURL           = Config::get('toby')->hasKey('appURL') ? Config::get('toby')->getValue('appURL') : '';
-        $this->appURLSecure     = Config::get('toby')->hasKey('appURLSecure') ? Config::get('toby')->getValue('appURLSecure') : $this->appURL;
+        $this->appURL           = Config::has('toby.app.url') ? Config::get('toby.app.url') : '';
+        $this->appURLSecure     = Config::has('toby.app.url_secure') ? Config::get('toby.app.url_secure') : $this->appURL;
         $this->appURLRelative   = preg_replace('/https?:\/\/[a-zA-Z0-9.-_]+\.[a-zA-Z]{2,4}(:[0-9]+)?\/?/', '/', $this->appURL);
 
         // init logging
         Logging::init();
 
-        if(Config::get('toby')->getValue('logRequestTimes'))
+        if(Config::get('toby.logging.log_request_times'))
         {
             $this->logRequestTime = true;
             $this->requestTimesLogger = \Logger::getLogger("toby.request-times");
@@ -152,7 +152,7 @@ class Toby
         $this->hook('post_init');
 
         // force resolve
-        if(Config::get('toby')->hasKey('forceResolve')) $request = Config::get('toby')->getValue('forceResolve');
+        if(Config::has('toby.force_resolve')) $request = Config::get('toby.force_resolve');
         
         // resolve and boot
         if($request !== null)
@@ -182,10 +182,10 @@ class Toby
             // default resolve on fail
             if($stdResolveOnFail)
             {
-                if(Config::get('toby')->hasKey('defaultResolve'))
+                if(Config::has('toby.default.resolve'))
                 {
                     // reboot
-                    list($controllerName, $actionName) = explode('/', Config::get('toby')->getValue('defaultResolve'));
+                    list($controllerName, $actionName) = explode('/', Config::get('toby.default.resolve'));
                     $this->boot($controllerName, $actionName);
                 }
             }

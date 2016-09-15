@@ -74,16 +74,14 @@ class MySQL
     protected function autoInit()
     {
         // cancellation
-        if(Config::get('toby')->getValue('mySQLAutoConnect') !== true) return;
+        if(Config::get('toby.mysql.auto_connect') !== true) return;
         
         // vars
-        $mad = Config::get('toby')->getValue('mySQLAccessData');
-
         $this->init(
-            $mad['host'],
-            $mad['user'],
-            $mad['password'],
-            isset($mad['db']) ? $mad['db'] : null
+            Config::get('toby.mysql.host'),
+            Config::get('toby.mysql.user'),
+            Config::get('toby.mysql.password'),
+            Config::get('toby.mysql.db')
             );
     }
 
@@ -96,7 +94,7 @@ class MySQL
         if($db !== false) $this->db = $db;
         
         // setup
-        if(Config::get('toby')->getValue('logMySQLQueries')) $this->initQueryLogging();
+        if(Config::get('toby.logging.log_mysql_queries')) $this->initQueryLogging();
         
         // connect
         if($this->connected) $this->disconnect();
