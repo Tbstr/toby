@@ -2,7 +2,6 @@
 
 namespace Toby;
 
-use Toby\Exceptions\TobyException;
 use Toby\Utils\Utils;
 
 class Config
@@ -41,8 +40,8 @@ class Config
     }
 
     /**
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed  $value
      */
     public function setEntry($key, $value)
     {
@@ -60,7 +59,7 @@ class Config
         {
             if(is_array($value))
             {
-                $this->setFromArray($keyBase.'.'.$key, $value);
+                $this->setEntriesFromArray($keyBase.'.'.$key, $value);
             }
             else
             {
@@ -70,7 +69,7 @@ class Config
     }
 
     /**
-     * @param $key
+     * @param string $key
      */
     public function removeEntry($key)
     {
@@ -78,10 +77,9 @@ class Config
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return mixed
-     * @throws TobyException
      */
     public function getValue($key)
     {
@@ -89,7 +87,7 @@ class Config
     }
 
     /**
-     * @param $keyBase
+     * @param string $keyBase
      *
      * @return array
      */
@@ -142,6 +140,10 @@ class Config
     }
 
     /* import */
+
+    /**
+     * @param string $dir
+     */
     public function readDir($dir)
     {
         $list = scandir($dir);
@@ -181,6 +183,10 @@ class Config
     }
     
     /* clone */
+
+    /**
+     * @return Config
+     */
     public function getClone()
     {
         $clone = new self();
@@ -210,16 +216,31 @@ class Config
         return self::$instance;
     }
 
+    /**
+     * @param string $key
+     * @param bool   $strict
+     *
+     * @return bool
+     */
     public static function has($key, $strict = true)
     {
         return self::getInstance()->hasEntry($key, $strict);
     }
-    
+
+    /**
+     * @param string $key
+     *
+     * @return mixed
+     */
     public static function get($key)
     {
         return self::getInstance()->getValue($key);
     }
 
+    /**
+     * @param string $key
+     * @param mixed  $value
+     */
     public static function set($key, $value)
     {
         self::getInstance()->setEntry($key, $value);
