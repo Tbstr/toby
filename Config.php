@@ -23,11 +23,12 @@ class Config
     /* entry management */
 
     /**
-     * @param $key
+     * @param string $key
+     * @param bool   $strict
      *
      * @return bool
      */
-    public function hasKey($key, $strict = true)
+    public function hasEntry($key, $strict = true)
     {
         if($strict === true)
         {
@@ -50,10 +51,18 @@ class Config
      * @param $key
      * @param $value
      */
-    public function setValue($key, $value)
+    public function setEntry($key, $value)
     {
         // set
         $this->data[$key] = $value;
+    }
+
+    /**
+     * @param $key
+     */
+    public function removeEntry($key)
+    {
+        unset($this->data[$key]);
     }
 
     /**
@@ -87,11 +96,11 @@ class Config
             
             foreach($definitions as $key => $value)
             {
-                $this->setValue($baseName.'.'.$key, $value);
+                $this->setEntry($baseName.'.'.$key, $value);
             }
         }
     }
-
+    
     /* PHP */
     public function __toString()
     {
@@ -99,6 +108,10 @@ class Config
     }
     
     /* static methods */
+
+    /**
+     * @return Config
+     */
     public static function getInstance()
     {
         if(self::$instance === null) self::$instance = new self();
@@ -107,7 +120,7 @@ class Config
 
     public static function has($key, $strict = true)
     {
-        return self::getInstance()->hasKey($key, $strict);
+        return self::getInstance()->hasEntry($key, $strict);
     }
     
     public static function get($key)
@@ -117,6 +130,6 @@ class Config
 
     public static function set($key, $value)
     {
-        self::getInstance()->setValue($key, $value);
+        self::getInstance()->setEntry($key, $value);
     }
 }
