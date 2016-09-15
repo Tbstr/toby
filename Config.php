@@ -12,13 +12,6 @@ class Config
     
     /* statics */
     public static $instance = null;
-    
-    /* constructor */
-    function __construct()
-    {
-        if(self::$instance !== null) throw new TobyException('Config is a singleton and therefor can only be accessed through Config::getInstance()');
-        self::$instance = $this;
-    }
 
     /* entry management */
 
@@ -58,6 +51,25 @@ class Config
     }
 
     /**
+     * @param string $keyBase
+     * @param array $arr
+     */
+    public function setEntriesFromArray($keyBase, array $arr)
+    {
+        foreach($arr as $key => $value)
+        {
+            if(is_array($value))
+            {
+                $this->setFromArray($keyBase.'.'.$key, $value);
+            }
+            else
+            {
+                $this->data[$keyBase] = $value;
+            }
+        }
+    }
+
+    /**
      * @param $key
      */
     public function removeEntry($key)
@@ -88,19 +100,19 @@ class Config
         
         // vars
         $keyBaseLength = strlen($keyBase);
-        $data = [];
+        $subValues = [];
         
         // search & pack
         foreach($this->data as $key => $value)
         {
             if(strncmp($key, $keyBase, $keyBaseLength) === 0)
             {
-                $this->packSubValue($data, substr($key, $keyBaseLength), $value);
+                $this->packSubValue($subValues, substr($key, $keyBaseLength), $value);
             }
         }
 
         // return
-        return $data;
+        return $subValues;
     }
 
     /**
@@ -162,29 +174,23 @@ class Config
                 $baseName = trim(substr($filename, 0, strrpos($filename, '.cfg.yml')));
 
                 $definitions = yaml_parse_file($filePath);
-                $this->setFromArray($baseName, $definitions);
+                $this->setEntriesFromArray($baseName, $definitions);
             }
             */
         }
     }
-
-    /**
-     * @param string $keyBase
-     * @param array $arr
-     */
-    private function setFromArray($keyBase, array $arr)
+    
+    /* clone */
+    public function getClone()
     {
-        foreach($arr as $key => $value)
+        $clone = new self();
+
+        foreach($this->data as $key => $value)
         {
-            if(is_array($value))
-            {
-                $this->setFromArray($keyBase.'.'.$key, $value);
-            }
-            else
-            {
-                $this->data[$keyBase] = $value;
-            }
+            $clone->setEntry($key, $value);
         }
+        
+        return $clone;
     }
     
     /* PHP */
