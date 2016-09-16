@@ -9,6 +9,7 @@ class Config
 {
     /* variables */
     private $data = [];
+    private $dataIndex = [];
     
     /* statics */
     public static $instance = null;
@@ -17,64 +18,125 @@ class Config
 
     /**
      * @param string $key
-     * @param bool   $strict
-     *
-     * @return bool
+     * @param mixed  $value
      */
-    public function hasEntry($key, $strict = true)
+    public function setEntry($key, &$value)
     {
-        if($strict === true)
+        $keyElements = explode('.', $key);
+        
+        $keyName = array_pop($keyElements);
+        $keyBase = implode('.', $keyElements);
+        
+        if($keyBase === '')
         {
-            return isset($this->data[$key]);
+            $arr = &$this->data;
         }
         else
         {
-            $keyLen = strlen($key);
-            
-            foreach($this->data as $dataKey => $dataValue)
+            if(isset($this->dataIndex[$keyBase]))
             {
-                if(strncmp($dataKey, $key, $keyLen) === 0) return true;
+                if(is_array($this->dataIndex[$keyBase]))
+                {
+                    $arr = &$this->dataIndex[$keyBase];
+                }
+                else
+                {
+                    $newArr = [];
+                    $this->setEntry($keyBase, $newArr);
+
+                    $arr = &$this->dataIndex[$keyBase];
+                    
+                    $this->removeUpperIndices($keyBase);
+                }
             }
+            else
+            {
+                $newArr = [];
+                $this->setEntry($keyBase, $newArr);
+                
+                $arr = &$this->dataIndex[$keyBase];
+            }
+        }
+
+        $arr[$keyName] = $value;
+        $this->dataIndex[$key] = &$arr[$keyName];
+    }
+    
+    private function removeUpperIndices($baseKey)
+    {
+        $baseKeyLength = strlen($baseKey);
+        
+        foreach($this->dataIndex as $key => $value)
+        {
+            if(strncmp($key, $baseKey, $baseKeyLength) === 0)
+            {
+                if(strlen($key) > $baseKeyLength) unset($this->dataIndex[$key]);
+            }
+        }
+    }
+
+    /**
+     * @param array  $arr
+     * @param string $keyBase
+     */
+    public function setEntriesFromArray(array &$arr, $keyBase = null)
+    {
+        foreach($arr as $key => $value)
+        {
+            $currKey = empty($keyBase) ? $key : $keyBase.'.'.$key;
             
-            return false;
+            if(is_array($value))
+            {
+                $this->setEntriesFromArray($value, $currKey);
+            }
+            else
+            {
+                $this->setEntry($currKey, $value);
+            }
         }
     }
 
     /**
      * @param string $key
-     * @param mixed  $value
+     *
+     * @return bool
      */
-    public function setEntry($key, $value)
+    public function hasEntry($key)
     {
-        // set
-        $this->data[$key] = $value;
+        return isset($this->dataIndex[$key]);
     }
-
-    /**
-     * @param string $keyBase
-     * @param array $arr
-     */
-    public function setEntriesFromArray($keyBase, array $arr)
-    {
-        foreach($arr as $key => $value)
-        {
-            if(is_array($value))
-            {
-                $this->setEntriesFromArray($keyBase.'.'.$key, $value);
-            }
-            else
-            {
-                $this->data[$keyBase.'.'.$key] = $value;
-            }
-        }
-    }
-
+    
     /**
      * @param string $key
      */
     public function removeEntry($key)
     {
-        unset($this->data[$key]);
+        $keyElements = explode('.', $key);
+
+        $keyName = array_pop($keyElements);
+        $keyBase = implode('.', $keyElements);
+        
+        
+        if(empty($keyBase))
+        {
+            $arr = &$this->data;
+        }
+        else
+        {
+            if(isset($this->dataIndex[$keyBase]))
+            {
+                $arr = &$this->dataIndex[$keyBase];
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        unset($arr[$keyName]);
+        
+        unset($this->dataIndex[$key]);
+        $this->removeUpperIndices($key);
     }
 
     /**
@@ -84,60 +146,7 @@ class Config
      */
     public function getValue($key)
     {
-        return isset($this->data[$key]) ? $this->data[$key] : null;
-    }
-
-    /**
-     * @param string $keyBase
-     *
-     * @return array
-     */
-    public function getSubValues($keyBase)
-    {
-        // append delimiter
-        $keyBase .= '.';
-        
-        // vars
-        $keyBaseLength = strlen($keyBase);
-        $subValues = [];
-        
-        // search & pack
-        foreach($this->data as $key => $value)
-        {
-            if(strncmp($key, $keyBase, $keyBaseLength) === 0)
-            {
-                $this->packSubValue($subValues, substr($key, $keyBaseLength), $value);
-            }
-        }
-
-        // return
-        return $subValues;
-    }
-
-    /**
-     * @param array  $data
-     * @param string $key
-     * @param mixed  $value
-     */
-    private function packSubValue(array &$data, $key, $value)
-    {
-        $keyElements = explode('.', $key);
-        $dataCursor = &$data;
-        
-        for($i = 0, $le = count($keyElements) - 1; $i <= $le; $i++)
-        {
-            $ke = $keyElements[$i];
-            
-            if($i === $le)
-            {
-                $dataCursor[$ke] = $value;
-            }
-            else
-            {
-                if(!isset($dataCursor[$ke])) $dataCursor[$ke] = [];
-                $dataCursor = &$dataCursor[$ke];
-            }
-        }
+        return isset($this->dataIndex[$key]) ? $this->dataIndex[$key]: null;
     }
 
     /* import */
@@ -152,7 +161,7 @@ class Config
         foreach($list as $filename)
         {
             if($filename[0] === '.') continue;
-
+            
             $filePath = Utils::pathCombine([$dir, $filename]);
             if(!is_readable($filePath)) continue;
                 
@@ -162,18 +171,12 @@ class Config
                 // get basename
                 $basename = basename($filename, '.php');
                 
-                // skip YAML version found, TODO: remove
-                if(in_array($basename.'.yml', $list)) continue;
-                
                 // load & parse definitions
                 $definitions = require $filePath;
                 if(!is_array($definitions)) continue;
-
+                
                 // set entries
-                foreach($definitions as $key => $value)
-                {
-                    $this->setEntry($basename.'.'.$key, $value);
-                }
+                $this->setEntriesFromArray($definitions, $basename);
             }
 
             // yaml
@@ -184,9 +187,9 @@ class Config
 
                 // load & parse definitions
                 $definitions = Yaml::parse(file_get_contents($filePath));
-
+                
                 // set entries
-                $this->setEntriesFromArray($basename, $definitions);
+                $this->setEntriesFromArray($definitions, $basename);
             }
         }
     }
@@ -198,13 +201,13 @@ class Config
      */
     public function getClone()
     {
+        // instantiate
         $clone = new self();
-
-        foreach($this->data as $key => $value)
-        {
-            $clone->setEntry($key, $value);
-        }
         
+        // set entries
+        $clone->setEntriesFromArray($this->data);
+        
+        // return
         return $clone;
     }
     
@@ -227,15 +230,14 @@ class Config
 
     /**
      * @param string $key
-     * @param bool   $strict
      *
-     * @return bool
+     * @return mixed
      */
-    public static function has($key, $strict = true)
+    public static function has($key)
     {
-        return self::getInstance()->hasEntry($key, $strict);
+        return self::getInstance()->hasEntry($key);
     }
-
+    
     /**
      * @param string $key
      *

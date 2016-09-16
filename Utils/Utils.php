@@ -431,16 +431,13 @@ class Utils
         return $out;
     }
     
-    public static function stoppwatchStart($id = false)
+    public static function stoppwatchStart($id = null)
     {
         // id
-        if($id === false) $id = uniqid(self::randomChars(4));
+        if($id === null) $id = uniqid(self::randomChars(4));
         
         // set startpoint
-        self::$stoppwatchData[] = array(
-            'id'    => $id,
-            'st'    => microtime(true)
-        );
+        self::$stoppwatchData[$id] = microtime(true);
         
         // return
         return $id;
@@ -448,21 +445,8 @@ class Utils
     
     public static function stoppwatchStop($id)
     {
-        // find entry
-        $data = null;
-        foreach(self::$stoppwatchData as $swd)
-        {
-            if($swd['id'] === $id)
-            {
-                $data = &$swd;
-                break;
-            }
-        }
-        
-        if($data === null) return false;
-        
         // return diff
-        return number_format((microtime(true) - $data['st']) * 1000, 3);
+        return number_format((microtime(true) - self::$stoppwatchData[$id]) * 1000, 3);
     }
 
     public static function getCurrentURL($relative = false, $secure = false)
