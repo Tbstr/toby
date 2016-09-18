@@ -156,9 +156,9 @@ class Config
      */
     public function readDir($dir)
     {
-        $list = scandir($dir);
+        $filenames = scandir($dir);
 
-        foreach($list as $filename)
+        foreach($filenames as $filename)
         {
             if($filename[0] === '.') continue;
             
@@ -185,6 +185,9 @@ class Config
                 // get basename
                 $basename = basename($filename, '.yml');
 
+                // skip if php version present
+                if(in_array($basename.'.php',$filenames, true)) continue;
+                
                 // load & parse definitions
                 $definitions = Yaml::parse(file_get_contents($filePath));
                 
