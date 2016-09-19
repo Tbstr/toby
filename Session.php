@@ -283,7 +283,7 @@ class Session
         if(empty($id)) return '';
         
         // fetch data
-        $result = $this->mysql->select('pd_sessions', '*', sprintf("WHERE `id`='%s' LIMIT 1 FOR UPDATE", $this->mysql->esc($id)));
+        $result = $this->mysql->select(Config::get('toby.session.mysql.table'), '*', sprintf("WHERE `id`='%s' LIMIT 1 FOR UPDATE", $this->mysql->esc($id)));
         if($result === false)               return '';
         if($result->getNumRows() === 0)     return '';
         
@@ -300,7 +300,7 @@ class Session
         $time = time();
         
         // insert or update
-        $this->mysql->insert('pd_sessions', array(
+        $this->mysql->insert(Config::get('toby.session.mysql.table'), array(
             'id'            => $id,
             'access_time'   => $time,
             'data'          => $data
@@ -319,14 +319,14 @@ class Session
         if(empty($id)) return false;
         
         // query & return
-        $this->mysql->delete('pd_sessions', sprintf("WHERE `id`='%s' LIMIT 1", $this->mysql->esc($id)));
+        $this->mysql->delete(Config::get('toby.session.mysql.table'), sprintf("WHERE `id`='%s' LIMIT 1", $this->mysql->esc($id)));
         return $this->mysql->result;
     }
     
     public function handleMySQLSessionClean($maxLifeTime)
     {
         // clean db
-        $this->mysql->delete('pd_sessions', 'WHERE `access_time`<'.(time() - (int)$maxLifeTime));
+        $this->mysql->delete(Config::get('toby.session.mysql.table'), 'WHERE `access_time`<'.(time() - (int)$maxLifeTime));
         
         // log & return fail
         if($this->mysql->result === false)
