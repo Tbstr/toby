@@ -12,7 +12,9 @@ class Config
     private $dataIndex = [];
     
     /* statics */
-    public static $instance = null;
+    public static $enableFileCache = false;
+    
+    private static $instance = null;
 
     /* entry management */
 
@@ -156,44 +158,132 @@ class Config
      */
     public function readDir($dir)
     {
+        // scan directory & pase
         $filenames = scandir($dir);
-
         foreach($filenames as $filename)
         {
+            // omit filenames starting with colon
             if($filename[0] === '.') continue;
             
+            // assemble path & check file
             $filePath = Utils::pathCombine([$dir, $filename]);
             if(!is_readable($filePath)) continue;
-                
-            // php
-            if(preg_match('/\.php$/', $filename) === 1)
-            {
-                // get basename
-                $basename = basename($filename, '.php');
-                
-                // load & parse definitions
-                $definitions = require $filePath;
-                if(!is_array($definitions)) continue;
-                
-                // set entries
-                $this->setEntriesFromArray($definitions, $basename);
-            }
 
-            // yaml
-            elseif(preg_match('/\.yml$/', $filename) === 1)
-            {
-                // get basename
-                $basename = basename($filename, '.yml');
+            // disassemble filename
+            $colonIndex = strrpos($filename, '.');
+            if($colonIndex === false) continue;
 
-                // skip if php version present
-                if(in_array($basename.'.php',$filenames, true)) continue;
+            $basename = strtolower(substr($filename, 0, $colonIndex));
+            $ext = strtolower(substr($filename, $colonIndex + 1));
+            
+            // cache lookup
+            $cachedData = self::$enableFileCache ? $this->readFromCache($filePath) : null;
+            
+            // read & parse file if cache entry missing ...
+            if($cachedData === null)
+            {
+                $definitions = null;
                 
-                // load & parse definitions
-                $definitions = Yaml::parse(file_get_contents($filePath));
+                // php
+                if($ext === 'php')
+                {
+                    // load & parse definitions
+                    $definitions = require $filePath;
+                    if(!is_array($definitions)) continue;
+                    
+                    // set entries
+                    $this->setEntriesFromArray($definitions, $basename);
+                }
+
+                // yaml
+                elseif($ext === 'yml')
+                {
+                    // load & parse definitions
+                    $definitions = Yaml::parse(file_get_contents($filePath));
+
+                    // set entries
+                    $this->setEntriesFromArray($definitions, $basename);
+                }
                 
-                // set entries
-                $this->setEntriesFromArray($definitions, $basename);
+                // put to cache
+                if(self::$enableFileCache && $definitions !== null)
+                {
+                    $this->putToCache($filePath, $definitions);
+                }
             }
+            
+            // ... or use cached data
+            else
+            {
+                $this->setEntriesFromArray($cachedData, $basename);
+            }
+        }
+    }
+
+    /**
+     * @param string $filePath
+     *
+     * @return mixed
+     */
+    private function readFromCache($filePath)
+    {
+        // get data from cache
+        $key = ftok($filePath, 'p');
+        $shmId = shmop_open($key, 'a', 0644 , 0);
+        $data = null;
+        
+        if($shmId !== false)
+        {
+            $cacheData = json_decode(shmop_read($shmId, 0, shmop_size($shmId)), true);
+            
+            // verify filemtime
+            if(isset($cacheData['filemtime']))
+            {
+                if(filemtime($filePath) > $cacheData['filemtime'])
+                {
+                    shmop_delete($shmId);
+                }
+                else
+                {
+                    $data = $cacheData['data'];
+                }
+            }
+            else
+            {
+                shmop_delete($shmId);
+            }
+            
+            // close & return
+            shmop_close($shmId);
+            return $data;
+        }
+        
+        // return on fail
+        return null;
+    }
+
+    /**
+     * @param string $filePath
+     * @param array  $data
+     */
+    private function putToCache($filePath, array $data)
+    {
+        // pack data
+        $cacheData = [
+            'filemtime' => filemtime($filePath),
+            'data' => $data
+        ];
+        
+        $cacheDataJSON = json_encode($cacheData);
+        
+        // save to cache
+        $key = ftok($filePath, 'p');
+        $shmId = shmop_open($key , 'c', 0644 , strlen($cacheDataJSON));
+        
+        if($shmId !== false)
+        {
+            shmop_write($shmId, $cacheDataJSON, 0);
+            shmop_close($shmId);
         }
     }
     
