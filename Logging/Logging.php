@@ -54,7 +54,12 @@ class Logging
         if(empty($variables))
         {
             $variables = array( "{APP_ROOT}" => APP_ROOT );
-            foreach(Config::get('logging.config_vars') as $key => $value) { $variables['{' . $key . '}'] = $value; }
+            
+            $configVars = Config::get('logging.config_vars');
+            if(!empty($configVars))
+            {
+                foreach($configVars as $key => $value) { $variables['{' . $key . '}'] = $value; }
+            }
         }
 
         // crawl config

@@ -190,7 +190,7 @@ abstract class Controller
         }
     }
     
-    /* get set view script */
+    /* manage view rendering */
     protected function setViewScript($viewScript)
     {
         $this->viewScriptOverride = $viewScript;
@@ -200,6 +200,11 @@ abstract class Controller
     {
         if(empty($this->viewScriptOverride)) return "$this->name/$this->action";
         else return $this->viewScriptOverride;
+    }
+    
+    protected function disableRendering()
+    {
+        $this->renderView = false;
     }
 
     /* helper management */
