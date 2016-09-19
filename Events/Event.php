@@ -11,6 +11,7 @@ class Event
      * Event constructor.
      *
      * @param string $type
+     * @param null $data
      */
     function __construct($type, $data = null)
     {
