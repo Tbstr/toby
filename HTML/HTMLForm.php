@@ -227,6 +227,6 @@ class HTMLForm
     /* to string */
     public function __toString()
     {
-        return "Toby_HTML_Form[$this->name]";
+        return "HTMLForm[$this->name]";
     }
 }

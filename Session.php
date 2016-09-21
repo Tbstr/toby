@@ -348,7 +348,7 @@ class Session
     /* to string */
     public function __toString()
     {
-        return "Toby_Session[$this->id]";
+        return "Session[$this->id]";
     }
     
     /* static functionality */

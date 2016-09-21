@@ -139,6 +139,6 @@ class View
     /* to string */
     public function __toString()
     {
-        return "Toby_View[$this->scriptPath]";
+        return "View[$this->scriptPath]";
     }
 }

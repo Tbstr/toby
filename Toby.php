@@ -287,7 +287,7 @@ class Toby
         if($this->logRequestTime) $starttime = microtime(true);
         
         // prepare theme manager
-        if(!ThemeManager::initByController($controller)) $this->finalize('unable to set theme '.ThemeManager::$themeName);
+        if(!ThemeManager::initByController($controller)) $this->finalize('unable to init ThemeManager with controller '.$controller);
 
         // render content
         $content = Renderer::renderPage($controller);
@@ -296,7 +296,7 @@ class Toby
         if($this->logRequestTime)
         {
             $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
-            $this->requestTimesLogger->info("rendering controller: {$controller->serialize()} [{$deltatime}ms]");
+            $this->requestTimesLogger->info("rendering controller: $controller [{$deltatime}ms]");
         }
         
         // return

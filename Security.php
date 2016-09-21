@@ -6,7 +6,7 @@ use Toby\Utils\Utils;
 
 class Security
 {
-    const XSRFKeyName   = 'xsrfkey';
+    const XSRFKeyName = 'xsrfkey';
     
     /* initialization */
     public static function init()

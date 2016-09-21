@@ -5,8 +5,8 @@ namespace Toby;
 class Renderer
 {
     /* static variables */
-    private static $defaultLayoutsPath = '/layout';
-    private static $defaultViewsPath = '/view';
+    private static $defaultLayoutsPath  = '/layout';
+    private static $defaultViewsPath    = '/view';
 
     /* static methods */
     public static function renderPage(Controller $controller)
@@ -14,24 +14,51 @@ class Renderer
         // auto init theme manager
         self::themeManagerAutoInit();
 
-        // script
+        // render script
         $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
         
-        // layout
-        $layoutPath = self::findLayout($controller->layoutName);
-        if($layoutPath === null) Toby::finalize('Toby_Layout "'.$controller->layoutName.'" could not be found.');
+        // find layout script path
+        $layoutPath = null;
         
+        if(isset($controller->overrides['layout']))
+        {
+            $layoutPath = self::findLayout($controller->overrides['layout']);
+        }
+        
+        if($layoutPath === null)
+        {
+            $layoutPath = self::findLayout(ThemeManager::$defaultLayout);
+            if($layoutPath === null) Toby::finalize('default layout "'.ThemeManager::$defaultLayout.'" could not be found.');
+        }
+        
+        // init layout
         $layout = new Layout($layoutPath, get_object_vars($controller->layout));
         
-        $layout->setTitle($controller->layoutTitle);
+        // set layout title
+        $title = isset($controller->overrides['layout_title']) ? (string)$controller->overrides['layout_title'] : (string)Config::get('toby.default.title');
+        if(isset($controller->overrides['layout_title_app'])) $title = $title.$controller->overrides['layout_title_app'];
+        if(isset($controller->overrides['layout_title_prep'])) $title = $controller->overrides['layout_title_prep'].$title;
+        
+        $layout->setTitle($title);
+        
+        // set layout js vars
         $layout->setJavaScriptVars(get_object_vars($controller->javascript));
         
-        $layout->setBodyId($controller->layoutBodyId);
-        $layout->addBodyClass($controller->layoutBodyClasses);
+        // set layout body attributes
+        if(isset($controller->overrides['layout_body_id']))
+        {
+            $layout->setBodyId($controller->overrides['layout_body_id']);
+        }
+
+        if(isset($controller->overrides['layout_body_classes']))
+        {
+            $layout->addBodyClass($controller->overrides['layout_body_classes']);
+        }
         
+        // set layout content
         $layout->setContent($content);
 
-        // render & return
+        // render layout & return
         return $layout->render();
     }
     
@@ -78,7 +105,7 @@ class Renderer
     private static function themeManagerAutoInit()
     {
         // cancellation
-        if(ThemeManager::$initialized) return;
+        if(ThemeManager::isInitialized()) return;
         if(!ThemeManager::init()) Toby::finalize('unable to init theme manager');
     }
 }

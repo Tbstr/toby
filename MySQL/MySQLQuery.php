@@ -443,6 +443,6 @@ class MySQLQuery
     /* to string */
     public function __toString()
     {
-        return 'Toby_MySQL_Query';
+        return 'MySQLQuery';
     }
 }

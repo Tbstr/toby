@@ -7,23 +7,24 @@ use Toby\Utils\Utils;
 
 class ThemeManager
 {
-    /* variables */
+    /* public variables */
     public static $themeName;
     
     public static $themePathRoot;
     public static $themeURL;
     
-    private static $controller;
+    public static $defaultLayout   = 'default';
     
-    public static $initialized      = false;
-    
+    /* private variables */
+    private static $controller      = null;
+    private static $initialized     = false;
     private static $cache           = [];
     
     /* initialization */
-    public static function init($themeName = false, $functionName = false)
+    public static function init($themeName = null, $functionName = null)
     {
         // compute input
-        if($themeName === false)
+        if(empty($themeName))
         {
             $configThemeName        = Config::get('toby.theme.name');
             $configThemeFunction    = Config::get('toby.theme.function');
@@ -38,7 +39,10 @@ class ThemeManager
                 if(!empty($configThemeFunction)) $functionName = $configThemeFunction;
             }
         }
-        else $themeName = strtolower($themeName);
+        else
+        {
+            $themeName = strtolower($themeName);
+        }
 
         // init if dir exists
         $themePath      = "themes/$themeName";
@@ -52,8 +56,12 @@ class ThemeManager
             self::$themeURL         = Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
             
             // include function
-            $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.php';
-            if(is_file($functionPathRoot)) require_once($functionPathRoot);
+            $functionPathRoot = $themePathRoot.'/'.(empty($functionName) ? $themeName : $functionName).'.php';
+            
+            if(is_file($functionPathRoot))
+            {
+                require_once($functionPathRoot);
+            }
             
             // return success
             self::$initialized = true;
@@ -68,14 +76,14 @@ class ThemeManager
     public static function initByController(Controller $controller)
     {
         // vars
-        $theme          = false;
-        $themeFunction  = false;
+        $theme          = null;
+        $themeFunction  = null;
         
         // grab from controller
-        if(isset($controller->themeOverride))
+        if(isset($controller->overrides['theme']))
         {
-            $theme          = $controller->themeOverride;
-            $themeFunction  = $controller->themeFunctionOverride;
+            $theme          = $controller->overrides['theme'];
+            $themeFunction  = isset($controller->overrides['theme_function']) ? $controller->overrides['theme_function'] : null;
         }
 
         // set
@@ -84,6 +92,17 @@ class ThemeManager
 
         // return
         return true;
+    }
+    
+    /* getter & setter */
+    public static function setDefaultLayout($layoutName)
+    {
+        self::$defaultLayout = $layoutName;
+    }
+    
+    public static function isInitialized()
+    {
+        return self::$initialized;
     }
     
     /* placements */

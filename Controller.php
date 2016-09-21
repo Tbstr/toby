@@ -3,49 +3,37 @@
 namespace Toby;
 
 use \InvalidArgumentException;
+use Logger;
+use stdClass;
 use Toby\Logging\Logging;
 use Toby\Utils\Utils;
 
 abstract class Controller
 {
-    /* controller vars */
+    /* variables */
     public $name;
     public $action;
     public $attributes;
     
-    public $toby;
-    
-    /* theme vars */
-    public $themeOverride           = false;
-    public $themeFunctionOverride   = false;
-    
-    /* layout vars */
-    public $layoutName              = 'default';
-    
-    public $layoutTitle             = '';
-    
-    public $layoutScripts           = array();
-    public $layoutStyles            = array();
-    
-    public $layoutBodyId            = '';
-    public $layoutBodyClasses       = array();
-    
-    /* view vars */
+    /* settings */
     public $renderView              = true;
-    private $viewScriptOverride;
     
-    /* data vars */
+    /* overrides */
+    public $overrides               = [];
+    
+    /* data container */
     public $layout;
     public $view;
     public $javascript;
 
-    /**
-     * @var \Logger
-     */
+    /** @var Logger  */
     protected $logger;
 
+    /** @var Toby */
+    protected $toby;
+
     /* static vars */
-    private static $helpers         = array();
+    private static $helpers         = [];
     
     function __construct($name, $action, $attributes = null)
     {
@@ -53,18 +41,14 @@ abstract class Controller
         $this->name                     = $name;
         $this->action                   = $action;
         $this->attributes               = $attributes;
-        
+
+        $this->logger                   = Logging::logger($this);
         $this->toby                     = Toby::getInstance();
         
-        if(Config::has('toby.default.title'))
-        {
-            $this->layoutTitle = Config::get('toby.default.title');
-        }
-        
         // holders
-        $this->layout                   = new \stdClass();
-        $this->view                     = new \stdClass();
-        $this->javascript               = new \stdClass();
+        $this->layout                   = new stdClass();
+        $this->view                     = new stdClass();
+        $this->javascript               = new stdClass();
         
         // default vars layout
         $this->layout->appURL           = $this->toby->appURL;
@@ -77,8 +61,6 @@ abstract class Controller
         // default vars javascript
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Security::XSRFGetKey();
-
-        $this->logger = Logging::logger($this);
     }
     
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
@@ -120,86 +102,80 @@ abstract class Controller
     }
     
     /* set theme */
-    protected function setTheme($themeName, $functionName = false)
+    protected function setTheme($themeName, $functionName = null)
     {
-        $this->themeOverride = $themeName;
-        if(!empty($functionName)) $this->themeFunctionOverride = $functionName;
+        $this->overrides['theme'] = $themeName;
+        
+        if(!empty($functionName))
+        {
+            $this->overrides['theme_function'] = $functionName;
+        }
     }
     
     /* set layout */
     protected function setLayout($layoutName)
     {
-        $this->layoutName = $layoutName;
+        $this->overrides['layout'] = $layoutName;
     }
     
     /* page title */
     protected function setTitle($value)
     {
-        $this->layoutTitle = $value;
+        $this->overrides['layout_title'] = $value;
     }
     
     protected function appendToTitle($value)
     {
-        $this->layoutTitle = $this->layoutTitle.$value;
+        if(!isset($this->overrides['layout_title_app'])) $this->overrides['layout_title_app'] = '';
+        $this->overrides['layout_title_app'] .= $value;
     }
     
     protected function prependToTitle($value)
     {
-        $this->layoutTitle = $value.$this->layoutTitle;
-    }
-
-    /* scripts & styles */
-    protected function addScript($scriptPath)
-    {
-        // add
-        $this->layoutScripts[] = $scriptPath;
-    }
-
-    protected function addStyle($stylePath, $media = 'all')
-    {
-        // init media entry
-        if(!isset($this->layoutStyles[$media])) $this->layoutStyles[$media] = array();
-
-        // add
-        $this->layoutStyles[$media][] = $stylePath;
+        if(!isset($this->overrides['layout_title_prep'])) $this->overrides['layout_title_prep'] = '';
+        $this->overrides['layout_title_prep'] = $value.$this->overrides['layout_title_prep'];
     }
     
     /* body properties */
     protected function setBodyId($id)
     {
-        $this->layoutBodyId = $id;
+        $this->overrides['layout_body_id'] = $id;
     }
     
     protected function addBodyClass()
     {
+        if(!isset($this->overrides['layout_body_classes'])) $this->overrides['layout_body_classes'] = [];
+        
         for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
             $arg = func_get_arg($i);
             if(!is_string($arg)) continue;
-            
-            $this->layoutBodyClasses = array_merge($this->layoutBodyClasses, explode(' ', $arg));
+
+            $this->overrides['layout_body_classes'] = array_merge($this->overrides['layout_body_classes'], explode(' ', $arg));
         }
     }
     
     protected function removeBodyClass()
     {
+        if(!isset($this->overrides['layout_body_classes'])) return;
+        
         for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
-            $key = array_search(func_get_arg($i), $this->layoutBodyClasses);
-            if($key !== false) array_splice($this->layoutBodyClasses, $key, 1);
+            $key = array_search(func_get_arg($i), $this->overrides['layout_body_classes']);
+            if($key !== false) array_splice($this->overrides['layout_body_classes'], $key, 1);
         }
     }
     
     /* manage view rendering */
     protected function setViewScript($viewScript)
     {
-        $this->viewScriptOverride = $viewScript;
+        $this->overrides['view_script'] = $viewScript;
     }
     
     public function getViewScript()
     {
-        if(empty($this->viewScriptOverride)) return "$this->name/$this->action";
-        else return $this->viewScriptOverride;
+        if(isset($this->overrides['view_script'])) return $this->overrides['view_script'];
+        return "$this->name/$this->action";
     }
     
     protected function disableRendering()
@@ -233,11 +209,6 @@ abstract class Controller
     /* to string */
     public function __toString()
     {
-        return "Toby_Controller[{$this->serialize()}]";
-    }
-    
-    public function serialize()
-    {
-        return "$this->name/$this->action";
+        return "Controller[{$this->name}/{$this->action}]";
     }
 }

@@ -96,6 +96,6 @@ class Layout extends View
     /* to string */
     public function __toString()
     {
-        return "Toby_Layout[$this->title]";
+        return "Layout[$this->title]";
     }
 }

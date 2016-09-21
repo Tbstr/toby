@@ -572,7 +572,7 @@ class MySQL
     /* to string */
     public function __toString()
     {
-        return "Toby_MySQL[$this->user@$this->host]";
+        return "MySQL[$this->user@$this->host]";
     }
 
     public function startPerformanceTracking()
