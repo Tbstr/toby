@@ -5,13 +5,13 @@ namespace Toby\Assets;
 class Assets
 {
     /* private variables */
-    private static $cacheBuster             = null;
-    
     private static $defaultSet               = null;
     private static $setsForLayout            = null;
     private static $setsForResolvePath       = [];
     private static $setsForResolvePathStrict = [];
     private static $setForResolvePathUnset   = null;
+
+    private static $cacheBuster              = null;
 
     /* set management */
     public static function byDefault()
@@ -19,7 +19,7 @@ class Assets
         // lazy create
         if(self::$defaultSet === null)
         {
-            self::$defaultSet = new AssetsSet(AssetsSet::TYPE_DEFAULT);
+            self::$defaultSet = new AssetsSet();
         }
         
         // return
@@ -31,7 +31,7 @@ class Assets
         // lazy create
         if(!isset(self::$setsForLayout[$layout]))
         {
-            $set = new AssetsSet(AssetsSet::TYPE_LAYOUT);
+            $set = new AssetsSet();
             $set->layout = $layout;
 
             self::$setsForLayout[$layout] = $set;
@@ -49,9 +49,8 @@ class Assets
             // lazy create
             if(!isset(self::$setsForResolvePathStrict[$path]))
             {
-                $set = new AssetsSet(AssetsSet::TYPE_RESOLVE_PATH);
-                $set->resolvePath           = $path;
-                $set->resolvePathStrict     = true;
+                $set = new AssetsSet();
+                $set->resolvePath = $path;
 
                 self::$setsForResolvePathStrict[$path] = $set;
             }
@@ -65,9 +64,8 @@ class Assets
         {
             if(!isset(self::$setsForResolvePath[$path]))
             {
-                $set = new AssetsSet(AssetsSet::TYPE_RESOLVE_PATH);
+                $set = new AssetsSet();
                 $set->resolvePath           = $path;
-                $set->resolvePathStrict     = false;
 
                 self::$setsForResolvePath[$path] = $set;
             }
@@ -82,7 +80,7 @@ class Assets
         // lazy create
         if(self::$setForResolvePathUnset === null)
         {
-            self::$setForResolvePathUnset = new AssetsSet(AssetsSet::TYPE_RESOLVE_PATH_UNSET);
+            self::$setForResolvePathUnset = new AssetsSet();
         }
 
         // return

@@ -7,26 +7,12 @@ use Toby\ThemeManager;
 class AssetsSet
 {
     /* PUBLIC VARIABLES */
-    public $type                        = null;
-    
     public $layout                      = null;
     public $resolvePath                 = null;
-    public $resolvePathStrict           = null;
 
     /* PRIVATE VARIABLES */
-    private $javascripts                = [];
-    private $stylesheets                = [];
-
-    /* CONSTANTS */
-    const TYPE_DEFAULT                  = 'default';
-    const TYPE_LAYOUT                   = 'layout';
-    const TYPE_RESOLVE_PATH             = 'resolve_path';
-    const TYPE_RESOLVE_PATH_UNSET       = 'resolve_path_unset';
-
-    function __construct($type)
-    {
-        $this->type = $type;
-    }
+    private $js                         = [];
+    private $css                        = [];
 
     /**
      * @param      $path
@@ -37,7 +23,7 @@ class AssetsSet
     public function addJavaScript($path, $async = false)
     {
         // add
-        $this->javascripts[] = array($path, $async === true);
+        $this->js[] = array($path, $async === true);
 
         // return self
         return $this;
@@ -52,7 +38,7 @@ class AssetsSet
     public function addCSS($path, $media = 'all')
     {
         // add
-        $this->stylesheets[] = array($path, $media);
+        $this->css[] = array($path, $media);
 
         // return self
         return $this;
@@ -70,7 +56,7 @@ class AssetsSet
         $versionQuery   = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
-        foreach($this->stylesheets as $css)
+        foreach($this->css as $css)
         {
             if(preg_match('/^(https?:\/\/|\/)/', $css[0]))
             {
@@ -96,7 +82,7 @@ class AssetsSet
         $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
-        foreach($this->javascripts as $js)
+        foreach($this->js as $js)
         {
             if(preg_match('/^(https?:\/\/|\/)/', $js[0]))
             {
