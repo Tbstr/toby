@@ -31,10 +31,7 @@ class Assets
         // lazy create
         if(!isset(self::$setsForLayout[$layout]))
         {
-            $set = new AssetsSet();
-            $set->layout = $layout;
-
-            self::$setsForLayout[$layout] = $set;
+            self::$setsForLayout[$layout] = new AssetsSet();
         }
 
         // return
@@ -49,10 +46,7 @@ class Assets
             // lazy create
             if(!isset(self::$setsForResolvePathStrict[$path]))
             {
-                $set = new AssetsSet();
-                $set->resolvePath = $path;
-
-                self::$setsForResolvePathStrict[$path] = $set;
+                self::$setsForResolvePathStrict[$path] = new AssetsSet();
             }
 
             // return
@@ -64,10 +58,7 @@ class Assets
         {
             if(!isset(self::$setsForResolvePath[$path]))
             {
-                $set = new AssetsSet();
-                $set->resolvePath           = $path;
-
-                self::$setsForResolvePath[$path] = $set;
+                self::$setsForResolvePath[$path] = new AssetsSet();
             }
 
             // return

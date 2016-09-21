@@ -6,10 +6,6 @@ use Toby\ThemeManager;
 
 class AssetsSet
 {
-    /* PUBLIC VARIABLES */
-    public $layout                      = null;
-    public $resolvePath                 = null;
-
     /* PRIVATE VARIABLES */
     private $js                         = [];
     private $css                        = [];
