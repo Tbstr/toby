@@ -2,7 +2,6 @@
 
 namespace Toby;
 
-use \InvalidArgumentException;
 use Toby\Exceptions\TobyException;
 
 class Model

@@ -20,7 +20,14 @@ class View
     private static $helpers     = array();
 
     /* constructor */
-    function __construct($scriptPath, $vars = null)
+
+    /**
+     * View constructor.
+     *
+     * @param string $scriptPath
+     * @param array  $vars
+     */
+    function __construct($scriptPath, array $vars = null)
     {
         // apply view vars
         if($vars !== null) foreach($vars as $key => $value) $this->$key = $value;

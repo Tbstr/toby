@@ -7,19 +7,26 @@ use Toby\ThemeManager;
 class AssetsSet
 {
     /* PUBLIC VARIABLES */
-    public $type                        = 'standard';
-
-    public $resolvePath                 = false;
-    public $resolvePathStrict           = false;
+    public $type                        = null;
+    
+    public $layout                      = null;
+    public $resolvePath                 = null;
+    public $resolvePathStrict           = null;
 
     /* PRIVATE VARIABLES */
-    private $javascripts                = array();
-    private $stylesheets                = array();
+    private $javascripts                = [];
+    private $stylesheets                = [];
 
     /* CONSTANTS */
-    const TYPE_STANDARD                 = 'standard';
+    const TYPE_DEFAULT                  = 'default';
+    const TYPE_LAYOUT                   = 'layout';
     const TYPE_RESOLVE_PATH             = 'resolve_path';
-    const TYPE_RESOLVE_PATH_DEFAULT     = 'resolve_path_default';
+    const TYPE_RESOLVE_PATH_UNSET       = 'resolve_path_unset';
+
+    function __construct($type)
+    {
+        $this->type = $type;
+    }
 
     /**
      * @param      $path
@@ -60,7 +67,7 @@ class AssetsSet
     {
         // vars
         $elements       = array();
-        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
+        $versionQuery   = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
         foreach($this->stylesheets as $css)
@@ -85,8 +92,8 @@ class AssetsSet
     public function buildDOMElementsJavaScript()
     {
         // vars
-        $elements       = array();
-        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
+        $elements     = [];
+        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
         foreach($this->javascripts as $js)

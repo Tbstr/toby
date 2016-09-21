@@ -2,6 +2,8 @@
 
 namespace Toby;
 
+use Toby\Assets\Assets;
+
 class Renderer
 {
     /* static variables */
@@ -18,21 +20,28 @@ class Renderer
         $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
         
         // find layout script path
+        $layoutName = null;
         $layoutPath = null;
         
         if(isset($controller->overrides['layout']))
         {
-            $layoutPath = self::findLayout($controller->overrides['layout']);
+            $layoutName = $controller->overrides['layout'];
+            $layoutPath = self::findLayout($layoutName);
         }
         
         if($layoutPath === null)
         {
-            $layoutPath = self::findLayout(ThemeManager::$defaultLayout);
-            if($layoutPath === null) Toby::finalize('default layout "'.ThemeManager::$defaultLayout.'" could not be found.');
+            $layoutName = ThemeManager::$defaultLayout;
+            $layoutPath = self::findLayout($layoutName);
+            
+            if($layoutPath === null) Toby::finalize('default layout "'.$layoutName.'" could not be found.');
         }
         
+        // gather assets
+        $assetSets = Assets::gatherSets($layoutName, Toby::getInstance()->resolve);
+        
         // init layout
-        $layout = new Layout($layoutPath, get_object_vars($controller->layout));
+        $layout = new Layout($layoutPath, get_object_vars($controller->layout), $assetSets);
         
         // set layout title
         $title = isset($controller->overrides['layout_title']) ? (string)$controller->overrides['layout_title'] : (string)Config::get('toby.default.title');

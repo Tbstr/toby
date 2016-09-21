@@ -2,7 +2,6 @@
 
 namespace Toby;
 
-use Toby\Assets\Assets;
 use Toby\Utils\Utils;
 
 class ThemeManager
@@ -13,12 +12,11 @@ class ThemeManager
     public static $themePathRoot;
     public static $themeURL;
     
-    public static $defaultLayout   = 'default';
+    public static $defaultLayout    = 'default';
     
     /* private variables */
     private static $controller      = null;
     private static $initialized     = false;
-    private static $cache           = [];
     
     /* initialization */
     public static function init($themeName = null, $functionName = null)
@@ -75,11 +73,10 @@ class ThemeManager
     
     public static function initByController(Controller $controller)
     {
-        // vars
+        // theme
         $theme          = null;
         $themeFunction  = null;
         
-        // grab from controller
         if(isset($controller->overrides['theme']))
         {
             $theme          = $controller->overrides['theme'];
@@ -94,51 +91,13 @@ class ThemeManager
         return true;
     }
     
-    /* getter & setter */
-    public static function setDefaultLayout($layoutName)
+    public static function setDefaultLayout($layout)
     {
-        self::$defaultLayout = $layoutName;
+        self::$defaultLayout = $layout;
     }
     
     public static function isInitialized()
     {
         return self::$initialized;
-    }
-    
-    /* placements */
-    private static function getSets()
-    {
-        // get from cache
-        if(isset(self::$cache['sets'])) return self::$cache['sets'];
-        
-        // get
-        /** @var \Toby\Assets\AssetsSet[] $sets */
-        $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
-        
-        // put to cache
-        self::$cache['sets'] = $sets;
-        
-        // return
-        return $sets;
-    }
-    
-    public static function placeScripts()
-    {
-        $sets = self::getSets();
-        
-        foreach($sets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
-        }
-    }
-
-    public static function placeStyles()
-    {
-        $sets = self::getSets();
-        
-        foreach($sets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsCSS())."\n";
-        }
     }
 }
