@@ -280,7 +280,7 @@ class Toby
     public function renderController(Controller $controller)
     {
         // cancellation
-        if(!$controller->renderView) return '';
+        if(!$controller->renderingEnabled()) return '';
         
         // start timing
         $starttime = null;

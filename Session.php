@@ -3,6 +3,7 @@
 namespace Toby;
 
 use InvalidArgumentException;
+use Logger;
 use Toby\MySQL\MySQL;
 use Toby\Utils\Utils;
 
@@ -19,10 +20,10 @@ class Session
     /* public variables */
     private $SESSION                            = array();
     
-    /** @var \Toby\MySQL\MySQL */
+    /** @var MySQL */
     private $mysql;
 
-    /** @var \Logger */
+    /** @var Logger */
     private $logger;
     
     /* static variables */
@@ -46,7 +47,7 @@ class Session
         // singleton check
         if(self::$instance !== null) Toby::finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
 
-        $this->logger = \Logger::getLogger("toby.session");
+        $this->logger = Logger::getLogger("toby.session");
         
         // initialize
         $this->init();
@@ -67,7 +68,7 @@ class Session
         if(Config::get('toby.session.mysql.enable'))
         {
             $this->mysqlMode = true;
-            $this->mysql = MySQL::getInstance();
+            $this->mysql     = MySQL::getInstance();
             
             session_set_save_handler(
                 array($this, 'handleMySQLSessionOpen'),

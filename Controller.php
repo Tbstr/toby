@@ -2,24 +2,25 @@
 
 namespace Toby;
 
-use \InvalidArgumentException;
+use Exception;
 use Logger;
 use stdClass;
+use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
 use Toby\Utils\Utils;
 
 abstract class Controller
 {
-    /* variables */
+    /* properties */
     public $name;
     public $action;
     public $attributes;
     
     /* settings */
-    public $renderView              = true;
+    private $renderView     = true;
     
     /* overrides */
-    public $overrides               = [];
+    public $overrides       = [];
     
     /* data container */
     public $layout;
@@ -33,7 +34,7 @@ abstract class Controller
     protected $toby;
 
     /* static vars */
-    private static $helpers         = [];
+    private static $helpers = [];
     
     function __construct($name, $action, $attributes = null)
     {
@@ -45,20 +46,16 @@ abstract class Controller
         $this->logger                   = Logging::logger($this);
         $this->toby                     = Toby::getInstance();
         
-        // holders
+        // init data containers
         $this->layout                   = new stdClass();
-        $this->view                     = new stdClass();
-        $this->javascript               = new stdClass();
-        
-        // default vars layout
         $this->layout->appURL           = $this->toby->appURL;
         $this->layout->url              = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
-        // default vars view
+        $this->view                     = new stdClass();
         $this->view->appURL             = $this->toby->appURL;
         $this->view->url                = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
         
-        // default vars javascript
+        $this->javascript               = new stdClass();
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Security::XSRFGetKey();
     }
@@ -82,7 +79,7 @@ abstract class Controller
         Toby::finalize(0);
     }
     
-    protected function returnFile($filePath, $nameOverride = null,  $mimeType = 'auto')
+    protected function returnFile($filePath, $nameOverride = null, $mimeType = 'auto')
     {
         // set header information
         header("Pragma: public");
@@ -118,7 +115,7 @@ abstract class Controller
         $this->overrides['layout'] = $layoutName;
     }
     
-    /* page title */
+    /* manage page title */
     protected function setTitle($value)
     {
         $this->overrides['layout_title'] = $value;
@@ -182,16 +179,26 @@ abstract class Controller
     {
         $this->renderView = false;
     }
+    
+    public function renderingEnabled()
+    {
+        return $this->renderView;
+    }
 
     /* helper management */
-    public static function registerHelper($functionName, $callable)
-    {
-        // cancellation
-        if(!is_string($functionName))   throw new InvalidArgumentException('argument functionName is not of type string');
-        if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
 
+    /**
+     * Registers helper function to be called via this class. Executed with __call magic method.
+     * 
+     * @param string $functionName
+     * @param callable $callable
+     *
+     * @throws TobyException
+     */
+    public static function registerHelper($functionName, callable $callable)
+    {
         // check for existence
-        if(isset(self::$helpers[$functionName])) throw new \Exception('Helper "'.$functionName.'" is already set');
+        if(isset(self::$helpers[$functionName])) throw new TobyException('Helper "'.$functionName.'" is already set');
 
         // register
         self::$helpers[$functionName] = $callable;
@@ -200,7 +207,7 @@ abstract class Controller
     public function __call($name, $arguments)
     {
         // cancellation
-        if(!isset(self::$helpers[$name])) throw new \Exception("call to undefined function $name");
+        if(!isset(self::$helpers[$name])) throw new Exception("call to undefined function $name");
 
         // call
         return call_user_func_array(self::$helpers[$name], $arguments);

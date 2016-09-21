@@ -80,14 +80,14 @@ class Layout extends View
         // id
         if(!empty($this->bodyId))
         {
-            $out[] =  "id=\"$this->bodyId\"";
+            $out[] =  'id="'.$this->bodyId.'"';
         }
         
         // class
         if(!empty($this->bodyClasses))
         {
             // add
-            $out[] =  "class=\"".implode(' ', $this->bodyClasses)."\"";
+            $out[] =  'class="'.implode(' ', $this->bodyClasses).'"';
         }
         
         echo implode(' ', $out);

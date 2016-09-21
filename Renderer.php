@@ -11,8 +11,8 @@ class Renderer
     /* static methods */
     public static function renderPage(Controller $controller)
     {
-        // auto init theme manager
-        self::themeManagerAutoInit();
+        // init theme manager
+        self::initThemeManager();
 
         // render script
         $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
@@ -64,8 +64,8 @@ class Renderer
     
     public static function renderView($scriptName, $vars = null)
     {
-        // auto init theme manager
-        self::themeManagerAutoInit();
+        // init theme manager
+        self::initThemeManager();
         
         // get view script
         $scriptPath = self::findViewScript($scriptName);
@@ -102,7 +102,7 @@ class Renderer
         return null;
     }
     
-    private static function themeManagerAutoInit()
+    private static function initThemeManager()
     {
         // cancellation
         if(ThemeManager::isInitialized()) return;
