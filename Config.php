@@ -3,7 +3,7 @@
 namespace Toby;
 
 use Symfony\Component\Yaml\Yaml;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class Config
 {
@@ -166,7 +166,7 @@ class Config
             if($filename[0] === '.') continue;
             
             // assemble path & check file
-            $filePath = Utils::pathCombine([$dir, $filename]);
+            $filePath = StringUtils::buildPath([$dir, $filename]);
             if(!is_readable($filePath)) continue;
 
             // disassemble filename

@@ -2,28 +2,27 @@
 
 namespace Toby;
 
-use Toby\Assets\Assets;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class ThemeManager
 {
-    /* variables */
+    /* public variables */
     public static $themeName;
     
     public static $themePathRoot;
     public static $themeURL;
     
-    private static $controller;
+    public static $defaultLayout    = 'default';
     
-    public static $initialized      = false;
-    
-    private static $cache           = [];
+    /* private variables */
+    private static $controller      = null;
+    private static $initialized     = false;
     
     /* initialization */
-    public static function init($themeName = false, $functionName = false)
+    public static function init($themeName = null, $functionName = null)
     {
         // compute input
-        if($themeName === false)
+        if(empty($themeName))
         {
             $configThemeName        = Config::get('toby.theme.name');
             $configThemeFunction    = Config::get('toby.theme.function');
@@ -38,22 +37,29 @@ class ThemeManager
                 if(!empty($configThemeFunction)) $functionName = $configThemeFunction;
             }
         }
-        else $themeName = strtolower($themeName);
+        else
+        {
+            $themeName = strtolower($themeName);
+        }
 
         // init if dir exists
         $themePath      = "themes/$themeName";
-        $themePathRoot  = Utils::pathCombine(array(PUBLIC_ROOT, $themePath));
+        $themePathRoot  = StringUtils::buildPath(array(PUBLIC_ROOT, $themePath));
 
         if(is_dir($themePathRoot))
         {
             // set theme vars
             self::$themeName        = $themeName;
             self::$themePathRoot    = $themePathRoot;
-            self::$themeURL         = Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
+            self::$themeURL         = StringUtils::buildPath(array(Toby::getInstance()->appURLRelative, $themePath));
             
             // include function
-            $functionPathRoot = $themePathRoot.'/'.($functionName ? $functionName : $themeName).'.php';
-            if(is_file($functionPathRoot)) require_once($functionPathRoot);
+            $functionPathRoot = $themePathRoot.'/'.(empty($functionName) ? $themeName : $functionName).'.php';
+            
+            if(is_file($functionPathRoot))
+            {
+                require_once($functionPathRoot);
+            }
             
             // return success
             self::$initialized = true;
@@ -67,15 +73,14 @@ class ThemeManager
     
     public static function initByController(Controller $controller)
     {
-        // vars
-        $theme          = false;
-        $themeFunction  = false;
+        // theme
+        $theme          = null;
+        $themeFunction  = null;
         
-        // grab from controller
-        if(isset($controller->themeOverride))
+        if(isset($controller->overrides['theme']))
         {
-            $theme          = $controller->themeOverride;
-            $themeFunction  = $controller->themeFunctionOverride;
+            $theme          = $controller->overrides['theme'];
+            $themeFunction  = isset($controller->overrides['theme_function']) ? $controller->overrides['theme_function'] : null;
         }
 
         // set
@@ -86,40 +91,13 @@ class ThemeManager
         return true;
     }
     
-    /* placements */
-    private static function getSets()
+    public static function setDefaultLayout($layout)
     {
-        // get from cache
-        if(isset(self::$cache['sets'])) return self::$cache['sets'];
-        
-        // get
-        /** @var \Toby\Assets\AssetsSet[] $sets */
-        $sets = array_merge(Assets::getStandardSets(), Assets::getSetsByResolvePath(Toby::getInstance()->resolve));
-        
-        // put to cache
-        self::$cache['sets'] = $sets;
-        
-        // return
-        return $sets;
+        self::$defaultLayout = $layout;
     }
     
-    public static function placeScripts()
+    public static function isInitialized()
     {
-        $sets = self::getSets();
-        
-        foreach($sets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
-        }
-    }
-
-    public static function placeStyles()
-    {
-        $sets = self::getSets();
-        
-        foreach($sets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsCSS())."\n";
-        }
+        return self::$initialized;
     }
 }

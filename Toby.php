@@ -4,7 +4,7 @@ namespace Toby;
 
 use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
-use Toby\Utils\Utils;
+use Toby\Utils\SysUtils;
 
 // check env vars
 switch(false)
@@ -280,14 +280,14 @@ class Toby
     public function renderController(Controller $controller)
     {
         // cancellation
-        if(!$controller->renderView) return '';
+        if(!$controller->renderingEnabled()) return '';
         
         // start timing
         $starttime = null;
         if($this->logRequestTime) $starttime = microtime(true);
         
         // prepare theme manager
-        if(!ThemeManager::initByController($controller)) $this->finalize('unable to set theme '.ThemeManager::$themeName);
+        if(!ThemeManager::initByController($controller)) $this->finalize('unable to init ThemeManager with controller '.$controller);
 
         // render content
         $content = Renderer::renderPage($controller);
@@ -296,7 +296,7 @@ class Toby
         if($this->logRequestTime)
         {
             $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
-            $this->requestTimesLogger->info("rendering controller: {$controller->serialize()} [{$deltatime}ms]");
+            $this->requestTimesLogger->info("rendering controller: $controller [{$deltatime}ms]");
         }
         
         // return
@@ -327,7 +327,7 @@ class Toby
         if(is_int($status)) exit($status);
         else
         {
-            Utils::printr($status);
+            SysUtils::printr($status);
             exit(1);
         }
     }

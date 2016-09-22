@@ -2,135 +2,168 @@
 
 namespace Toby\Assets;
 
-use \InvalidArgumentException;
-
 class Assets
 {
-    /* public variables */
-    public static $cacheBuster      = false;
-
     /* private variables */
-    private static $sets            = array();
+    private static $defaultSet               = null;
+    private static $setsForLayout            = null;
+    private static $setsForResolvePath       = [];
+    private static $setsForResolvePathStrict = [];
+    private static $setForResolvePathUnset   = null;
+
+    private static $cacheBuster              = null;
 
     /* set management */
-    public static function setStandard()
+    public static function byDefault()
     {
-        // find existing & return
-        foreach(self::$sets as $set)
+        // lazy create
+        if(self::$defaultSet === null)
         {
-            if($set->type === AssetsSet::TYPE_STANDARD) return $set;
+            self::$defaultSet = new AssetsSet();
         }
-
-        // create new & return
-        $set = new AssetsSet();
-        $set->type = AssetsSet::TYPE_STANDARD;
-
-        self::$sets[] = $set;
-
-        return $set;
+        
+        // return
+        return self::$defaultSet;
     }
 
-    public static function setResolvePath($path, $strictCompare = false)
+    public static function forLayout($layout)
     {
-        // cancellation
-        if(!is_string($path) || empty($path)) throw new InvalidArgumentException('argument $path is not of type string or empty');
-
-        // find existing & return
-        foreach(self::$sets as $set)
+        // lazy create
+        if(!isset(self::$setsForLayout[$layout]))
         {
-            if($set->type === AssetsSet::TYPE_RESOLVE_PATH)
+            self::$setsForLayout[$layout] = new AssetsSet();
+        }
+
+        // return
+        return self::$setsForLayout[$layout];
+    }
+
+    public static function forResolvePath($path, $strictCompare = false)
+    {
+        // strict
+        if($strictCompare)
+        {
+            // lazy create
+            if(!isset(self::$setsForResolvePathStrict[$path]))
             {
-                if($set->resolvePath === $path) return $set;
+                self::$setsForResolvePathStrict[$path] = new AssetsSet();
             }
+
+            // return
+            return self::$setsForResolvePathStrict[$path];
         }
-
-        // create new & set
-        $set = new AssetsSet();
-
-        $set->type                  = AssetsSet::TYPE_RESOLVE_PATH;
-
-        $set->resolvePath           = $path;
-        $set->resolvePathStrict     = $strictCompare;
-
-        // add to list
-        self::$sets[] = $set;
-
-        // return
-        return $set;
-    }
-
-    public static function setResolvePathDefault()
-    {
-        // find existing & return
-        foreach(self::$sets as $set)
+        
+        // not strict
+        else
         {
-            if($set->type === AssetsSet::TYPE_RESOLVE_PATH_DEFAULT) return $set;
+            if(!isset(self::$setsForResolvePath[$path]))
+            {
+                self::$setsForResolvePath[$path] = new AssetsSet();
+            }
+
+            // return
+            return self::$setsForResolvePath[$path];
         }
-
-        // create new & set
-        $set = new AssetsSet();
-        $set->type = AssetsSet::TYPE_RESOLVE_PATH_DEFAULT;
-
-        // add to list
-        self::$sets[] = $set;
-
-        // return
-        return $set;
     }
 
-    /* placement functionality */
+    public static function forResolvePathUnset()
+    {
+        // lazy create
+        if(self::$setForResolvePathUnset === null)
+        {
+            self::$setForResolvePathUnset = new AssetsSet();
+        }
+
+        // return
+        return self::$setForResolvePathUnset;
+    }
+
+    /* cachebuster */
+    public static function setCacheBuster($cacheBuster)
+    {
+        self::$cacheBuster = empty($cacheBuster) ? null : (string)$cacheBuster;
+    }
+
+    public static function getCacheBuster()
+    {
+        return self::$cacheBuster;
+    }
+    
+    /* collecting sets */
+
+    public static function gatherSets($layout, $resolvePath)
+    {
+        // gather sets
+        $sets = [];
+
+        $defaultSet = self::getDefaultSet();
+        if($defaultSet !== null) $sets[] = $defaultSet;
+
+        $layoutSet = self::getSetForLayout($layout);
+        if($layoutSet !== null) $sets[] = $layoutSet;
+
+        $sets = array_merge($sets, self::getSetsForResolvePath($resolvePath));
+
+        // return
+        return $sets;
+    }
+    
+    /**
+     * @return AssetsSet
+     */
+    public static function getDefaultSet()
+    {
+        return self::$defaultSet;
+    }
 
     /**
-     * @return \Toby\Assets\AssetsSet[]
+     * @param string $layout
+     *
+     * @return AssetsSet
      */
-    public static function getStandardSets()
+    public static function getSetForLayout($layout)
     {
-        // vars
-        $setsOut = array();
-
-        // find
-        foreach(self::$sets as $set)
-        {
-            if($set->type === AssetsSet::TYPE_STANDARD) $setsOut[] = $set;
-        }
-
-        // return
-        return $setsOut;
+        return isset(self::$setsForLayout[$layout]) ? self::$setsForLayout[$layout] : null;
     }
-
+    
     /**
      * @param string $resolvePath
      *
-     * @return \Toby\Assets\AssetsSet[]
+     * @return AssetsSet[]
      */
-    public static function getSetsByResolvePath($resolvePath)
+    public static function getSetsForResolvePath($resolvePath)
     {
-        // cancellation
-        if(!is_string($resolvePath) || empty($resolvePath)) throw new InvalidArgumentException('argument $resolvePath is not of type string or empty');
-
         // normalize input
         $resolvePath = strtolower($resolvePath);
 
         // vars
-        $setsOut = array();
-
-        // find matching
-        foreach(self::$sets as $set)
+        $sets = [];
+        
+        // get strict
+        if(isset(self::$setsForResolvePathStrict[$resolvePath]))
         {
-            if($set->type === AssetsSet::TYPE_RESOLVE_PATH)
+            $sets[] = self::$setsForResolvePathStrict[$resolvePath];
+        }
+
+        // unstrict
+        foreach(self::$setsForResolvePath as $path => $set)
+        {
+            if(strncmp($path, $resolvePath, strlen($path)) === 0)
             {
-                if($set->resolvePathStrict === true)   { if($set->resolvePath === $resolvePath) $setsOut[] = $set; }
-                else                                   { if(strncmp($set->resolvePath, $resolvePath, strlen($set->resolvePath)) === 0) $setsOut[] = $set; }
+                $sets[] = $set;
             }
         }
 
-        // find matching
-        if(empty($setsOut))
+        // unset
+        if(empty($sets))
         {
-            foreach(self::$sets as $set) { if($set->type === AssetsSet::TYPE_RESOLVE_PATH_DEFAULT) $setsOut[] = $set; }
+            if(self::$setForResolvePathUnset !== null)
+            {
+                $sets[] = self::$setForResolvePathUnset;
+            }
         }
 
         // return
-        return $setsOut;
+        return $sets;
     }
 }

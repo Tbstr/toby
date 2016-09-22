@@ -2,16 +2,36 @@
 
 namespace Toby;
 
+use Toby\Assets\AssetsSet;
+
 class Layout extends View
 {
     protected $title            = '';
+    
     protected $jsVars           = null;
+    protected $assetSets        = null;
 
     protected $bodyId           = null;
     protected $bodyClasses      = [];
 
     protected $content          = '';
-    
+
+    /**
+     * Layout constructor.
+     *
+     * @param string      $scriptPath
+     * @param array       $vars
+     * @param AssetsSet[] $assetSets
+     */
+    function __construct($scriptPath, array $vars, array $assetSets)
+    {
+        // vars
+        $this->assetSets = $assetSets;
+        
+        // call parent
+        parent::__construct($scriptPath, $vars);
+    }
+
     /* getter & setter */
     public function setTitle($title)
     {
@@ -59,12 +79,18 @@ class Layout extends View
     /* placements */
     protected function placeScripts()
     {
-        ThemeManager::placeScripts();
+        foreach($this->assetSets as $set)
+        {
+            echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
+        }
     }
     
     protected function placeStyles()
     {
-        ThemeManager::placeStyles();
+        foreach($this->assetSets as $set)
+        {
+            echo implode("\n", $set->buildDOMElementsCSS())."\n";
+        }
     }
 
     protected function placeJSVars()
@@ -80,14 +106,14 @@ class Layout extends View
         // id
         if(!empty($this->bodyId))
         {
-            $out[] =  "id=\"$this->bodyId\"";
+            $out[] =  'id="'.$this->bodyId.'"';
         }
         
         // class
         if(!empty($this->bodyClasses))
         {
             // add
-            $out[] =  "class=\"".implode(' ', $this->bodyClasses)."\"";
+            $out[] =  'class="'.implode(' ', $this->bodyClasses).'"';
         }
         
         echo implode(' ', $out);
@@ -96,6 +122,6 @@ class Layout extends View
     /* to string */
     public function __toString()
     {
-        return "Toby_Layout[$this->title]";
+        return "Layout[$this->title]";
     }
 }

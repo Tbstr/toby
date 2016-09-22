@@ -4,7 +4,7 @@ namespace Toby\MySQL;
 
 use Toby\Config;
 use Toby\Toby;
-use Toby\Utils\Utils;
+use Toby\Utils\SysUtils;
 
 class MySQL
 {
@@ -189,7 +189,7 @@ class MySQL
         // dry run
         if($this->dryRun)
         {
-            Utils::printr($q);
+            SysUtils::printr($q);
             return true;
         }
 
@@ -572,7 +572,7 @@ class MySQL
     /* to string */
     public function __toString()
     {
-        return "Toby_MySQL[$this->user@$this->host]";
+        return "MySQL[$this->user@$this->host]";
     }
 
     public function startPerformanceTracking()

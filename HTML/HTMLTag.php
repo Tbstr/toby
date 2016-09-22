@@ -89,6 +89,6 @@ class HTMLTag
     /* to string */
     public function __toString()
     {
-        return "Toby_HTML_Tag[$this->name]";
+        return "HTMLTag[$this->name]";
     }
 }

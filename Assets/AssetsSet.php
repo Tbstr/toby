@@ -6,20 +6,9 @@ use Toby\ThemeManager;
 
 class AssetsSet
 {
-    /* PUBLIC VARIABLES */
-    public $type                        = 'standard';
-
-    public $resolvePath                 = false;
-    public $resolvePathStrict           = false;
-
     /* PRIVATE VARIABLES */
-    private $javascripts                = array();
-    private $stylesheets                = array();
-
-    /* CONSTANTS */
-    const TYPE_STANDARD                 = 'standard';
-    const TYPE_RESOLVE_PATH             = 'resolve_path';
-    const TYPE_RESOLVE_PATH_DEFAULT     = 'resolve_path_default';
+    private $js                         = [];
+    private $css                        = [];
 
     /**
      * @param      $path
@@ -30,7 +19,7 @@ class AssetsSet
     public function addJavaScript($path, $async = false)
     {
         // add
-        $this->javascripts[] = array($path, $async === true);
+        $this->js[] = array($path, $async === true);
 
         // return self
         return $this;
@@ -45,7 +34,7 @@ class AssetsSet
     public function addCSS($path, $media = 'all')
     {
         // add
-        $this->stylesheets[] = array($path, $media);
+        $this->css[] = array($path, $media);
 
         // return self
         return $this;
@@ -60,10 +49,10 @@ class AssetsSet
     {
         // vars
         $elements       = array();
-        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
+        $versionQuery   = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
-        foreach($this->stylesheets as $css)
+        foreach($this->css as $css)
         {
             if(preg_match('/^(https?:\/\/|\/)/', $css[0]))
             {
@@ -85,11 +74,11 @@ class AssetsSet
     public function buildDOMElementsJavaScript()
     {
         // vars
-        $elements       = array();
-        $versionQuery   = Assets::$cacheBuster === false ? '' : '?v='.Assets::$cacheBuster;
+        $elements     = [];
+        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
 
         // build
-        foreach($this->javascripts as $js)
+        foreach($this->js as $js)
         {
             if(preg_match('/^(https?:\/\/|\/)/', $js[0]))
             {

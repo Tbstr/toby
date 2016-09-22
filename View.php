@@ -4,7 +4,7 @@ namespace Toby;
 
 use \InvalidArgumentException;
 use Toby\Exceptions\TobyException;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class View
 {
@@ -20,7 +20,14 @@ class View
     private static $helpers     = array();
 
     /* constructor */
-    function __construct($scriptPath, $vars = null)
+
+    /**
+     * View constructor.
+     *
+     * @param string $scriptPath
+     * @param array  $vars
+     */
+    function __construct($scriptPath, array $vars = null)
     {
         // apply view vars
         if($vars !== null) foreach($vars as $key => $value) $this->$key = $value;
@@ -107,7 +114,7 @@ class View
         if(!is_string($pathToFile) || empty($pathToFile)) throw new InvalidArgumentException('argument $pathToFile is not of type string or empty');
         
         // prepend theme path
-        if($prependThemePath) $pathToFile = Utils::pathCombine (array(ThemeManager::$themePathRoot, $pathToFile));
+        if($prependThemePath) $pathToFile = StringUtils::buildPath(array(ThemeManager::$themePathRoot, $pathToFile));
         
         // return content
         return file_get_contents($pathToFile);
@@ -139,6 +146,6 @@ class View
     /* to string */
     public function __toString()
     {
-        return "Toby_View[$this->scriptPath]";
+        return "View[$this->scriptPath]";
     }
 }

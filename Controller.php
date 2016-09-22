@@ -2,50 +2,40 @@
 
 namespace Toby;
 
-use \InvalidArgumentException;
+use Exception;
+use Logger;
+use stdClass;
+use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
+use Toby\Utils\TypeUtils;
 
 abstract class Controller
 {
-    /* controller vars */
+    /* properties */
     public $name;
     public $action;
     public $attributes;
     
-    public $toby;
+    /* settings */
+    private $renderView     = true;
     
-    /* theme vars */
-    public $themeOverride           = false;
-    public $themeFunctionOverride   = false;
+    /* overrides */
+    public $overrides       = [];
     
-    /* layout vars */
-    public $layoutName              = 'default';
-    
-    public $layoutTitle             = '';
-    
-    public $layoutScripts           = array();
-    public $layoutStyles            = array();
-    
-    public $layoutBodyId            = '';
-    public $layoutBodyClasses       = array();
-    
-    /* view vars */
-    public $renderView              = true;
-    private $viewScriptOverride;
-    
-    /* data vars */
+    /* data container */
     public $layout;
     public $view;
     public $javascript;
 
-    /**
-     * @var \Logger
-     */
+    /** @var Logger  */
     protected $logger;
 
+    /** @var Toby */
+    protected $toby;
+
     /* static vars */
-    private static $helpers         = array();
+    private static $helpers = [];
     
     function __construct($name, $action, $attributes = null)
     {
@@ -53,32 +43,22 @@ abstract class Controller
         $this->name                     = $name;
         $this->action                   = $action;
         $this->attributes               = $attributes;
-        
+
+        $this->logger                   = Logging::logger($this);
         $this->toby                     = Toby::getInstance();
         
-        if(Config::has('toby.default.title'))
-        {
-            $this->layoutTitle = Config::get('toby.default.title');
-        }
-        
-        // holders
-        $this->layout                   = new \stdClass();
-        $this->view                     = new \stdClass();
-        $this->javascript               = new \stdClass();
-        
-        // default vars layout
+        // init data containers
+        $this->layout                   = new stdClass();
         $this->layout->appURL           = $this->toby->appURL;
-        $this->layout->url              = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->layout->url              = StringUtils::buildPath(array($this->toby->appURL, $this->toby->request));
         
-        // default vars view
+        $this->view                     = new stdClass();
         $this->view->appURL             = $this->toby->appURL;
-        $this->view->url                = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->view->url                = StringUtils::buildPath(array($this->toby->appURL, $this->toby->request));
         
-        // default vars javascript
+        $this->javascript               = new stdClass();
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Security::XSRFGetKey();
-
-        $this->logger = Logging::logger($this);
     }
     
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
@@ -100,7 +80,7 @@ abstract class Controller
         Toby::finalize(0);
     }
     
-    protected function returnFile($filePath, $nameOverride = null,  $mimeType = 'auto')
+    protected function returnFile($filePath, $nameOverride = null, $mimeType = 'auto')
     {
         // set header information
         header("Pragma: public");
@@ -108,7 +88,7 @@ abstract class Controller
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
         header("Content-Description: File Transfer");
 
-        if($mimeType === 'auto') $mimeType = Utils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
+        if($mimeType === 'auto') $mimeType = TypeUtils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
         if(!empty($mimeType)) header("Content-Type:$mimeType");
 
         header("Content-Disposition: attachment; filename=\"".(empty($nameOverride) ? basename($filePath) : $nameOverride)."\"");
@@ -120,102 +100,106 @@ abstract class Controller
     }
     
     /* set theme */
-    protected function setTheme($themeName, $functionName = false)
+    protected function setTheme($themeName, $functionName = null)
     {
-        $this->themeOverride = $themeName;
-        if(!empty($functionName)) $this->themeFunctionOverride = $functionName;
+        $this->overrides['theme'] = $themeName;
+        
+        if(!empty($functionName))
+        {
+            $this->overrides['theme_function'] = $functionName;
+        }
     }
     
     /* set layout */
     protected function setLayout($layoutName)
     {
-        $this->layoutName = $layoutName;
+        $this->overrides['layout'] = $layoutName;
     }
     
-    /* page title */
+    /* manage page title */
     protected function setTitle($value)
     {
-        $this->layoutTitle = $value;
+        $this->overrides['layout_title'] = $value;
     }
     
     protected function appendToTitle($value)
     {
-        $this->layoutTitle = $this->layoutTitle.$value;
+        if(!isset($this->overrides['layout_title_app'])) $this->overrides['layout_title_app'] = '';
+        $this->overrides['layout_title_app'] .= $value;
     }
     
     protected function prependToTitle($value)
     {
-        $this->layoutTitle = $value.$this->layoutTitle;
-    }
-
-    /* scripts & styles */
-    protected function addScript($scriptPath)
-    {
-        // add
-        $this->layoutScripts[] = $scriptPath;
-    }
-
-    protected function addStyle($stylePath, $media = 'all')
-    {
-        // init media entry
-        if(!isset($this->layoutStyles[$media])) $this->layoutStyles[$media] = array();
-
-        // add
-        $this->layoutStyles[$media][] = $stylePath;
+        if(!isset($this->overrides['layout_title_prep'])) $this->overrides['layout_title_prep'] = '';
+        $this->overrides['layout_title_prep'] = $value.$this->overrides['layout_title_prep'];
     }
     
     /* body properties */
     protected function setBodyId($id)
     {
-        $this->layoutBodyId = $id;
+        $this->overrides['layout_body_id'] = $id;
     }
     
     protected function addBodyClass()
     {
+        if(!isset($this->overrides['layout_body_classes'])) $this->overrides['layout_body_classes'] = [];
+        
         for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
             $arg = func_get_arg($i);
             if(!is_string($arg)) continue;
-            
-            $this->layoutBodyClasses = array_merge($this->layoutBodyClasses, explode(' ', $arg));
+
+            $this->overrides['layout_body_classes'] = array_merge($this->overrides['layout_body_classes'], explode(' ', $arg));
         }
     }
     
     protected function removeBodyClass()
     {
+        if(!isset($this->overrides['layout_body_classes'])) return;
+        
         for($i = 0, $num = func_num_args(); $i < $num; $i++)
         {
-            $key = array_search(func_get_arg($i), $this->layoutBodyClasses);
-            if($key !== false) array_splice($this->layoutBodyClasses, $key, 1);
+            $key = array_search(func_get_arg($i), $this->overrides['layout_body_classes']);
+            if($key !== false) array_splice($this->overrides['layout_body_classes'], $key, 1);
         }
     }
     
     /* manage view rendering */
     protected function setViewScript($viewScript)
     {
-        $this->viewScriptOverride = $viewScript;
+        $this->overrides['view_script'] = $viewScript;
     }
     
     public function getViewScript()
     {
-        if(empty($this->viewScriptOverride)) return "$this->name/$this->action";
-        else return $this->viewScriptOverride;
+        if(isset($this->overrides['view_script'])) return $this->overrides['view_script'];
+        return "$this->name/$this->action";
     }
     
     protected function disableRendering()
     {
         $this->renderView = false;
     }
+    
+    public function renderingEnabled()
+    {
+        return $this->renderView;
+    }
 
     /* helper management */
-    public static function registerHelper($functionName, $callable)
-    {
-        // cancellation
-        if(!is_string($functionName))   throw new InvalidArgumentException('argument functionName is not of type string');
-        if(!is_callable($callable))     throw new InvalidArgumentException('argument callable is not of type $callable');
 
+    /**
+     * Registers helper function to be called via this class. Executed with __call magic method.
+     * 
+     * @param string $functionName
+     * @param callable $callable
+     *
+     * @throws TobyException
+     */
+    public static function registerHelper($functionName, callable $callable)
+    {
         // check for existence
-        if(isset(self::$helpers[$functionName])) throw new \Exception('Helper "'.$functionName.'" is already set');
+        if(isset(self::$helpers[$functionName])) throw new TobyException('Helper "'.$functionName.'" is already set');
 
         // register
         self::$helpers[$functionName] = $callable;
@@ -224,7 +208,7 @@ abstract class Controller
     public function __call($name, $arguments)
     {
         // cancellation
-        if(!isset(self::$helpers[$name])) throw new \Exception("call to undefined function $name");
+        if(!isset(self::$helpers[$name])) throw new Exception("call to undefined function $name");
 
         // call
         return call_user_func_array(self::$helpers[$name], $arguments);
@@ -233,11 +217,6 @@ abstract class Controller
     /* to string */
     public function __toString()
     {
-        return "Toby_Controller[{$this->serialize()}]";
-    }
-    
-    public function serialize()
-    {
-        return "$this->name/$this->action";
+        return "Controller[{$this->name}/{$this->action}]";
     }
 }
