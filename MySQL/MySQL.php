@@ -4,7 +4,7 @@ namespace Toby\MySQL;
 
 use Toby\Config;
 use Toby\Toby;
-use Toby\Utils\Utils;
+use Toby\Utils\SysUtils;
 
 class MySQL
 {
@@ -189,7 +189,7 @@ class MySQL
         // dry run
         if($this->dryRun)
         {
-            Utils::printr($q);
+            SysUtils::printr($q);
             return true;
         }
 

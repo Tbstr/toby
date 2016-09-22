@@ -2,7 +2,7 @@
 
 namespace Toby;
 
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class ThemeManager
 {
@@ -44,14 +44,14 @@ class ThemeManager
 
         // init if dir exists
         $themePath      = "themes/$themeName";
-        $themePathRoot  = Utils::pathCombine(array(PUBLIC_ROOT, $themePath));
+        $themePathRoot  = StringUtils::buildPath(array(PUBLIC_ROOT, $themePath));
 
         if(is_dir($themePathRoot))
         {
             // set theme vars
             self::$themeName        = $themeName;
             self::$themePathRoot    = $themePathRoot;
-            self::$themeURL         = Utils::pathCombine(array(Toby::getInstance()->appURLRelative, $themePath));
+            self::$themeURL         = StringUtils::buildPath(array(Toby::getInstance()->appURLRelative, $themePath));
             
             // include function
             $functionPathRoot = $themePathRoot.'/'.(empty($functionName) ? $themeName : $functionName).'.php';

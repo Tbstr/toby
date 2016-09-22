@@ -7,7 +7,8 @@ use Logger;
 use stdClass;
 use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
+use Toby\Utils\TypeUtils;
 
 abstract class Controller
 {
@@ -49,11 +50,11 @@ abstract class Controller
         // init data containers
         $this->layout                   = new stdClass();
         $this->layout->appURL           = $this->toby->appURL;
-        $this->layout->url              = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->layout->url              = StringUtils::buildPath(array($this->toby->appURL, $this->toby->request));
         
         $this->view                     = new stdClass();
         $this->view->appURL             = $this->toby->appURL;
-        $this->view->url                = Utils::pathCombine(array($this->toby->appURL, $this->toby->request));
+        $this->view->url                = StringUtils::buildPath(array($this->toby->appURL, $this->toby->request));
         
         $this->javascript               = new stdClass();
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
@@ -87,7 +88,7 @@ abstract class Controller
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
         header("Content-Description: File Transfer");
 
-        if($mimeType === 'auto') $mimeType = Utils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
+        if($mimeType === 'auto') $mimeType = TypeUtils::getMIMEFromExtension(empty($nameOverride) ? $filePath : $nameOverride);
         if(!empty($mimeType)) header("Content-Type:$mimeType");
 
         header("Content-Disposition: attachment; filename=\"".(empty($nameOverride) ? basename($filePath) : $nameOverride)."\"");

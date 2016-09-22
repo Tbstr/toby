@@ -4,7 +4,7 @@ namespace Toby;
 
 use Toby\Exceptions\TobyException;
 use Toby\Logging\Logging;
-use Toby\Utils\Utils;
+use Toby\Utils\SysUtils;
 
 // check env vars
 switch(false)
@@ -327,7 +327,7 @@ class Toby
         if(is_int($status)) exit($status);
         else
         {
-            Utils::printr($status);
+            SysUtils::printr($status);
             exit(1);
         }
     }

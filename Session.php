@@ -5,7 +5,7 @@ namespace Toby;
 use InvalidArgumentException;
 use Logger;
 use Toby\MySQL\MySQL;
-use Toby\Utils\Utils;
+use Toby\Utils\SysUtils;
 
 class Session
 {
@@ -264,7 +264,7 @@ class Session
     
     public function printr()
     {
-        Utils::printr($this->SESSION);
+        SysUtils::printr($this->SESSION);
     }
     
     /* event handler */

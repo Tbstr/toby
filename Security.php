@@ -3,7 +3,7 @@
 namespace Toby;
 
 use Logger;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class Security
 {
@@ -15,13 +15,13 @@ class Security
     {
         // add XSRF Key if missing
         $session = Session::getInstance();
-        if(!$session->has(self::XSRFKeyName)) $session->set(self::XSRFKeyName, Utils::randomChars(32));
+        if(!$session->has(self::XSRFKeyName)) $session->set(self::XSRFKeyName, StringUtils::randomChars(32));
     }
     
     /* XSRF */
     public static function XSRFUpdateKey()
     {
-        Session::getInstance()->set(self::XSRFKeyName, Utils::randomChars(32));
+        Session::getInstance()->set(self::XSRFKeyName, StringUtils::randomChars(32));
     }
     
     public static function XSRFGetKey()

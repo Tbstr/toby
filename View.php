@@ -4,7 +4,7 @@ namespace Toby;
 
 use \InvalidArgumentException;
 use Toby\Exceptions\TobyException;
-use Toby\Utils\Utils;
+use Toby\Utils\StringUtils;
 
 class View
 {
@@ -114,7 +114,7 @@ class View
         if(!is_string($pathToFile) || empty($pathToFile)) throw new InvalidArgumentException('argument $pathToFile is not of type string or empty');
         
         // prepend theme path
-        if($prependThemePath) $pathToFile = Utils::pathCombine (array(ThemeManager::$themePathRoot, $pathToFile));
+        if($prependThemePath) $pathToFile = StringUtils::buildPath(array(ThemeManager::$themePathRoot, $pathToFile));
         
         // return content
         return file_get_contents($pathToFile);
