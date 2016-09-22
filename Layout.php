@@ -23,7 +23,7 @@ class Layout extends View
      * @param array       $vars
      * @param AssetsSet[] $assetSets
      */
-    function __construct($scriptPath, array $vars, array $assetSets)
+    function __construct($scriptPath, array $vars = null, array $assetSets = null)
     {
         // vars
         $this->assetSets = $assetSets;
@@ -79,6 +79,8 @@ class Layout extends View
     /* placements */
     protected function placeScripts()
     {
+        if($this->assetSets === null) return;
+        
         foreach($this->assetSets as $set)
         {
             echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
@@ -87,6 +89,8 @@ class Layout extends View
     
     protected function placeStyles()
     {
+        if($this->assetSets === null) return;
+        
         foreach($this->assetSets as $set)
         {
             echo implode("\n", $set->buildDOMElementsCSS())."\n";
