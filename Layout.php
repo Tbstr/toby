@@ -97,6 +97,16 @@ class Layout extends View
         }
     }
 
+    protected function placeMeta()
+    {
+        if($this->assetSets === null) return;
+
+        foreach($this->assetSets as $set)
+        {
+            echo implode("\n", $set->buildDOMElementsMeta())."\n";
+        }
+    }
+
     protected function placeJSVars()
     {
         if(!empty($this->jsVars)) echo /** @lang text */'<script type="text/javascript">window.TobyVars='.json_encode($this->jsVars).';</script>';
@@ -110,14 +120,14 @@ class Layout extends View
         // id
         if(!empty($this->bodyId))
         {
-            $out[] =  'id="'.$this->bodyId.'"';
+            $out[] = 'id="'.$this->bodyId.'"';
         }
         
         // class
         if(!empty($this->bodyClasses))
         {
             // add
-            $out[] =  'class="'.implode(' ', $this->bodyClasses).'"';
+            $out[] = 'class="'.implode(' ', $this->bodyClasses).'"';
         }
         
         echo implode(' ', $out);

@@ -14,6 +14,10 @@ class Assets
     private static $cacheBuster              = null;
 
     /* set management */
+
+    /**
+     * @return AssetsSet
+     */
     public static function byDefault()
     {
         // lazy create
@@ -26,6 +30,11 @@ class Assets
         return self::$defaultSet;
     }
 
+    /**
+     * @param $layout
+     *
+     * @return AssetsSet
+     */
     public static function forLayout($layout)
     {
         // lazy create
@@ -38,6 +47,12 @@ class Assets
         return self::$setsForLayout[$layout];
     }
 
+    /**
+     * @param string $path
+     * @param bool   $strictCompare
+     *
+     * @return AssetsSet
+     */
     public static function forResolvePath($path, $strictCompare = false)
     {
         // strict
@@ -66,6 +81,9 @@ class Assets
         }
     }
 
+    /**
+     * @return AssetsSet
+     */
     public static function forResolvePathUnset()
     {
         // lazy create
@@ -79,11 +97,18 @@ class Assets
     }
 
     /* cachebuster */
+
+    /**
+     * @param string $cacheBuster
+     */
     public static function setCacheBuster($cacheBuster)
     {
         self::$cacheBuster = empty($cacheBuster) ? null : (string)$cacheBuster;
     }
 
+    /**
+     * @return string|null
+     */
     public static function getCacheBuster()
     {
         return self::$cacheBuster;
@@ -91,6 +116,12 @@ class Assets
     
     /* collecting sets */
 
+    /**
+     * @param string $layout
+     * @param string $resolvePath
+     *
+     * @return array
+     */
     public static function gatherSets($layout, $resolvePath)
     {
         // gather sets
