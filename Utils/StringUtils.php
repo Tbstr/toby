@@ -113,4 +113,51 @@ class StringUtils
         // return
         return implode($separator, $elements);
     }
+
+    /**
+     * converts a string that is not already encoded in UTF-8
+     *
+     * @param string $value
+     * @param string $preferredSourceEncoding encoding to try before using detected encoding
+     * @return string
+     */
+    public static function convertToUtf8($value, $preferredSourceEncoding = null)
+    {
+        $encoding = mb_detect_encoding($value, array("UTF-8", "Windows-1252", "ISO-8859-15", "ISO-8859-1"));
+        if ($encoding === false)
+        {
+            return $value;
+        }
+
+        if ($encoding !== 'UTF-8')
+        {
+            $convertedValue = false;
+
+            // look for common special characters (äöüßÄÖÜéè) encoded in MacRoman
+            if (preg_match("/[\x8a\x9a\x9f\xa7\x80\x85\x86\x8e\x8f]/", $value))
+            {
+                $convertedValue = @iconv("MACINTOSH", "UTF-8", $value);
+            }
+
+            if ($preferredSourceEncoding !== null)
+            {
+                // first try to convert using preferred encoding
+                $convertedValue = @iconv($preferredSourceEncoding, "UTF-8", $value);
+            }
+
+            if ($convertedValue === false)
+            {
+                $convertedValue = mb_convert_encoding($value, "UTF-8", $encoding);
+            }
+
+            $value = $convertedValue;
+        }
+
+        return $value;
+    }
+
+    public static function convertToUtf8PreferringMacRoman($value)
+    {
+        return self::convertToUtf8($value, "MACINTOSH");
+    }
 }
