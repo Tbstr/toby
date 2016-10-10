@@ -21,47 +21,46 @@ class Config
     /**
      * @param string $key
      * @param mixed  $value
+     * @param array  $hierarchy
      */
-    public function setEntry($key, &$value)
+    public function setEntry($key, $value, array $hierarchy = null)
     {
-        $keyElements = explode('.', $key);
+        $hierarchyStr = empty($hierarchy) ? null : implode('.', $hierarchy);
+        $fullKey = ($hierarchyStr === null ? '' : $hierarchyStr.'.').$key;
         
-        $keyName = array_pop($keyElements);
-        $keyBase = implode('.', $keyElements);
-        
-        if($keyBase === '')
+        if($hierarchyStr === null)
         {
             $arr = &$this->data;
         }
         else
         {
-            if(isset($this->dataIndex[$keyBase]))
+            if(isset($this->dataIndex[$hierarchyStr]))
             {
-                if(is_array($this->dataIndex[$keyBase]))
+                if(is_array($this->dataIndex[$hierarchyStr]))
                 {
-                    $arr = &$this->dataIndex[$keyBase];
+                    $arr = &$this->dataIndex[$hierarchyStr];
                 }
                 else
                 {
-                    $newArr = [];
-                    $this->setEntry($keyBase, $newArr);
+                    $subKey = array_pop($hierarchy);
+                    $this->setEntry($subKey, [], $hierarchy);
 
-                    $arr = &$this->dataIndex[$keyBase];
-                    
-                    $this->removeUpperIndices($keyBase);
+                    $arr = &$this->dataIndex[$hierarchyStr];
                 }
             }
             else
             {
-                $newArr = [];
-                $this->setEntry($keyBase, $newArr);
+                $subKey = array_pop($hierarchy);
+                $this->setEntry($subKey, [], $hierarchy);
                 
-                $arr = &$this->dataIndex[$keyBase];
+                $arr = &$this->dataIndex[$hierarchyStr];
             }
         }
+        
+        $arr[$key] = $value;
 
-        $arr[$keyName] = $value;
-        $this->dataIndex[$key] = &$arr[$keyName];
+        if(isset($this->dataIndex[$fullKey])) $this->removeUpperIndices($fullKey);
+        $this->dataIndex[$fullKey] = &$arr[$key];
     }
     
     private function removeUpperIndices($baseKey)
@@ -78,22 +77,20 @@ class Config
     }
 
     /**
-     * @param array  $arr
-     * @param string $keyBase
+     * @param array $arr
+     * @param array $hierarchy
      */
-    public function setEntriesFromArray(array &$arr, $keyBase = null)
+    public function setEntriesFromArray(array $arr, array $hierarchy = null)
     {
-        foreach($arr as $key => $value)
+        foreach($arr as $key => &$value)
         {
-            $currKey = empty($keyBase) ? $key : $keyBase.'.'.$key;
-            
             if(is_array($value))
             {
-                $this->setEntriesFromArray($value, $currKey);
+                $this->setEntriesFromArray($value, empty($hierarchy) ? [$key] : array_merge($hierarchy, [$key]));
             }
             else
             {
-                $this->setEntry($currKey, $value);
+                $this->setEntry($key, $value, $hierarchy);
             }
         }
     }
@@ -158,65 +155,74 @@ class Config
      */
     public function readDir($dir)
     {
-        // scan directory & pase
+        // scan directory
         $filenames = scandir($dir);
         foreach($filenames as $filename)
         {
             // omit filenames starting with colon
             if($filename[0] === '.') continue;
             
-            // assemble path & check file
+            // assemble path & pass on
             $filePath = StringUtils::buildPath([$dir, $filename]);
-            if(!is_readable($filePath)) continue;
+            $this->readFile($filePath);
+        }
+    }
+    
+    public function readFile($filePath)
+    {
+        // check readability
+        if(!is_readable($filePath)) return;
 
-            // disassemble filename
-            $colonIndex = strrpos($filename, '.');
-            if($colonIndex === false) continue;
+        // get filename
+        $filename = basename($filePath);
+        
+        // disassemble filename
+        $colonIndex = strrpos($filename, '.');
+        if($colonIndex === false) return;
 
-            $basename = strtolower(substr($filename, 0, $colonIndex));
-            $ext = strtolower(substr($filename, $colonIndex + 1));
-            
-            // cache lookup
-            $cachedData = self::$enableFileCache ? $this->readFromCache($filePath) : null;
-            
-            // read & parse file if cache entry missing ...
-            if($cachedData === null)
+        $basename = strtolower(substr($filename, 0, $colonIndex));
+        $ext = strtolower(substr($filename, $colonIndex + 1));
+
+        // cache lookup
+        $cachedData = self::$enableFileCache ? $this->readFromCache($filePath) : null;
+
+        // read & parse file if cache entry missing ...
+        if($cachedData === null)
+        {
+            $definitions = null;
+
+            // php
+            if($ext === 'php')
             {
-                $definitions = null;
-                
-                // php
-                if($ext === 'php')
-                {
-                    // load & parse definitions
-                    $definitions = require $filePath;
-                    if(!is_array($definitions)) continue;
-                    
-                    // set entries
-                    $this->setEntriesFromArray($definitions, $basename);
-                }
+                // load & parse definitions
+                $definitions = require $filePath;
+                if(!is_array($definitions)) return;
 
-                // yaml
-                elseif($ext === 'yml')
-                {
-                    // load & parse definitions
-                    $definitions = Yaml::parse(file_get_contents($filePath));
-
-                    // set entries
-                    $this->setEntriesFromArray($definitions, $basename);
-                }
-                
-                // put to cache
-                if(self::$enableFileCache && $definitions !== null)
-                {
-                    $this->putToCache($filePath, $definitions);
-                }
+                // set entries
+                $this->setEntriesFromArray($definitions, [$basename]);
             }
-            
-            // ... or use cached data
-            else
+
+            // yaml
+            elseif($ext === 'yml')
             {
-                $this->setEntriesFromArray($cachedData, $basename);
+                // load & parse definitions
+                $definitions = Yaml::parse(file_get_contents($filePath));
+
+                // set entries
+                $this->setEntriesFromArray($definitions, [$basename]);
             }
+
+            // put to cache
+            if(self::$enableFileCache && $definitions !== null)
+            {
+                $this->putToCache($filePath, $definitions);
+            }
+        }
+
+        // ... or use cached data
+        else
+        {
+            $this->setEntriesFromArray($cachedData, [$basename]);
         }
     }
 
@@ -298,7 +304,7 @@ class Config
         $clone = new self();
         
         // set entries
-        $clone->setEntriesFromArray($this->data);
+        $clone-> setEntriesFromArray($this->data);
         
         // return
         return $clone;
@@ -344,9 +350,10 @@ class Config
     /**
      * @param string $key
      * @param mixed  $value
+     * @param array  $hierarchy
      */
-    public static function set($key, $value)
+    public static function set($key, $value, array $hierarchy = null)
     {
-        self::getInstance()->setEntry($key, $value);
+        self::getInstance()->setEntry($key, $value, $hierarchy);
     }
 }
