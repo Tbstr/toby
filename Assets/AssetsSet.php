@@ -7,23 +7,105 @@ use Toby\ThemeManager;
 class AssetsSet
 {
     /* variables */
-    private $js   = [];
-    private $css  = [];
-    private $meta = [];
+    private $meta    = [];
+    private $scripts = [];
+    private $links   = [];
 
+    /* core management functions */
+
+    /**
+     * @param array $props
+     *
+     * @return AssetsSet
+     */
+    public function addMeta(array $props)
+    {
+        // prepare
+        $data = [];
+
+        if(!empty($props))
+        {
+            foreach($props as $key => $value)
+            {
+                $data[$key] = $value;
+            }
+        }
+        
+        // add
+        $this->meta[] = $data;
+
+        // return self
+        return $this;
+    }
+    
+    /**
+     * @param string $src
+     * @param bool   $type
+     * @param array  $props
+     *
+     * @return AssetsSet
+     */
+    public function addScript($src, $type, array $props = null)
+    {
+        // prepare
+        $data = ['src' => $src, 'type' => $type];
+        
+        if(!empty($props))
+        {
+            foreach($props as $key => $value)
+            {
+                $data[$key] = $value;
+            }
+        }
+        
+        // add
+        $this->scripts[] = $data;
+
+        // return self
+        return $this;
+    }
+
+    /**
+     * @param string $href
+     * @param string $rel
+     * @param array  $props
+     *
+     * @return AssetsSet
+     */
+    public function addLink($href, $rel, array $props = null)
+    {
+        // prepare
+        $data = ['href' => $href, 'rel' => $rel];
+
+        if(!empty($props))
+        {
+            foreach($props as $key => $value)
+            {
+                $data[$key] = $value;
+            }
+        }
+
+        // add
+        $this->links[] = $data;
+
+        // return self
+        return $this;
+    }
+    
+    /* high level management functions */
+    
     /**
      * @param string $path
      * @param bool   $async
      *
      * @return AssetsSet
      */
-    public function addJavaScript($path, $async = false)
+    public function addJS($path, $async = false)
     {
-        // add
-        $this->js[] = [$path, $async === true];
-
-        // return self
-        return $this;
+        $props = [];
+        if($async === true) $props['async'] = null;
+        
+        return $this->addScript($path, 'text/javascript', $props);
     }
 
     /**
@@ -34,11 +116,7 @@ class AssetsSet
      */
     public function addCSS($path, $media = 'all')
     {
-        // add
-        $this->css[] = [$path, $media];
-
-        // return self
-        return $this;
+        return $this->addLink($path, 'stylesheet', ['media' => $media]);
     }
 
     /**
@@ -47,15 +125,11 @@ class AssetsSet
      *
      * @return AssetsSet
      */
-    public function addMeta($name, $content)
+    public function addMetaStandard($name, $content)
     {
-        // add
-        $this->meta[] = ['name' => $name, 'content' => $content];
-
-        // return self
-        return $this;
+        return $this->addMeta(['name' => $name, 'content' => $content]);
     }
-
+    
     /**
      * @param string $httpEquiv
      * @param string $content
@@ -64,11 +138,7 @@ class AssetsSet
      */
     public function addMetaHTTP($httpEquiv, $content)
     {
-        // add
-        $this->meta[] = ['http-equiv' => $httpEquiv, 'content' => $content];
-
-        // return self
-        return $this;
+        return $this->addMeta(['http-equiv' => $httpEquiv, 'content' => $content]);
     }
 
     /**
@@ -76,82 +146,22 @@ class AssetsSet
      *
      * @return AssetsSet
      */
-    public function addMetaCharset($charset)
+    public function addCharset($charset)
     {
-        // add
-        $this->meta[] = ['charset' => $charset];
-
-        // return self
-        return $this;
-    }
-
-    /**
-     * @param array $properties
-     *
-     * @return AssetsSet
-     */
-    public function addMetaCustom(array $properties)
-    {
-        // add
-        $this->meta[] = $properties;
-
-        // return self
-        return $this;
-    }
-
-    /* PLACEMENT */
-
-    /**
-     * @return array
-     */
-    public function buildDOMElementsJavaScript()
-    {
-        // vars
-        $elements     = [];
-        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
-
-        // build
-        foreach($this->js as $js)
-        {
-            if(preg_match('/^(https?:\/\/|\/)/', $js[0]))
-            {
-                $elements[] = '<script type="text/javascript" src="'.$js[0].$versionQuery.'" '.($js[1] ? 'async' : '').'></script>'.NL;
-            }
-            else
-            {
-                $elements[] = '<script type="text/javascript" src="'.ThemeManager::$themeURL.'/'.$js[0].$versionQuery.'" '.($js[1] ? 'async' : '').'></script>';
-            }
-        }
-
-        // return
-        return $elements;
+        return $this->addMeta(['charset' => $charset]);
     }
     
     /**
-     * @return array
+     * @param string $manifestURL
+     *
+     * @return AssetsSet
      */
-    public function buildDOMElementsCSS()
+    public function addManifest($manifestURL)
     {
-        // vars
-        $elements       = [];
-        $versionQuery   = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
-
-        // build
-        foreach($this->css as $css)
-        {
-            if(preg_match('/^(https?:\/\/|\/)/', $css[0]))
-            {
-                $elements[] = '<link rel="stylesheet" type="text/css" media="'.$css[1].'" href="'.$css[0].$versionQuery.'" />'.NL;
-            }
-            else
-            {
-                $elements[] = '<link rel="stylesheet" type="text/css" media="'.$css[1].'" href="'.ThemeManager::$themeURL.'/'.$css[0].$versionQuery.'" />';
-            }
-        }
-
-        // return
-        return $elements;
+        return $this->addLink($manifestURL, 'manifest');
     }
+    
+    /* PLACEMENT */
 
     /**
      * @return array
@@ -164,13 +174,81 @@ class AssetsSet
         // build
         foreach($this->meta as $meta)
         {
-            $props = '';
+            $props = [];
             foreach($meta as $key => $value)
             {
-                $props .= $key.'="'.$value.'" ';
+                $props[] = $key.'="'.$value.'" ';
+            }
+
+            $elements[] = '<meta '.implode(' ', $props).'/>';
+        }
+
+        // return
+        return $elements;
+    }
+    
+    /**
+     * @return array
+     */
+    public function buildDOMElementsScripts()
+    {
+        // vars
+        $elements     = [];
+        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
+
+        // build
+        foreach($this->scripts as $script)
+        {
+            if(preg_match('/^(https?:\/\/|\/)/', $script['src']))
+            {
+                $script['src'] = $script['src'].$versionQuery;
+            }
+            else
+            {
+                $script['src'] = ThemeManager::$themeURL.'/'.$script['src'].$versionQuery;
+            }
+
+            $props = [];
+            foreach($script as $key => $value)
+            {
+                $props[] = $key.'="'.$value.'"';
             }
             
-            $elements[] = '<meta '.$props.'/>';
+            $elements[] = '<script '.implode(' ', $props).'></script>';
+        }
+
+        // return
+        return $elements;
+    }
+
+    /**
+     * @return array
+     */
+    public function buildDOMElementsLinks()
+    {
+        // vars
+        $elements     = [];
+        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
+
+        // build
+        foreach($this->links as $link)
+        {
+            if(preg_match('/^(https?:\/\/|\/)/', $link['href']))
+            {
+                $link['href'] = $link['href'].$versionQuery;
+            }
+            else
+            {
+                $link['href'] = ThemeManager::$themeURL.'/'.$link['href'].$versionQuery;
+            }
+
+            $props = [];
+            foreach($link as $key => $value)
+            {
+                $props[] = $key === null ? $key : $key.'="'.$value.'"';
+            }
+
+            $elements[] = '<link '.implode(' ', $props).' />';
         }
 
         // return

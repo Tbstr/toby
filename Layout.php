@@ -77,26 +77,6 @@ class Layout extends View
     }
     
     /* placements */
-    protected function placeScripts()
-    {
-        if($this->assetSets === null) return;
-        
-        foreach($this->assetSets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsJavaScript())."\n";
-        }
-    }
-    
-    protected function placeStyles()
-    {
-        if($this->assetSets === null) return;
-        
-        foreach($this->assetSets as $set)
-        {
-            echo implode("\n", $set->buildDOMElementsCSS())."\n";
-        }
-    }
-
     protected function placeMeta()
     {
         if($this->assetSets === null) return;
@@ -104,6 +84,26 @@ class Layout extends View
         foreach($this->assetSets as $set)
         {
             echo implode("\n", $set->buildDOMElementsMeta())."\n";
+        }
+    }
+    
+    protected function placeScripts()
+    {
+        if($this->assetSets === null) return;
+        
+        foreach($this->assetSets as $set)
+        {
+            echo implode("\n", $set->buildDOMElementsScripts())."\n";
+        }
+    }
+    
+    protected function placeLinks()
+    {
+        if($this->assetSets === null) return;
+        
+        foreach($this->assetSets as $set)
+        {
+            echo implode("\n", $set->buildDOMElementsLinks())."\n";
         }
     }
 
