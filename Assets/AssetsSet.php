@@ -156,7 +156,7 @@ class AssetsSet
      *
      * @return AssetsSet
      */
-    public function addManifest($manifestURL)
+    public function addWebAppManifest($manifestURL)
     {
         return $this->addLink($manifestURL, 'manifest');
     }
