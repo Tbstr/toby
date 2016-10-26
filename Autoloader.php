@@ -81,10 +81,32 @@ class Autoloader
     }
 
     /* controller loading */
+    public static function hasControllerInstance($controllerName)
+    {
+        // build class name
+        $controllerClassName = self::getControllerClassName($controllerName);
+        
+        // check
+        if(class_exists($controllerClassName, false))
+        {
+            return true;
+        }
+        else
+        {
+            self::load($controllerClassName);
+            if(class_exists($controllerClassName, false))
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public static function getControllerInstance($controllerName, $actionName, $arguments)
     {
         // build class name
-        $controllerClassName = self::$controllerNamespace.'\\'.strtoupper($controllerName[0]).substr($controllerName, 1).'Controller';
+        $controllerClassName = self::getControllerClassName($controllerName);
 
         // load
         if(!class_exists($controllerClassName, false))
@@ -97,6 +119,11 @@ class Autoloader
         return new $controllerClassName($controllerName, $actionName, $arguments);
     }
 
+    private static function getControllerClassName($controllerName)
+    {
+        return self::$controllerNamespace.'\\'.strtoupper($controllerName[0]).substr($controllerName, 1).'Controller';
+    }
+    
     public static function setControllerNamespace($newControllerNamespace)
     {
         // cancellation

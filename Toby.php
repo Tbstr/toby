@@ -151,8 +151,18 @@ class Toby
         // include post init hook
         $this->hook('post_init');
 
-        // force resolve
-        if(Config::has('toby.force_resolve')) $request = Config::get('toby.force_resolve');
+        // request manipulation: force resolve
+        if(Config::has('toby.request.force_resolve'))
+        {
+            $request = Config::get('toby.request.force_resolve');
+        }
+        
+        // request manipulation: aliases
+        else if(Config::has('toby.request.aliases'))
+        {
+            $requestAliases = Config::get('toby.request.aliases');
+            if(isset($requestAliases[$request])) $request = $requestAliases[$request];
+        }
         
         // resolve and boot
         if($request !== null)
@@ -182,10 +192,10 @@ class Toby
             // default resolve on fail
             if($stdResolveOnFail)
             {
-                if(Config::has('toby.default.resolve'))
+                if(Config::has('toby.request.default_resolve'))
                 {
                     // reboot
-                    list($controllerName, $actionName) = explode('/', Config::get('toby.default.resolve'));
+                    list($controllerName, $actionName) = explode('/', Config::get('toby.request.default_resolve'));
                     $this->boot($controllerName, $actionName);
                 }
             }

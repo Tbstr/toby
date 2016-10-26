@@ -174,12 +174,14 @@ class AssetsSet
         // build
         foreach($this->meta as $meta)
         {
+            // prepare properties
             $props = [];
             foreach($meta as $key => $value)
             {
                 $props[] = $key.'="'.$value.'" ';
             }
 
+            // assemble
             $elements[] = '<meta '.implode(' ', $props).'/>';
         }
 
@@ -194,26 +196,31 @@ class AssetsSet
     {
         // vars
         $elements     = [];
-        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
+        $versionQuery = empty(Assets::getCacheBuster()) ? null : 'v='.Assets::getCacheBuster();
 
         // build
         foreach($this->scripts as $script)
         {
-            if(preg_match('/^(https?:\/\/|\/)/', $script['src']))
+            // prepend theme URL
+            if(!preg_match('/^(https?:\/\/|\/)/', $script['src']))
             {
-                $script['src'] = $script['src'].$versionQuery;
+                $script['src'] = ThemeManager::$themeURL.'/'.$script['src'];
             }
-            else
+            
+            // append version query
+            if($versionQuery !== null)
             {
-                $script['src'] = ThemeManager::$themeURL.'/'.$script['src'].$versionQuery;
+                $script['src'] .= (strpos($script['src'], '?') === false ? '?' : '&').$versionQuery;
             }
 
+            // prepare properties
             $props = [];
             foreach($script as $key => $value)
             {
                 $props[] = $key.'="'.$value.'"';
             }
             
+            // assemble
             $elements[] = '<script '.implode(' ', $props).'></script>';
         }
 
@@ -228,26 +235,31 @@ class AssetsSet
     {
         // vars
         $elements     = [];
-        $versionQuery = empty(Assets::getCacheBuster()) ? '' : '?v='.Assets::getCacheBuster();
+        $versionQuery = empty(Assets::getCacheBuster()) ? null : 'v='.Assets::getCacheBuster();
 
         // build
         foreach($this->links as $link)
         {
-            if(preg_match('/^(https?:\/\/|\/)/', $link['href']))
+            // prepend theme URL
+            if(!preg_match('/^(https?:\/\/|\/)/', $link['href']))
             {
-                $link['href'] = $link['href'].$versionQuery;
-            }
-            else
-            {
-                $link['href'] = ThemeManager::$themeURL.'/'.$link['href'].$versionQuery;
+                $link['href'] = ThemeManager::$themeURL.'/'.$link['href'];
             }
 
+            // append version query
+            if($versionQuery !== null)
+            {
+                $link['href'] .= (strpos($link['href'], '?') === false ? '?' : '&').$versionQuery;
+            }
+            
+            // prepare properties
             $props = [];
             foreach($link as $key => $value)
             {
                 $props[] = $key === null ? $key : $key.'="'.$value.'"';
             }
-
+            
+            // assemble
             $elements[] = '<link '.implode(' ', $props).' />';
         }
 
