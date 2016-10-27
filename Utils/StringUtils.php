@@ -158,6 +158,12 @@ class StringUtils
             $value = $convertedValue;
         }
 
+        if (SysUtils::extensionLoaded("intl"))
+        {
+            // normalize UTF-8 into NFC
+            $value = \Normalizer::normalize($value, \Normalizer::FORM_C);
+        }
+
         return $value;
     }
 
