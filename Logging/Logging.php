@@ -101,6 +101,12 @@ class Logging
 
     public static function handleError($errno, $errstr, $errfile = '', $errline = 0/*, $errcontex = array()*/)
     {
+        if (!(error_reporting() & $errno))
+        {
+            // this error is ignored in error_reporting configuration or suppressed with @
+            return false;
+        }
+
         \LoggerMDC::put("file", $errfile);
         \LoggerMDC::put("line", $errline);
 
