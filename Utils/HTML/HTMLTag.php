@@ -1,6 +1,6 @@
 <?php
 
-namespace Toby\HTML;
+namespace Toby\Utils\HTML;
 
 class HTMLTag
 {

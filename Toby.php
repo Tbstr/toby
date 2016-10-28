@@ -29,8 +29,11 @@ define('NL', "\n");
 set_include_path(get_include_path().PATH_SEPARATOR.APP_ROOT.'/lib');
 
 // init auto loaders
-$composerAutoloaderPath = COMPOSER_ROOT.'/autoload.php';
-if(is_file($composerAutoloaderPath)) require_once $composerAutoloaderPath;
+if(defined('COMPOSER_ROOT'))
+{
+    $composerAutoloaderPath = COMPOSER_ROOT.'/autoload.php';
+    if(is_file($composerAutoloaderPath)) require_once $composerAutoloaderPath;
+}
 
 require_once 'Autoloader.php';
 
