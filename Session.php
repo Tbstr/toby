@@ -62,7 +62,11 @@ class Session
         session_name('tobysess');
 
         $domain = preg_replace('/^https?:\/\/([^\/:]+)(:[0-9]+)?\/?.*$/', '$1', Toby::getInstance()->appURL);
-        ini_set('session.cookie_domain', $domain);
+        
+        if(Config::get('toby.session.cookie.restrict_to_app_domain') === true)
+        {
+            ini_set('session.cookie_domain', $domain);
+        }
         
         // set handlers
         if(Config::get('toby.session.mysql.enable'))
