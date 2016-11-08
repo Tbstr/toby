@@ -4,22 +4,21 @@ namespace Toby\Utils;
 
 class StringUtils
 {
-    public static function randomChars($numChars, $charSet = null)
+    const CHARSET_BASE58 = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    const CHARSET_BASE62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const CHARSET_PASSWD = "23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    const CHARSET_PASSLC = "23456789abcdefghjkmnpqrstuvwxyz";
+
+    public static function randomChars($numChars, $charSet = self::CHARSET_BASE62)
     {
-        // vars
-        if($charSet === null) $charSet = str_shuffle('abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ0123456789');
-        $charCount  = strlen($charSet);
+        $charsetLength = strlen($charSet);
         $result = '';
 
-        // generate
-        $i = 0;
-        while($i < $numChars)
+        for ($i = 0; $i < $numChars; $i++)
         {
-            $result .= $charSet[rand(0, $charCount - 1)];
-            $i++;
+            $result .= $charSet[rand(0, $charsetLength - 1)];
         }
 
-        // return
         return $result;
     }
 
