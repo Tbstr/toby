@@ -4,6 +4,10 @@ namespace Toby\HTTP;
 
 class Response
 {
+    /** @var string */
+    protected $protocolVersion;
+    
+    /** @var array */
     protected $headers;
     
     /** @var string */
@@ -14,9 +18,27 @@ class Response
 
     function __construct($content = '', $statusCode = StatusCodes::HTTP_OK, array $headers = null)
     {
+        // vars
         $this->content    = $content;
         $this->statusCode = $statusCode;
         $this->headers    = empty($headers) ? [] : $headers;
+        
+        // set protocol
+        if(isset($_SERVER['SERVER_PROTOCOL']))
+        {
+            if($_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0')
+            {
+                $this->protocolVersion = '1.0';
+            }
+            else
+            {
+                $this->protocolVersion = '1.1';
+            }
+        }
+        else
+        {
+            $this->protocolVersion = '1.1';
+        }
     }
 
     /**
@@ -58,9 +80,6 @@ class Response
     /* send */
     public function send()
     {
-        // set status code
-        http_response_code($this->statusCode);
-
         // send headers
         $this->sendHeaders();
 
@@ -80,7 +99,7 @@ class Response
         }
         
         // status
-        header(sprintf('HTTP/1.1 %s %s', $this->statusCode, StatusCodes::toText($this->statusCode)), true, $this->statusCode);
+        header(sprintf('HTTP/%s %s %s', $this->protocolVersion, $this->statusCode, StatusCodes::toText($this->statusCode)), true, $this->statusCode);
         
         // return self
         return $this;
