@@ -24,9 +24,9 @@ class Response
      * 
      * * @return $this
      */
-    public function addHeader($header)
+    public function addHeader($header, $replace = true)
     {
-        $this->headers[] = $header;
+        $this->headers[] = ['header' => $header, 'replace' => $replace];
         
         return $this;
     }
@@ -73,9 +73,14 @@ class Response
         // cancellation
         if(headers_sent()) return $this;
         
-        // send
+        // defined headers
+        foreach($this->headers as $header)
+        {
+            header($header['header'], $header['replace'], $this->statusCode);
+        }
+        
+        // status
         header(sprintf('HTTP/1.1 %s %s', $this->statusCode, StatusCodes::toText($this->statusCode)), true, $this->statusCode);
-        foreach($this->headers as $header) { header($header, false, $this->statusCode); }
         
         // return self
         return $this;
@@ -83,8 +88,10 @@ class Response
     
     public function sendContent()
     {
+        // print content
         echo $this->content;
         
+        // return self
         return $this;
     }
 }
