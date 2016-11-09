@@ -34,7 +34,7 @@ class Renderer
             $layoutName = ThemeManager::$defaultLayout;
             $layoutPath = self::findLayout($layoutName);
             
-            if($layoutPath === null) Toby::finalize('default layout "'.$layoutName.'" could not be found.');
+            if($layoutPath === null) Toby::getInstance()->finalize('default layout "'.$layoutName.'" could not be found.');
         }
         
         // gather assets
@@ -78,7 +78,7 @@ class Renderer
         
         // get view script
         $scriptPath = self::findViewScript($scriptName);
-        if($scriptPath === null) Toby::finalize('Script "'.$scriptName.'" could not be found.');
+        if($scriptPath === null) Toby::getInstance()->finalize('Script "'.$scriptName.'" could not be found.');
         
         // render & return
         $scriptView = new View($scriptPath, $vars);
@@ -115,6 +115,6 @@ class Renderer
     {
         // cancellation
         if(ThemeManager::isInitialized()) return;
-        if(!ThemeManager::init()) Toby::finalize('unable to init theme manager');
+        if(!ThemeManager::init()) Toby::getInstance()->finalize('unable to init theme manager');
     }
 }

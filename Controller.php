@@ -6,6 +6,7 @@ use Exception;
 use Logger;
 use stdClass;
 use Toby\Exceptions\TobyException;
+use Toby\HTTP\Response;
 use Toby\Logging\Logging;
 use Toby\Utils\StringUtils;
 use Toby\Utils\TypeUtils;
@@ -34,6 +35,9 @@ abstract class Controller
     /** @var Toby */
     protected $toby;
 
+    /** @var Response */
+    public $response;
+
     /* static vars */
     private static $helpers = [];
     
@@ -44,8 +48,10 @@ abstract class Controller
         $this->action                   = $action;
         $this->attributes               = $attributes;
 
-        $this->logger                   = Logging::logger($this);
         $this->toby                     = Toby::getInstance();
+        $this->logger                   = Logging::logger($this);
+
+        $this->response                 = new Response();
         
         // init data containers
         $this->layout                   = new stdClass();
@@ -67,17 +73,24 @@ abstract class Controller
         if(!empty($attributes) && !is_array($attributes)) $attributes = array($attributes);
         
         // forward
-        if($externalForward) header('Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : ''));
-        else Toby::getInstance()->boot($controller, $action, $attributes);
+        if($externalForward)
+        {
+            $locHeader = 'Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : '');
+            $this->response->addHeader($locHeader)->send();
+        }
+        else
+        {
+            Toby::getInstance()->boot($controller, $action, $attributes);
+        }
         
         // exit
-        Toby::finalize(0);
+        $this->toby->finalize(0);
     }
     
     protected function forwardToURL($url)
     {
-        header('Location: '.$url);
-        Toby::finalize(0);
+        $this->response->addHeader('Location: '.$url)->send();
+        $this->toby->finalize(0);
     }
     
     protected function returnFile($filePath, $nameOverride = null, $mimeType = 'auto')

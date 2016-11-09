@@ -3,6 +3,7 @@
 namespace Toby;
 
 use Toby\Exceptions\TobyException;
+use Toby\HTTP\Response;
 use Toby\Logging\Logging;
 use Toby\Utils\SysUtils;
 
@@ -62,6 +63,9 @@ class Toby
     public $request                     = false;
     public $resolve                     = false;
     
+    /** @var Response  */
+    public $response                    = null;
+    
     public $startupTime                 = 0;
     public $encoding                    = false;
 
@@ -113,7 +117,7 @@ class Toby
         $this->request          = $request;
         $this->scope            = $scope;
         $this->startupTime      = time();
-        
+
         // sessions
         if($scope === self::SCOPE_LOCAL) Session::$enabled = false;
 
@@ -186,7 +190,7 @@ class Toby
     {
         // set resolve
         $this->resolve = "$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments));
-
+        
         // run action
         $controller = $this->runAction($controllerName, $actionName, $arguments);
 
@@ -205,8 +209,15 @@ class Toby
         }
         else
         {
+            // get response
+            $response = $controller->response;
+            
             // render
-            echo $this->renderController($controller);
+            $renderedContent = $this->renderController($controller); 
+            if($renderedContent !== null) $response->setContent($renderedContent);
+            
+            // send
+            $response->send();
         }
     }
 
@@ -293,7 +304,7 @@ class Toby
     public function renderController(Controller $controller)
     {
         // cancellation
-        if(!$controller->renderingEnabled()) return '';
+        if(!$controller->renderingEnabled()) return null;
         
         // start timing
         $starttime = null;
@@ -312,7 +323,7 @@ class Toby
             $this->requestTimesLogger->info("rendering controller: $controller [{$deltatime}ms]");
         }
         
-        // return
+        // set content to controller reques
         return $content;
     }
     
@@ -334,13 +345,16 @@ class Toby
     }
     
     /* finalization */
-    public static function finalize($status = 0)
+    public function finalize($exitCodeOrText = 0)
     {
         // exit
-        if(is_int($status)) exit($status);
+        if(is_int($exitCodeOrText))
+        {
+            exit($exitCodeOrText);
+        }
         else
         {
-            SysUtils::printr($status);
+            echo $exitCodeOrText;
             exit(1);
         }
     }

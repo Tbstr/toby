@@ -53,7 +53,7 @@ class Security
                 // hang up or return
                 if($finalizeOnFail === true)
                 {
-                    Toby::finalize();
+                    Toby::getInstance()->finalize();
                 }
                 else
                 {
@@ -73,7 +73,7 @@ class Security
             .' IP:'.$_SERVER['REMOTE_ADDR']);
 
         // hang up or return
-        if($finalizeOnFail) Toby::finalize();
+        if($finalizeOnFail) Toby::getInstance()->finalize();
         return false;
     }
 }

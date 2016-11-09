@@ -45,7 +45,7 @@ class Session
     public function __construct($openOnInit = true)
     {
         // singleton check
-        if(self::$instance !== null) Toby::finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
+        if(self::$instance !== null) Toby::getInstance()->finalize('Toby_Session is a Singleton dude. Use Toby_Session.getInstance().');
 
         $this->logger = Logger::getLogger("toby.session");
         
@@ -250,6 +250,11 @@ class Session
     {
         return $this->has($key) ? $this->SESSION[self::KEY][$key] : null;
     }
+
+    public function getAll()
+    {
+        return $this->SESSION[self::KEY];
+    }
     
     public function has($key)
     {
@@ -264,11 +269,6 @@ class Session
         // unset & return
         unset($this->SESSION[self::KEY][$key]);
         return true;
-    }
-    
-    public function printr()
-    {
-        SysUtils::printr($this->SESSION);
     }
     
     /* event handler */

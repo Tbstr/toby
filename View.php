@@ -96,14 +96,14 @@ class View
     
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
-        $controller = Toby::getInstance()->runAction($controllerName, $actionName, $vars);
+        $controller = $this->toby->runAction($controllerName, $actionName, $vars);
         if($controller !== null)
         {
             return Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
         }
         else
         {
-            Toby::finalize("includeAction: $controllerName/$actionName does not exist");
+            $this->toby->finalize("includeAction: $controllerName/$actionName does not exist");
             return null;
         }
     }

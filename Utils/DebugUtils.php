@@ -39,7 +39,7 @@ class DebugUtils
         $recLog = MySQL::getInstance()->stopQueryRecording();
 
         if($print) SysUtils::printr($recLog);
-        if($finalize) Toby::finalize(0);
+        if($finalize) Toby::getInstance()->finalize(0);
         
         return $recLog;
     }
