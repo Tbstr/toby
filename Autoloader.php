@@ -102,8 +102,13 @@ class Autoloader
         
         return false;
     }
-    
-    public static function getControllerInstance($controllerName, $actionName, $arguments)
+
+    /**
+     * @param string $controllerName
+     *
+     * @return Controller|null
+     */
+    public static function getControllerInstance($controllerName)
     {
         // build class name
         $controllerClassName = self::getControllerClassName($controllerName);
@@ -116,7 +121,7 @@ class Autoloader
         }
 
         // instantiate & return
-        return new $controllerClassName($controllerName, $actionName, $arguments);
+        return new $controllerClassName($controllerName);
     }
 
     private static function getControllerClassName($controllerName)

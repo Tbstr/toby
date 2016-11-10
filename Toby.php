@@ -5,7 +5,6 @@ namespace Toby;
 use Toby\Exceptions\TobyException;
 use Toby\HTTP\Response;
 use Toby\Logging\Logging;
-use Toby\Utils\SysUtils;
 
 // check env vars
 switch(false)
@@ -192,9 +191,9 @@ class Toby
         $this->resolve = "$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments));
         
         // run action
-        $controller = $this->runAction($controllerName, $actionName, $arguments);
+        $response = $this->runAction($controllerName, $actionName, $arguments);
 
-        if($controller === null)
+        if(empty($response))
         {
             // default resolve on fail
             if($stdResolveOnFail)
@@ -209,14 +208,7 @@ class Toby
         }
         else
         {
-            // get response
-            $response = $controller->response;
-            
-            // render
-            $renderedContent = $this->renderController($controller); 
-            if($renderedContent !== null) $response->setContent($renderedContent);
-            
-            // send
+            // send response
             $response->send();
         }
     }
@@ -226,7 +218,7 @@ class Toby
      * @param string $actionName
      * @param null   $arguments
      *
-     * @return \Toby\Controller|null
+     * @return \Toby\HTTP\Response
      */
     public function runAction($controllerName, $actionName = 'index', $arguments = null)
     {
@@ -234,37 +226,46 @@ class Toby
         $this->requestTimeLogStart("$controllerName/$actionName".(empty($arguments) ? '' : '/'.implode('/', $arguments)));
 
         // load controller class
-        $controllerInstance = Autoloader::getControllerInstance($controllerName, $actionName, $arguments);
+        $controller = Autoloader::getControllerInstance($controllerName);
 
-        if($controllerInstance !== null)
+        if($controller !== null)
         {
-            // call action method
-            $actionMethodName = $actionName.'Action';
-            if(method_exists($controllerInstance, $actionMethodName))
+            $actionResponse = $controller->callAction($actionName, $arguments);
+            
+            // success return
+            if($actionResponse !== null)
             {
-                // call
-                if(empty($arguments))   call_user_func(array($controllerInstance, $actionMethodName));
-                else                    call_user_func_array (array($controllerInstance, $actionMethodName), $arguments);
-
                 // stop timing
                 $this->requestTimeLogStop(true);
 
-                // return
-                return $controllerInstance;
+                // return response
+                return $actionResponse;
             }
+            
+            // fail try default action
             else
             {
+                // stop timing
+                $this->requestTimeLogStop(false);
+                
+                // call default action
                 if($actionName !== 'default')
                 {
-                    // stop timing
-                    $this->requestTimeLogStop(false);
-
                     // rebuild arguments
                     if(empty($arguments))       $arguments = array($actionName);
                     else                        array_unshift($arguments, $actionName);
+                    
+                    // restart timing;
+                    $this->requestTimeLogStart("$controllerName/default".(empty($arguments) ? '' : '/'.implode('/', $arguments)));
+
+                    // call action
+                    $defaultResponse = $controller->callAction('default', $arguments);
+                    
+                    // stop timing
+                    $this->requestTimeLogStop($defaultResponse !== null);
 
                     // return
-                    return $this->runAction($controllerName, 'default', $arguments);
+                    return $defaultResponse;
                 }
             }
         }
@@ -299,32 +300,6 @@ class Toby
         // log
         $deltatime = number_format((microtime(true) - $startTime) * 1000, 2);
         $this->requestTimesLogger->info("action done: $title [{$deltatime}ms]".($success ? '' : ' [action not found]'));
-    }
-    
-    public function renderController(Controller $controller)
-    {
-        // cancellation
-        if(!$controller->renderingEnabled()) return null;
-        
-        // start timing
-        $starttime = null;
-        if($this->logRequestTime) $starttime = microtime(true);
-        
-        // prepare theme manager
-        if(!ThemeManager::initByController($controller)) $this->finalize('unable to init ThemeManager with controller '.$controller);
-
-        // render content
-        $content = Renderer::renderPage($controller);
-
-        // stop timing
-        if($this->logRequestTime)
-        {
-            $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
-            $this->requestTimesLogger->info("rendering controller: $controller [{$deltatime}ms]");
-        }
-        
-        // set content to controller reques
-        return $content;
     }
     
     /* settings */

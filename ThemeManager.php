@@ -15,7 +15,6 @@ class ThemeManager
     public static $defaultLayout    = 'default';
     
     /* private variables */
-    private static $controller      = null;
     private static $initialized     = false;
     
     /* initialization */
@@ -69,26 +68,6 @@ class ThemeManager
         // return false
         self::$initialized = false;
         return false;
-    }
-    
-    public static function initByController(Controller $controller)
-    {
-        // theme
-        $theme          = null;
-        $themeFunction  = null;
-        
-        if(isset($controller->overrides['theme']))
-        {
-            $theme          = $controller->overrides['theme'];
-            $themeFunction  = isset($controller->overrides['theme_function']) ? $controller->overrides['theme_function'] : null;
-        }
-
-        // set
-        if(!self::init($theme, $themeFunction)) return false;
-        self::$controller = $controller;
-
-        // return
-        return true;
     }
     
     public static function setDefaultLayout($layout)

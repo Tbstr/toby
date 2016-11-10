@@ -42,12 +42,11 @@ abstract class Controller
     /* static vars */
     private static $helpers = [];
     
-    function __construct($name, $action, $attributes = null)
+    /* constructor */
+    function __construct($name)
     {
         // vars
         $this->name                     = $name;
-        $this->action                   = $action;
-        $this->attributes               = $attributes;
 
         $this->toby                     = Toby::getInstance();
         $this->logger                   = Logging::logger($this);
@@ -66,6 +65,54 @@ abstract class Controller
         $this->javascript               = new stdClass();
         $this->javascript->xsrfkeyname  = Security::XSRFKeyName;
         $this->javascript->xsrfkey      = Security::XSRFGetKey();
+    }
+    
+    /* action management */
+
+    /**
+     * @param string     $actionName
+     * @param array|null $attributes
+     *
+     * @return mixed
+     * @throws TobyException
+     */
+    public function callAction($actionName, array $attributes = null)
+    {
+        $this->action = $actionName;
+        $this->attributes = $attributes;
+
+        $actionMethodName = $actionName.'Action';
+        if(method_exists($this, $actionMethodName))
+        {
+            // call
+            if($attributes === null)
+            {
+                $response = call_user_func(array($this, $actionMethodName));
+            }
+            else
+            {
+                $response = call_user_func_array (array($this, $actionMethodName), $attributes);
+            }
+
+            // render default response if none given
+            if($response === null)
+            {
+                // get default response from controller
+                $response = $this->response;
+        
+                // set response content with rendered action view
+                if($this->renderView === true)
+                {
+                    $renderedContent = $this->renderActionView($actionName);
+                    if($renderedContent !== null) $response->setContent($renderedContent);
+                }
+            }
+            
+            // return
+            return $response;
+        }
+        
+        return null;
     }
     
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
@@ -204,6 +251,45 @@ abstract class Controller
         return $this->renderView;
     }
 
+    protected function renderActionView($actionName)
+    {
+        // cancellation
+        if(!$this->renderingEnabled()) return null;
+
+        // start timing
+        /*
+        $starttime = null;
+        if($this->logRequestTime) $starttime = microtime(true);
+        */
+
+        // init theme manager
+        $theme          = null;
+        $themeFunction  = null;
+
+        if(isset($this->overrides['theme']))
+        {
+            $theme          = $this->overrides['theme'];
+            $themeFunction  = isset($this->overrides['theme_function']) ? $this->overrides['theme_function'] : null;
+        }
+        
+        if(!ThemeManager::init($theme, $themeFunction)) $this->toby->finalize('unable to init ThemeManager with controller '.$this);
+
+        // render content
+        $content = Renderer::renderPage($this);
+
+        // stop timing
+        /*
+        if($this->logRequestTime)
+        {
+            $deltatime = number_format((microtime(true) - $starttime) * 1000, 2);
+            $this->requestTimesLogger->info("rendering controller: $controller [{$deltatime}ms]");
+        }
+        */
+
+        // return
+        return $content;
+    }
+    
     /* helper management */
 
     /**
