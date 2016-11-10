@@ -18,8 +18,6 @@ abstract class Controller
 {
     /* properties */
     public $name;
-    public $action;
-    public $attributes;
     
     /* settings */
     private $renderView     = true;
@@ -74,8 +72,9 @@ abstract class Controller
     /**
      * @param string     $actionName
      * @param array|null $attributes
+     * @param bool       $renderView
      *
-     * @return mixed
+     * @return Response
      * @throws TobyException
      */
     public function callAction($actionName, array $attributes = null, $renderView = true)
@@ -117,7 +116,18 @@ abstract class Controller
         
         return null;
     }
+
+    /* response management */
+    protected function setResponse(Response $response)
+    {
+        // cancellation
+        if($response === null) return;
+
+        // set
+        $this->response = $response;
+    }
     
+    /* default helper methods */
     protected function forward($controller, $action = 'index', $attributes = null, $externalForward = false, $forceSecure = false)
     {
         // convert attributes to array
@@ -167,7 +177,7 @@ abstract class Controller
         readfile($filePath);
     }
     
-    /* set theme */
+    /* view rendering management */
     protected function setTheme($themeName, $functionName = null)
     {
         $this->overrides['theme'] = $themeName;
@@ -178,13 +188,11 @@ abstract class Controller
         }
     }
     
-    /* set layout */
     protected function setLayout($layoutName)
     {
         $this->overrides['layout'] = $layoutName;
     }
-    
-    /* manage page title */
+
     protected function setTitle($value)
     {
         $this->overrides['layout_title'] = $value;
@@ -202,7 +210,6 @@ abstract class Controller
         $this->overrides['layout_title_prep'] = $value.$this->overrides['layout_title_prep'];
     }
     
-    /* body properties */
     protected function setBodyId($id)
     {
         $this->overrides['layout_body_id'] = $id;
@@ -232,17 +239,6 @@ abstract class Controller
         }
     }
     
-    /* response management */
-    protected function setResponse(Response $response)
-    {
-        // cancellation
-        if($response === null) return;
-        
-        // set
-        $this->response = $response;
-    }
-    
-    /* manage view rendering */
     protected function setViewScript($viewScript)
     {
         $this->overrides['view_script'] = $viewScript;
