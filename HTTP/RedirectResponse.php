@@ -10,7 +10,7 @@ class RedirectResponse extends Response
     {
         $this->url = $url;
         
-        parent::__construct('', $statusCode, $headers);
+        parent::__construct(null, $statusCode, $headers);
     }
     
     public function setURL($url)

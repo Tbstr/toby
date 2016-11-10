@@ -16,7 +16,7 @@ class Response
     /** @var int */
     protected $statusCode;
 
-    function __construct($content = '', $statusCode = StatusCodes::HTTP_OK, array $headers = null)
+    function __construct($content = null, $statusCode = StatusCodes::HTTP_OK, array $headers = null)
     {
         // vars
         $this->content    = $content;
@@ -43,6 +43,7 @@ class Response
 
     /**
      * @param string $header
+     * @param bool   $replace
      * 
      * * @return $this
      */
@@ -108,7 +109,7 @@ class Response
     protected function sendContent()
     {
         // print content
-        echo $this->content;
+        if($this->content !== null) echo $this->content;
         
         // return self
         return $this;
