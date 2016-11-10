@@ -136,6 +136,8 @@ class StatusCodes
 
     /**
      * @param int $code
+     *
+     * @return string
      */
     public static function toText($code)
     {

@@ -11,7 +11,7 @@ class JSONResponse extends Response
     
     function __construct(array $data = null, $statusCode = 200, array $headers = null)
     {
-        parent::__construct('', $statusCode, $headers);
+        parent::__construct(null, $statusCode, $headers);
         
         if($data !== null) $this->set($data);
         $this->addHeader('Content-type: application/json');

@@ -193,7 +193,12 @@ class Toby
         // run action
         $response = $this->runAction($controllerName, $actionName, $arguments);
 
-        if(empty($response))
+        if($response !== null)
+        {
+            // send response
+            $response->send();
+        }
+        else
         {
             // default resolve on fail
             if($stdResolveOnFail)
@@ -205,11 +210,6 @@ class Toby
                     $this->boot($controllerName, $actionName);
                 }
             }
-        }
-        else
-        {
-            // send response
-            $response->send();
         }
     }
 
@@ -227,7 +227,7 @@ class Toby
 
         // load controller class
         $controller = Autoloader::getControllerInstance($controllerName);
-
+        
         if($controller !== null)
         {
             $actionResponse = $controller->callAction($actionName, $arguments);

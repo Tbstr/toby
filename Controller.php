@@ -6,8 +6,10 @@ use Exception;
 use Logger;
 use stdClass;
 use Toby\Exceptions\TobyException;
+use Toby\HTTP\JSONResponse;
 use Toby\HTTP\RedirectResponse;
 use Toby\HTTP\Response;
+use Toby\HTTP\StreamedResponse;
 use Toby\Logging\Logging;
 use Toby\Utils\StringUtils;
 use Toby\Utils\TypeUtils;
@@ -36,7 +38,7 @@ abstract class Controller
     /** @var Toby */
     protected $toby;
 
-    /** @var Response */
+    /** @var Response|JSONResponse|StreamedResponse|RedirectResponse */
     public $response;
 
     /* static vars */
@@ -76,11 +78,8 @@ abstract class Controller
      * @return mixed
      * @throws TobyException
      */
-    public function callAction($actionName, array $attributes = null)
+    public function callAction($actionName, array $attributes = null, $renderView = true)
     {
-        $this->action = $actionName;
-        $this->attributes = $attributes;
-
         $actionMethodName = $actionName.'Action';
         if(method_exists($this, $actionMethodName))
         {
@@ -91,20 +90,24 @@ abstract class Controller
             }
             else
             {
-                $response = call_user_func_array (array($this, $actionMethodName), $attributes);
+                $response = call_user_func_array(array($this, $actionMethodName), $attributes);
             }
-
+            
             // render default response if none given
             if($response === null)
             {
                 // get default response from controller
                 $response = $this->response;
-        
+                
                 // set response content with rendered action view
-                if($this->renderView === true)
+                if($renderView && $this->renderingEnabled() && get_class($response) === Response::class)
                 {
                     $renderedContent = $this->renderActionView($actionName);
-                    if($renderedContent !== null) $response->setContent($renderedContent);
+                    
+                    if($renderedContent !== null)
+                    {
+                        $response->setContent($renderedContent);
+                    }
                 }
             }
             
@@ -229,16 +232,20 @@ abstract class Controller
         }
     }
     
+    /* response management */
+    protected function setResponse(Response $response)
+    {
+        // cancellation
+        if($response === null) return;
+        
+        // set
+        $this->response = $response;
+    }
+    
     /* manage view rendering */
     protected function setViewScript($viewScript)
     {
         $this->overrides['view_script'] = $viewScript;
-    }
-    
-    public function getViewScript()
-    {
-        if(isset($this->overrides['view_script'])) return $this->overrides['view_script'];
-        return "$this->name/$this->action";
     }
     
     protected function disableRendering()
@@ -253,6 +260,7 @@ abstract class Controller
 
     protected function renderActionView($actionName)
     {
+        
         // cancellation
         if(!$this->renderingEnabled()) return null;
 
@@ -274,8 +282,18 @@ abstract class Controller
         
         if(!ThemeManager::init($theme, $themeFunction)) $this->toby->finalize('unable to init ThemeManager with controller '.$this);
 
+        // determine view script
+        if(isset($this->overrides['view_script']))
+        {
+            $viewScript = $this->overrides['view_script'];
+        }
+        else
+        {
+            $viewScript = "$this->name/$actionName";
+        }
+        
         // render content
-        $content = Renderer::renderPage($this);
+        $content = Renderer::renderPage($this, $viewScript);
 
         // stop timing
         /*
@@ -321,6 +339,6 @@ abstract class Controller
     /* to string */
     public function __toString()
     {
-        return "Controller[{$this->name}/{$this->action}]";
+        return "Controller[{$this->name}]";
     }
 }

@@ -12,7 +12,7 @@ class StreamedResponse extends Response
     
     function __construct(callable $callback = null, $statusCode = StatusCodes::HTTP_OK, array $headers = null)
     {
-        parent::__construct('', $statusCode, $headers);
+        parent::__construct(null, $statusCode, $headers);
         
         if($callback !== null) $this->setCallback($callback);
         $this->callbackCalled = false;

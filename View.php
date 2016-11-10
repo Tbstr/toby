@@ -96,10 +96,10 @@ class View
     
     protected function includeAction($controllerName, $actionName = 'index', $vars = null)
     {
-        $controller = $this->toby->runAction($controllerName, $actionName, $vars);
-        if($controller !== null)
+        $response = $this->toby->runAction($controllerName, $actionName, $vars);
+        if($response !== null)
         {
-            return Renderer::renderView($controller->getViewScript(), get_object_vars($controller->view));
+            return $response;
         }
         else
         {

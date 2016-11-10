@@ -5,7 +5,6 @@ namespace Toby;
 use InvalidArgumentException;
 use Logger;
 use Toby\MySQL\MySQL;
-use Toby\Utils\SysUtils;
 
 class Session
 {

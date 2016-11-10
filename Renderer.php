@@ -11,13 +11,13 @@ class Renderer
     private static $defaultViewsPath    = '/view';
 
     /* static methods */
-    public static function renderPage(Controller $controller)
+    public static function renderPage(Controller $controller, $viewScript)
     {
         // init theme manager
         self::initThemeManager();
 
         // render script
-        $content = self::renderView($controller->getViewScript(), get_object_vars($controller->view));
+        $content = self::renderView($viewScript, get_object_vars($controller->view));
         
         // find layout script path
         $layoutName = null;

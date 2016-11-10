@@ -25,15 +25,15 @@ class TobyUtils
         if($controllerName !== null)
         {
             // check controller instance
-            $controllerInstance = Autoloader::getControllerInstance($controllerName, $actionName, null);
+            $controller = Autoloader::getControllerInstance($controllerName);
             
-            if($controllerInstance !== null)
+            if($controller !== null)
             {
                 // check action
                 if($omitAction) return true;
 
                 $actionMethodName = $actionName.'Action';
-                if(method_exists($controllerInstance, $actionMethodName)) return true;
+                if(method_exists($controller, $actionMethodName)) return true;
             }
         }
         
