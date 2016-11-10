@@ -87,7 +87,7 @@ class Response
         $this->sendContent();
     }
     
-    public function sendHeaders()
+    protected function sendHeaders()
     {
         // cancellation
         if(headers_sent()) return $this;
@@ -104,8 +104,8 @@ class Response
         // return self
         return $this;
     }
-    
-    public function sendContent()
+
+    protected function sendContent()
     {
         // print content
         echo $this->content;

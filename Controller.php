@@ -6,6 +6,7 @@ use Exception;
 use Logger;
 use stdClass;
 use Toby\Exceptions\TobyException;
+use Toby\HTTP\RedirectResponse;
 use Toby\HTTP\Response;
 use Toby\Logging\Logging;
 use Toby\Utils\StringUtils;
@@ -75,8 +76,10 @@ abstract class Controller
         // forward
         if($externalForward)
         {
-            $locHeader = 'Location: '.($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : '');
-            $this->response->addHeader($locHeader)->send();
+            $url = ($forceSecure ? $this->toby->appURLSecure : $this->toby->appURL).DS.$controller.DS.$action.($attributes ? DS.implode(DS, $attributes) : '');
+            
+            $response = new RedirectResponse($url);
+            $response->send();
         }
         else
         {
@@ -89,7 +92,9 @@ abstract class Controller
     
     protected function forwardToURL($url)
     {
-        $this->response->addHeader('Location: '.$url)->send();
+        $response = new RedirectResponse($url);
+        $response->send();
+        
         $this->toby->finalize(0);
     }
     
