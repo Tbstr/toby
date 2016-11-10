@@ -4,6 +4,10 @@ namespace Toby\HTTP;
 
 class Response
 {
+    /** @var string */
+    protected $protocolVersion;
+    
+    /** @var array */
     protected $headers;
     
     /** @var string */
@@ -14,9 +18,27 @@ class Response
 
     function __construct($content = '', $statusCode = StatusCodes::HTTP_OK, array $headers = null)
     {
+        // vars
         $this->content    = $content;
         $this->statusCode = $statusCode;
         $this->headers    = empty($headers) ? [] : $headers;
+        
+        // set protocol
+        if(isset($_SERVER['SERVER_PROTOCOL']))
+        {
+            if($_SERVER['SERVER_PROTOCOL'] === 'HTTP/1.0')
+            {
+                $this->protocolVersion = '1.0';
+            }
+            else
+            {
+                $this->protocolVersion = '1.1';
+            }
+        }
+        else
+        {
+            $this->protocolVersion = '1.1';
+        }
     }
 
     /**
@@ -24,9 +46,9 @@ class Response
      * 
      * * @return $this
      */
-    public function addHeader($header)
+    public function addHeader($header, $replace = true)
     {
-        $this->headers[] = $header;
+        $this->headers[] = ['header' => $header, 'replace' => $replace];
         
         return $this;
     }
@@ -58,9 +80,6 @@ class Response
     /* send */
     public function send()
     {
-        // set status code
-        http_response_code($this->statusCode);
-
         // send headers
         $this->sendHeaders();
 
@@ -68,23 +87,30 @@ class Response
         $this->sendContent();
     }
     
-    public function sendHeaders()
+    protected function sendHeaders()
     {
         // cancellation
         if(headers_sent()) return $this;
         
-        // send
-        header(sprintf('HTTP/1.1 %s %s', $this->statusCode, StatusCodes::toText($this->statusCode)), true, $this->statusCode);
-        foreach($this->headers as $header) { header($header, false, $this->statusCode); }
+        // defined headers
+        foreach($this->headers as $header)
+        {
+            header($header['header'], $header['replace'], $this->statusCode);
+        }
+        
+        // status
+        header(sprintf('HTTP/%s %s %s', $this->protocolVersion, $this->statusCode, StatusCodes::toText($this->statusCode)), true, $this->statusCode);
         
         // return self
         return $this;
     }
-    
-    public function sendContent()
+
+    protected function sendContent()
     {
+        // print content
         echo $this->content;
         
+        // return self
         return $this;
     }
 }
