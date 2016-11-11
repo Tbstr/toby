@@ -218,7 +218,7 @@ class Toby
      * @param string $actionName
      * @param null   $arguments
      *
-     * @return \Toby\HTTP\Response
+     * @return Response|null
      */
     public function runAction($controllerName, $actionName = 'index', $arguments = null)
     {

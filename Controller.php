@@ -74,7 +74,7 @@ abstract class Controller
      * @param array|null $attributes
      * @param bool       $renderView
      *
-     * @return Response
+     * @return Response|null
      * @throws TobyException
      */
     public function callAction($actionName, array $attributes = null, $renderView = true)
@@ -92,26 +92,29 @@ abstract class Controller
                 $response = call_user_func_array(array($this, $actionMethodName), $attributes);
             }
             
-            // render default response if none given
-            if($response === null)
+            // use default response if none returned
+            if($response instanceof Response)
             {
-                // get default response from controller
-                $response = $this->response;
-                
-                // set response content with rendered action view
-                if($renderView && $this->renderingEnabled() && get_class($response) === Response::class)
+                return $response;
+            }
+            else
+            {
+                if($this->response instanceof Response)
                 {
-                    $renderedContent = $this->renderActionView($actionName);
-                    
-                    if($renderedContent !== null)
+                    // set response content with rendered action view
+                    if($renderView && $this->renderingEnabled() && get_class($this->response) === Response::class)
                     {
-                        $response->setContent($renderedContent);
+                        $renderedContent = $this->renderActionView($actionName);
+                        if($renderedContent !== null) $this->response->setContent($renderedContent);
                     }
+                    
+                    return $this->response;
+                }
+                else
+                {
+                    return null;
                 }
             }
-            
-            // return
-            return $response;
         }
         
         return null;
