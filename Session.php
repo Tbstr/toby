@@ -57,14 +57,26 @@ class Session
     
     private function init()
     {
-        // settings
+        // settings: session name
         session_name('tobysess');
 
-        $domain = preg_replace('/^https?:\/\/([^\/:]+)(:[0-9]+)?\/?.*$/', '$1', Toby::getInstance()->appURL);
-        
+        // settings: cookie domain
         if(Config::get('toby.session.cookie.restrict_to_app_domain') === true)
         {
+            $domain = preg_replace('/^https?:\/\/([^\/:]+)(:[0-9]+)?\/?.*$/', '$1', Toby::getInstance()->appURL);
             ini_set('session.cookie_domain', $domain);
+        }
+
+        // settings: cookie secure
+        if(Config::get('toby.session.cookie.secure') === true)
+        {
+            ini_set('session.cookie_secure', '1');
+        }
+
+        // settings: cookie http only
+        if(Config::get('toby.session.cookie.http_only') === true)
+        {
+            ini_set('session.cookie_httponly', '1');
         }
         
         // set handlers
