@@ -27,7 +27,7 @@ class Logging
 
     public static function init()
     {
-        self::$fatalNotificationTo = Config::get('toby.error.fatal_notificationT_to');
+        self::$fatalNotificationTo = Config::get('toby.error.fatal_notification_to');
 
         $config = Config::get('logging.config');
         if(!is_array($config) || empty($config))
