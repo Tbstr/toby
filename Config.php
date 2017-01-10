@@ -57,23 +57,26 @@ class Config
             }
         }
         
+        // remove old data from index
+        if (isset($this->dataIndex[$fullKey]) && is_array($this->dataIndex[$fullKey]))
+        {
+            $this->removeFromIndex($fullKey);
+        }
         $arr[$key] = $value;
 
-        if(isset($this->dataIndex[$fullKey])) $this->removeUpperIndices($fullKey);
         $this->dataIndex[$fullKey] = &$arr[$key];
     }
-    
-    private function removeUpperIndices($baseKey)
+
+    private function removeFromIndex($key)
     {
-        $baseKeyLength = strlen($baseKey);
-        
-        foreach($this->dataIndex as $key => $value)
+        if (isset($this->dataIndex[$key]) && is_array($this->dataIndex[$key]))
         {
-            if(strncmp($key, $baseKey, $baseKeyLength) === 0)
+            foreach ($this->dataIndex[$key] as $k => $v)
             {
-                if(strlen($key) > $baseKeyLength) unset($this->dataIndex[$key]);
+                $this->removeFromIndex($key . '.' . $k);
             }
         }
+        unset($this->dataIndex[$key]);
     }
 
     /**
@@ -134,8 +137,11 @@ class Config
 
         unset($arr[$keyName]);
         
+        if (isset($this->dataIndex[$key]) && is_array($this->dataIndex[$key]))
+        {
+            $this->removeFromIndex($key);
+        }
         unset($this->dataIndex[$key]);
-        $this->removeUpperIndices($key);
     }
 
     /**
