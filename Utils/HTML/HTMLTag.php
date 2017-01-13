@@ -49,6 +49,12 @@ class HTMLTag
         if(is_string($this->content)) $this->content .= $content;
         return $this;
     }
+
+    public function prependToContent($content)
+    {
+        if(is_string($this->content)) $this->content = $content.$this->content;
+        return $this;
+    }
     
     /* build */
     public function build()
