@@ -101,8 +101,42 @@ class StringUtils
         // cancellation
         if(empty($url)) return false;
 
-        // check
-        return (boolean)preg_match('/^https?:\/\/([0-9.]+(:\d{1,5})?|(?![0-9 .-])(\.?(-?[0-9a-z]+)+)+\.[a-z]{2,32})(\/[\w .-]+)?\/?(\?(&?\w+(=\w+)?)+)?$/i', $url);
+        if (!function_exists("idn_to_ascii"))
+        {
+            // use old regexp, not supporting IDN domains in non-idn form
+            return (boolean)preg_match('/^https?:\/\/([0-9.]+(:\d{1,5})?|(?![0-9 .-])(\.?(-?[0-9a-z]+)+)+\.[a-z]{2,32})(\/[\w .-]+)?\/?(\?(&?\w+(=\w+)?)+)?$/i', $url);
+        }
+        else
+        {
+            // strip protocol and trailing path and stuff
+            $matches = null;
+            if (preg_match('/^(https?:\/\/)([^\/ ]+)(\/[\w .-]+)?\/?(\?(&?\w+(=\w+)?)+)?$/i', $url, $matches))
+            {
+                $hostname = $matches[2];
+                if (strpos($hostname, '@') !== false)
+                {
+                    // strip leading user
+                    $hostname = substr($hostname, strpos($hostname, '@') + 1);
+                }
+                if (strpos($hostname, ':') !== false)
+                {
+                    // strip trailing port
+                    $hostname = substr($hostname, 0, strpos($hostname, ':'));
+                }
+                if (idn_to_ascii($hostname) === false)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
     public static function buildPath(array $elements, $separator = '/')
